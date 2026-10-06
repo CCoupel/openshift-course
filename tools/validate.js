@@ -75,7 +75,7 @@ for (const file of files) {
       err(file, `${where}, champ ${field} : balise <${m[1]}> non autorisée dans un champ HTML brut (« …${ex}… ») ; écris &lt;${m[1]}&gt;`);
     }
   };
-  for (const k of ['tagline']) strs(mod[k]).forEach(t => checkHtml('module', k, t));
+  for (const k of ['tagline', 'duration', 'emoji']) strs(mod[k]).forEach(t => checkHtml('module', k, t));
   for (const k of ['objectives', 'takeaways']) strs(mod[k]).forEach(t => checkHtml('module', k, t));
 
   let quizzes = 0, labs = 0;

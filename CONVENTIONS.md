@@ -36,7 +36,7 @@ Le `title` d'une slide est du **texte brut** (pas de HTML, pas de backticks). `t
 
 ## Blocs disponibles (`t:`)
 
-Tous acceptent `frag` et `wide`. Les champs « HTML » acceptent `<b> <i> <code> <br> <span class="tag cloud">…`.
+Tous acceptent `frag` et `wide`. Les champs « HTML » acceptent `<b> <i> <em> <strong> <code> <br> <a> <span class="tag cloud"> <ul> <ol> <li> <p> <kbd> <sub> <sup> <mark> <small> <pre>` (liste blanche contrôlée par `tools/validate.js`).
 
 | `t` | Champs | Usage |
 |---|---|---|
