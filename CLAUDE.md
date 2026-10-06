@@ -8,7 +8,7 @@ ecrit moi un support de court pour openshift. le cours doit porter sur: comparat
 
 ### Cadrage (workshop du 2026-10-06)
 
-- **But** : support de cours OpenShift **on-premise**, structuré pour mon apprentissage et réutilisable en mission, partagé avec la communauté (dépôt public + GitHub Pages).
+- **But** : support de cours OpenShift **on-premise**, structuré pour mon apprentissage et réutilisable en mission, partagé avec la communauté (dépôt public ; vitrine sur GitHub Pages, cours HTML et PPTX en téléchargement via les Releases).
 - **Public** : admins K8s qui passent à OpenShift, ingénieurs plateforme/DevOps. Les bases K8s ne sont pas réexpliquées.
 - **Format** : hybride — **HTML interactif** (source de vérité, `index.html` + `modules/*.js`) et **export PowerPoint** pour présenter.
 - **Contraintes** : HTML/JS sans dépendance, ouvrable en double-clic ; en français ; encarts « écart cloud » quand le comportement diffère fortement du cloud managé.
@@ -53,6 +53,8 @@ ecrit moi un support de court pour openshift. le cours doit porter sur: comparat
 | Nom | Rôle | Fichier | Spawn |
 |-----|------|---------|-------|
 | `planner` | Plan d'implémentation + contrats API | `.claude/agents/implementation-planner.template.md` | permanent |
+| `dev-course` | Rédaction des modules du cours (HTML, source unique) | `.claude/agents/dev-course.md` | permanent |
+| `dev-export` | Export PowerPoint (.pptx) à partir des modules | `.claude/agents/dev-export.md` | permanent |
 | `test-writer` | Scripts de tests + procédures QA | `.claude/agents/test-writer.template.md` | permanent |
 | `code-reviewer` | Revue de code | `.claude/agents/code-reviewer.template.md` | permanent |
 | `qa` | Exécution des tests et validation | `.claude/agents/qa.template.md` | permanent |
@@ -60,6 +62,7 @@ ecrit moi un support de court pour openshift. le cours doit porter sur: comparat
 | `deployer` | Build + Publication + Déploiement QUALIF/PROD | `.claude/agents/deploy.template.md` | permanent |
 | `security` | Audit sécurité | `.claude/agents/security.template.md` | ponctuel |
 | `infra` | Infrastructure (si configurée) | `.claude/agents/infra.template.md` | ponctuel |
+| `marketing-release` | Site vitrine gh-pages + release notes | `.claude/agents/marketing-release.template.md` | ponctuel |
 
 > **Fichier** pointe vers le `.template.md` — géré par sync, toujours présent. Un compagnon
 > `.md` (sans suffixe) peut exister à côté pour des adaptations projet ; il est optionnel et
@@ -156,7 +159,7 @@ Le paramètre `name` dans `Task` est **toujours le nom canonique simple** : `qa`
 
 **Noms canoniques** :
 ```
-planner, dev-backend, dev-frontend, dev-firmware, dev-plugin,
+planner, dev-course, dev-export, dev-backend, dev-frontend, dev-firmware, dev-plugin,
 test-writer, code-reviewer, qa, doc-updater, deployer, security, infra
 ```
 
