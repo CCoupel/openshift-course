@@ -30,7 +30,7 @@ COURSE.add({
       blocks: [
         { t: 'compare', wide: true,
           left: { title: '🧩 Tu veux un chemin guidé', items: ['<b>Agent-based</b> : fonctionne déconnecté, idéal pour bare metal et SNO', '<b>Assisted</b> : UI + validations des hôtes (réseau, disque, NTP) avant installation', 'Pas besoin de BMC ni de provisioning réseau'] },
-          right: { title: '🔧 Tu veux tout piloter', items: ['<b>IPI</b> : moins de tâches manuelles, VIP gérées pour toi (vSphere, bare metal avec BMC)', '<b>UPI</b> : maximum de contrôle, maximum de travail ; imposé quand la plateforme ou le process l\'exige', 'Les nœuds sont à ajouter à la main ensuite (CSR)'] },
+          right: { title: '🔧 Tu veux tout piloter', items: ['<b>IPI</b> : moins de tâches manuelles, VIP gérées pour toi (vSphere, bare metal avec BMC)', '<b>UPI</b> : maximum de contrôle, maximum de travail ; imposé quand la plateforme ou le process l\'exige', 'En UPI, les nœuds sont créés et leurs CSR approuvés à la main'] },
           verdict: 'Règle de départ : <b>Agent-based</b> si tu as des serveurs nus ou du déconnecté ; <b>IPI vSphere</b> si ton infra est déjà vSphere et que tu as les droits.' },
         { t: 'callout', kind: 'cloud', wide: true, html: "En cloud (AWS, Azure, GCP), IPI crée aussi les <b>load balancers, le DNS, les groupes de sécurité</b> : il n'y a quasiment rien à préparer. En managé (ROSA/ARO/OSD), tu n'installes rien : tout ce module ne te concerne pas. On-prem, la préparation de l'infra <b>est</b> le projet." }
       ]
@@ -61,7 +61,7 @@ COURSE.add({
         { t: 'bullets', items: [
           '<b>Ordres de grandeur minimaux</b> : à vérifier dans la doc 4.20 ; dimensionne plus large (monitoring, logging, virtualisation).',
           'Disque control plane : <b>rapide</b> (latence etcd, voir module 08).',
-          '<b>Architecture et firmware</b> : x86_64 (autres archi : hors périmètre), UEFI recommandé.',
+          '<b>Architecture et firmware</b> : x86_64 (autres archi : hors périmètre) ; mode de démarrage (UEFI recommandé ?) à vérifier dans la doc 4.20.',
           'Poste d\'installation avec accès aux nœuds et à Internet (ou au miroir).'
         ] },
         { t: 'cmds', wide: true, items: [
@@ -110,7 +110,7 @@ metadata:
   name: ocp4                 # => api.ocp4.example.com
 compute:
 - name: worker
-  replicas: 3                # 0 pour un compact ou un SNO
+  replicas: 3                # 0 pour un compact ou un SNO ; 0 aussi en UPI (workers créés à la main)
 controlPlane:
   name: master
   replicas: 3                # 1 pour un SNO
@@ -287,7 +287,7 @@ hosts:
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ export KUBECONFIG=ocp4/auth/kubeconfig\n$ openshift-install wait-for bootstrap-complete --dir ocp4 --log-level=debug\n$ openshift-install wait-for install-complete  --dir ocp4\n\n# Les workers apparaissent seulement après approbation des CSR\n$ oc get csr | grep Pending\n$ oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{\"\\n\"}}{{end}}{{end}}' \\\n    | xargs oc adm certificate approve" },
         { t: 'bullets', items: [
           '<b>Deux vagues</b> de CSR par nœud : le client (kubelet-bootstrap), puis le serving.',
-          'En <b>IPI/Machine API</b>, l\'approbation est automatique ; en UPI et Agent-based sur <code>none</code>, c\'est à toi.',
+          'En <b>IPI/Machine API</b>, l\'approbation est automatique. En <b>UPI</b>, c\'est à toi. En <b>Agent-based</b>, l\'installeur gère les hôtes qu\'il installe (à vérifier dans la doc d\'installation et les release notes) ; pour un nœud ajouté ensuite, prévois d\'approuver les CSR toi-même.',
           'Si ça bloque : <code>openshift-install gather bootstrap</code> (UPI/IPI) ou <code>oc adm must-gather</code> sur un cluster déjà vivant.'
         ] },
         { t: 'callout', kind: 'tip', wide: true, html: "Un worker absent de <code>oc get nodes</code> en UPI, c'est presque toujours <b>un CSR en Pending</b>. Pense à relancer la commande une fois la première vague approuvée : la seconde apparaît ensuite." }
@@ -359,7 +359,7 @@ mirror:
         { t: 'bullets', items: [
           'Le <b>pull secret</b> de l\'installation contient les identifiants du miroir (en plus ou à la place de ceux de Red Hat).',
           '<code>additionalTrustBundle</code> dans <code>install-config.yaml</code> : la <b>CA</b> du registre, pour que les nœuds lui fassent confiance.',
-          'Les IDMS/ITMS sont soit générés à l\'installation à partir d\'<code>imageContentSources</code> (à vérifier pour 4.20), soit appliqués après.',
+          'Les IDMS/ITMS sont soit générés à l\'installation à partir d\'<code>imageDigestSources</code> dans <code>install-config.yaml</code> (nom depuis 4.14 ; l\'ancien <code>imageContentSources</code> : à vérifier pour 4.20), soit appliqués après.',
           'Utilisation des catalogues miroités (<code>CatalogSource</code>, OLM) : module 04.'
         ] },
         { t: 'callout', kind: 'trap', wide: true, html: "Un cluster déconnecté affiche des <b>OperatorHub vides</b> et des pods en <code>ImagePullBackOff</code> tant que les catalogues par défaut tentent d'atteindre Internet ou que les IDMS manquent. Vérifie aussi que tes <b>images applicatives</b> sont mirrorées (<code>additionalImages</code>)." }
@@ -376,7 +376,8 @@ mirror:
           ['oc get mcp', 'Pools à jour (UPDATED=True, DEGRADED=False) ?'],
           ['oc get pods -A | grep -v -E "Running|Completed"', 'Pods en erreur après installation'],
           ['oc whoami --show-console', 'URL de la console'],
-          ['oc get route -n openshift-ingress', 'L\'Ingress répond : test du DNS wildcard']
+          ['oc get co ingress', 'Cluster Operator ingress Available ? (le routeur répond)'],
+          ['curl -kI https://$(oc get route console -n openshift-console -o jsonpath=\'{.spec.host}\')', 'La console répond en HTTPS : valide le DNS wildcard et le LB Ingress']
         ] },
         { t: 'bullets', frag: true, items: [
           'Récupère le mot de passe <code>kubeadmin</code> dans <code>auth/kubeadmin-password</code> ; remplace-le par un vrai IdP (module 06), puis supprime-le.',
@@ -392,7 +393,7 @@ mirror:
         { t: 'cards', items: [
           { front: 'Install bloquée à 80-90 %', back: '<b>Wildcard *.apps</b> absent ou LB Ingress mal configuré.' },
           { front: 'Bootstrap qui n\'avance pas', back: 'Port <b>22623</b> fermé ou LB mal configuré ; heure décalée (certificats).' },
-          { front: 'Workers absents', back: '<b>CSR en Pending</b> (UPI / platform none).' },
+          { front: 'Workers absents', back: '<b>CSR en Pending</b> (UPI ; nœud ajouté après coup ; Agent-based : à vérifier).' },
           { front: 'ImagePullBackOff partout', back: 'Pull secret sans le miroir, <b>CA non fournie</b> ou IDMS manquants.' },
           { front: 'Install-config perdu', back: 'Le fichier est <b>consommé</b> : sauvegarde-le avant <code>create</code>.' },
           { front: 'VIP qui flottent mal', back: 'VIP hors du <b>machineNetwork</b>, ou conflit d\'IP sur le sous-réseau.' }
@@ -405,8 +406,8 @@ mirror:
       tag: 'quiz',
       blocks: [
         { t: 'quiz', q: 'Installation UPI : <code>wait-for bootstrap-complete</code> passe, mais <code>install-complete</code> ne se termine jamais ; la console est injoignable. Quelle cause est la plus probable ?', options: ['Le port 6443 est fermé', 'L\'enregistrement DNS wildcard <code>*.apps</code> ou le LB Ingress est absent ou incorrect', 'Le pull secret est expiré', 'Le bootstrap n\'a pas été supprimé'], answer: 1, explain: 'Le bootstrap passe, donc l\'API (6443) et le MCS (22623) fonctionnent. La console, OAuth et le registre passent par l\'Ingress : sans wildcard ou LB Ingress, les opérateurs concernés restent non disponibles.' },
-        { t: 'quiz', q: 'Cluster déconnecté : les images sont miroitées, mais les manifests référencent encore <code>quay.io/...</code>. Comment les nœuds tirent-ils depuis le miroir ?', options: ['Il faut modifier chaque Deployment', 'Via les ressources <code>ImageDigestMirrorSet</code> / <code>ImageTagMirrorSet</code>', 'Un proxy transparent est obligatoire', 'En remplaçant /etc/hosts sur chaque nœud'], answer: 1, explain: 'IDMS et ITMS redirigent les pulls (par digest et par tag) vers le miroir au niveau du runtime ; on ne modifie pas les workloads. ICSP est l\'ancien mécanisme (déprécié).' },
-        { t: 'quiz', q: 'Après une installation UPI, un worker n\'apparaît pas dans <code>oc get nodes</code>. Premier réflexe ?', options: ['Redémarrer le bootstrap', 'Regarder <code>oc get csr</code> et approuver les demandes en Pending', 'Recréer le cluster', 'Modifier le MachineConfigPool worker'], answer: 1, explain: 'Sans Machine API, les CSR du kubelet (client, puis serving) ne sont pas auto-approuvées : il faut les approuver à la main, en deux vagues.' }
+        { t: 'quiz', q: 'Cluster déconnecté : les images sont miroitées, mais les manifests référencent encore <code>quay.io/...</code>. Comment les nœuds tirent-ils depuis le miroir ?', options: ['Via les ressources <code>ImageDigestMirrorSet</code> / <code>ImageTagMirrorSet</code>', 'Il faut modifier chaque Deployment', 'Un proxy transparent est obligatoire', 'En remplaçant /etc/hosts sur chaque nœud'], answer: 0, explain: 'IDMS et ITMS redirigent les pulls (par digest et par tag) vers le miroir au niveau du runtime ; on ne modifie pas les workloads. ICSP est l\'ancien mécanisme (déprécié).' },
+        { t: 'quiz', q: 'Après une installation UPI, un worker n\'apparaît pas dans <code>oc get nodes</code>. Premier réflexe ?', options: ['Redémarrer le bootstrap', 'Recréer le cluster', 'Regarder <code>oc get csr</code> et approuver les demandes en Pending', 'Modifier le MachineConfigPool worker'], answer: 2, explain: 'Sans Machine API, les CSR du kubelet (client, puis serving) ne sont pas auto-approuvées : il faut les approuver à la main, en deux vagues.' }
       ]
     },
     {
@@ -422,7 +423,7 @@ mirror:
           'Relis les manifests générés : où retrouves-tu ton pull secret, ta clé SSH et ton réseau ? Quel fichier décrit l\'hôte ?',
           'Vérifie ton DNS fictif : écris les trois enregistrements (<code>api</code>, <code>api-int</code>, <code>*.apps</code>) pour ton SNO et explique pourquoi ils pointent tous vers la même IP.',
           '(bonus) Sur le cluster du module 00 : <code>oc get clusterversion -o yaml</code> ; retrouve l\'historique des versions et les conditions.',
-          '(bonus) Rédige un <code>ImageSetConfiguration</code> minimal (une release, un paquet d\'opérateur) et lance <code>oc-mirror</code> en simulation (<code>--dry-run</code>, à vérifier) ; estime le volume à transférer.'
+          '(bonus) Rédige un <code>ImageSetConfiguration</code> minimal (une release, un paquet d\'opérateur) et lance <code>oc-mirror</code> en simulation (<code>--dry-run</code>, à vérifier) ; estime le volume à transférer. Prérequis : accès réseau à registry.redhat.io et à quay.io depuis le poste, et un <b>pull secret Red Hat réel</b> (module 00).'
         ] }
       ]
     }
@@ -431,7 +432,7 @@ mirror:
     'Quatre méthodes (Agent-based, Assisted, IPI, UPI) : le choix dépend de la plateforme (baremetal, vsphere, none) et de ce que tu veux piloter.',
     'DNS (api, api-int, *.apps), LB ou VIP, NTP : préparés <b>avant</b>. Le wildcard oublié est la panne n°1.',
     '<code>install-config.yaml</code> (et <code>agent-config.yaml</code>) décrit tout ; l\'installeur le consomme : fais-en une copie.',
-    'En UPI et sur <code>none</code>, tu approuves les CSR et retires le bootstrap toi-même.',
+    'En UPI, tu approuves les CSR et retires le bootstrap toi-même (Agent-based : à vérifier ; nœuds ajoutés après coup : CSR à approuver).',
     'Déconnecté = registre miroir + <code>oc-mirror</code> + IDMS/ITMS + CA et pull secret ; versions d\'oc-mirror et d\'<code>ImageSetConfiguration</code> à vérifier.',
     'Après l\'installation : valider (<code>oc get co</code>), sauvegarder etcd, remplacer kubeadmin et les certificats.'
   ]
