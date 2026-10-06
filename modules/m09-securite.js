@@ -231,7 +231,7 @@ groups: []` },
           'Une politique décrit des <b>scopes</b> (images, dépôts ou registres) et une <b>racine de confiance</b> (clé publique, PKI ou Fulcio).',
           'Si une image d\'<code>ImagePolicy</code> est couverte par un scope de <code>ClusterImagePolicy</code>, <b>seule la politique cluster s\'applique</b>.'
         ] },
-        { t: 'callout', kind: 'warn', html: "<b>Statut</b> : en 4.20, <code>ClusterImagePolicy</code> / <code>ImagePolicy</code> sont en <b>Technology Preview</b> (actifs seulement avec les fonctionnalités Tech Preview, donc pas pour de la production : module 04). La politique <code>openshift</code> par défaut est passée en GA en <b>4.21</b>. Ne modifie pas la politique <code>openshift</code>. <code>apiVersion</code> des CR en 4.20 : à vérifier." }
+        { t: 'callout', kind: 'warn', html: "<b>Statut en 4.20</b> : <code>ClusterImagePolicy</code> et <code>ImagePolicy</code> sont <b>GA</b> (<code>apiVersion: config.openshift.io/v1</code>, release notes 4.20). Restent en <b>Technology Preview</b> : la politique par défaut <code>openshift</code> (GA en 4.21 d\'après la doc) et le chargement de certificats <b>BYOPKI</b> (<code>v1alpha1</code>, feature set <code>TechPreviewNoUpgrade</code>, donc pas pour de la production : module 04). Ne modifie pas la politique <code>openshift</code>." }
       ]
     },
     {
@@ -356,7 +356,7 @@ spec:
     'La SCC dit ce qu\'un pod peut demander <b>et</b> assigne UID, SELinux, capabilities ; <code>restricted-v2</code> est le défaut, <code>restricted-v3</code> (user namespace) arrive en 4.20.',
     'Sélection : priorité d\'abord (<code>anyuid</code> : 10, <code>restricted-v2</code> : aucune), puis plus restrictive, puis nom ; accorde une SCC par RBAC (verbe <code>use</code>) au <b>ServiceAccount</b>, et crée une SCC dédiée plutôt que <code>anyuid</code>.',
     'PSA : enforce <code>privileged</code> global, audit et warn <code>restricted</code> ; les labels se synchronisent depuis les SCC (<code>podSecurityLabelSync</code>), sauf namespaces système.',
-    'Images : sources autorisées (module 04), miroirs (module 03), digests ; la signature sigstore (<code>ClusterImagePolicy</code>) est Tech Preview en 4.20.',
+    'Images : sources autorisées (module 04), miroirs (module 03), digests ; la signature sigstore (<code>ClusterImagePolicy</code> / <code>ImagePolicy</code>, <code>config.openshift.io/v1</code>) est GA en 4.20 ; BYOPKI et la politique <code>openshift</code> restent Tech Preview.',
     'Secrets : chiffrer etcd ne suffit pas ; External Secrets Operator (GA 4.20+) ou Secrets Store CSI avec un coffre externe.',
     'Compliance Operator : <code>ScanSettingBinding</code> → scans → <code>ComplianceCheckResult</code> → remédiations lues avant d\'être appliquées ; File Integrity Operator pour l\'intégrité des nœuds.'
   ]
