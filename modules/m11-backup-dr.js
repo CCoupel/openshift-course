@@ -84,12 +84,13 @@ COURSE.add({
       title: 'Quelle procédure de reprise ?',
       blocks: [
         { t: 'table', head: ['Situation', 'Procédure', 'Sauvegarde nécessaire ?'], rows: [
-          ['<b>Quorum perdu</b>, API en lecture seule', '<code>quorum-restore.sh</code> sur un hôte de reprise', '<b>Non</b> : on repart de l\'état local d\'un membre'],
-          ['Erreur grave, retour à un <b>état antérieur</b>', 'Restauration depuis une sauvegarde (<code>cluster-restore.sh</code>)', 'Oui : les deux fichiers, même z-stream'],
-          ['<b>Un membre etcd</b> défaillant', 'Remplacement du membre', 'Non (le cluster reste fonctionnel)'],
-          ['<b>Certificats</b> du control plane expirés', 'Reprise et approbation des CSR', 'Non']
+          ['<b>Quorum perdu</b>, API en lecture seule', '<code>quorum-restore.sh</code> sur un hôte de reprise', '<b>Non requise</b> par la doc : on repart de l\'état local d\'un membre (en prendre une avant si c\'est encore possible)'],
+          ['Erreur grave, retour à un <b>état antérieur</b>', 'Restauration depuis une sauvegarde (<code>cluster-restore.sh</code>)', '<b>Oui</b> : les deux fichiers, même z-stream'],
+          ['<b>Un membre etcd</b> défaillant', 'Remplacement du membre malsain', '<b>Oui</b> : prérequis de la doc (« You have taken an etcd backup ») pour pouvoir restaurer en cas de souci'],
+          ['<b>Certificats</b> du control plane expirés', 'Approbation des CSR <code>node-bootstrapper</code> (et <code>kubelet-serving</code> en UPI)', 'Non requise (prérequis : <code>cluster-admin</code> et <code>oc</code>)']
         ] },
         { t: 'callout', kind: 'warn', html: "Toute reprise suppose <b>au moins un nœud de control plane sain</b>. La restauration à un état antérieur est un <b>dernier recours</b> : tu choisis la procédure la <b>moins destructrice</b> qui résout ton problème." },
+        { t: 'callout', kind: 'trap', html: "<b>Règle de prudence</b> : <b>prends une sauvegarde etcd avant toute intervention sur etcd</b> quand c'est possible, même si la doc ne l'exige pas pour ta procédure : c'est ton filet de sécurité si l'opération tourne mal." },
         { t: 'callout', kind: 'tip', html: "Avant tout geste : <code>oc get co</code>, <code>oc get nodes</code> et l'état des pods <code>openshift-etcd</code> disent <b>dans quelle situation</b> tu es (module 12 pour le diagnostic)." }
       ]
     },
