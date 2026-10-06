@@ -118,7 +118,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** (P5) : ressources `config.openshift.io` (`Proxy`, `Image` / sources de registres autorisées, `APIServer` avec profil TLS, `Ingress` de cluster, `Scheduler`, `Console`) ; **certificats** (remplacement du certificat ingress par défaut et de l'API, CA de confiance du cluster) ; MachineConfig d'usage (chrony/NTP, kargs) via `butane` ; **OLM** : OperatorHub, `Subscription`, canaux, approbation manuelle des `InstallPlan`, `CatalogSource` miroités, OLM v1 (`ClusterExtension`) ; console et plugins ; check-list post-install.
 - **Renvoyé** : concept MCO → 02 ; IdP/OAuth → 06 ; IngressController (sharding, routes) → 07 ; stockage du registre → 08 ; rotation des certificats et CSR → 12 ; GitOps de cette configuration → 10.
 - **Durée** : ≈ 60 min + lab 20 min. **Lab** : E1 (MachineConfig chrony, certificat ingress auto-signé par une CA de lab, installation d'un Operator en approbation manuelle) ; bonus : ClusterExtension OLM v1.
-- **À vérifier** : statut GA d'OLM v1 en 4.20 ; comportement des kubeconfig après remplacement du certificat de l'API ; label `inject-trusted-cabundle`.
+- **À vérifier** : détails de l'API OLM v1 (OLM v1 est GA depuis 4.18) ; comportement des kubeconfig après remplacement du certificat de l'API ; label `inject-trusted-cabundle`.
 
 ### Jour 2 — Brancher, sécuriser, observer
 
@@ -134,7 +134,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : tel que rédigé (22 slides). Propriétaire : OAuth/IdP, RBAC, project template, quotas, kubeadmin, politique d'audit. SCC limités à l'**angle autorisation** (verbe `use`, ServiceAccount).
 - **Renvoyé** : SCC en profondeur → 09 ; NetworkPolicy → 07 ; expédition des logs d'audit → 05.
 - **Durée** : ≈ 60 min + lab 20 min. **Lab** : E0 (htpasswd/LDAP conteneurisé), suppression de kubeadmin sur cluster jetable uniquement.
-- **À vérifier** : synchronisation de groupes par claims avec le serveur OAuth (IdP OpenID) ; l'OIDC direct est GA en 4.20 mais ne crée pas d'objets Group.
+- **À vérifier** : rien de propre. `claims.groups` du serveur OAuth (IdP OpenID) existe depuis 4.10 et crée des objets Group ; l'OIDC direct (GA en 4.20) ne crée pas d'objets Group.
 
 #### 07 — Réseau ⬜ (`m07-reseau.js`)
 - **Objectif** : comprendre et exploiter le réseau d'un cluster on-prem, du nœud jusqu'à la sortie.

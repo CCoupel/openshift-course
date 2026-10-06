@@ -355,7 +355,7 @@ spec:
         { t: 'compare', wide: true,
           left: { title: '📦 OLM v0 (classique)', items: ['<code>OperatorGroup</code> + <code>Subscription</code> + <code>InstallPlan</code>', 'Modes d\'installation par namespace', 'Droits accordés par OLM', 'Écosystème le plus large aujourd\'hui'] },
           right: { title: '🧩 OLM v1', items: ['<code>ClusterCatalog</code> + <code>ClusterExtension</code>', 'Pas d\'OperatorGroup ni de Subscription', 'Tu fournis le <code>ServiceAccount</code> (et ses droits)', 'Périmètre plus restreint, à confirmer'] },
-          verdict: 'OLM v1 est un nouveau modèle, pas un simple « v2 » : les deux coexistent. Activé par défaut depuis 4.18 ; limites en 4.20 : bundles <code>registry+v1</code>, mode AllNamespaces (SingleNamespace/OwnNamespace en Technology Preview) ; statut GA : à vérifier.' },
+          verdict: 'OLM v1 est un nouveau modèle, pas un simple « v2 » : les deux coexistent. GA et activé par défaut depuis 4.18 ; limites en 4.20 : bundles <code>registry+v1</code>, mode AllNamespaces (SingleNamespace/OwnNamespace en Technology Preview).' },
         { t: 'code', lang: 'yaml', file: 'clusterextension.yaml', code: `apiVersion: olm.operatorframework.io/v1
 kind: ClusterExtension
 metadata:
@@ -435,6 +435,6 @@ spec:
     'Proxy, CA d\'entreprise, registres autorisés : transverses, avec un effet possible sur les nœuds ; vérifie toujours le <code>status</code> et l\'opérateur associé.',
     'Certificats à remplacer : Ingress par défaut (Secret + <code>defaultCertificate</code>) et API (<code>namedCertificates</code>) ; la rotation est au module 12.',
     'Chrony et kargs passent par un MachineConfig (<code>butane</code>) : un pool à la fois, avec reboot ; un label de rôle ne cible qu\'un pool.',
-    'OLM : Subscription, canal et <b>approbation manuelle</b> des InstallPlan pour les Operators critiques ; en déconnecté, catalogues miroités ; OLM v1 (activé par défaut depuis 4.18, statut GA à vérifier).'
+    'OLM : Subscription, canal et <b>approbation manuelle</b> des InstallPlan pour les Operators critiques ; en déconnecté, catalogues miroités ; OLM v1 (GA depuis 4.18).'
   ]
 });
