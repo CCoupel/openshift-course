@@ -42,7 +42,7 @@ COURSE.add({
       title: "Panorama des backends on-prem",
       blocks: [
         { t: 'table', head: ['Backend', 'Modes', 'Dynamique ?', 'Cas d\'usage'], rows: [
-          ['<b>vSphere CSI</b>', 'RWO (VMDK) ; RWX via vSAN File Services (à vérifier)', 'Oui', 'Cluster sur vSphere, datastore existant'],
+          ['<b>vSphere CSI</b>', 'RWO (VMDK) ; RWX via vSAN File Services (si l\'environnement vSphere le supporte)', 'Oui', 'Cluster sur vSphere, datastore existant'],
           ['<b>LVMS</b> (LVM Storage)', 'RWO bloc/fichier local', 'Oui (thin LVM)', 'SNO, edge, petits clusters'],
           ['<b>Local Storage Operator</b>', 'RWO, volumeMode Filesystem ou Block', 'Non : PV statiques sur disques locaux', 'Bare metal, disques dédiés, base pour ODF'],
           ['<b>NFS</b>', 'RWX', "Via nfs-subdir ou CSI NFS (communautaires)", 'Partage de fichiers simple ; pas pour les bases de données'],
@@ -72,10 +72,10 @@ COURSE.add({
       layout: 'two',
       blocks: [
         { t: 'text', html: "<p><b>LVMS</b> (LVM Storage) : un opérateur qui construit un volume group LVM sur les disques locaux et provisionne dynamiquement des volumes <i>thin</i> (basé sur TopoLVM). C'est le choix naturel pour SNO et l'edge.</p>" },
-        { t: 'code', lang: 'yaml', file: 'lvmcluster.yaml', code: "apiVersion: lvm.topolvm.io/v1alpha1\nkind: LVMCluster\nmetadata:\n  name: my-lvmcluster\n  namespace: openshift-storage\nspec:\n  storage:\n    deviceClasses:\n    - name: vg1\n      default: true\n      thinPoolConfig:\n        name: thin-pool-1\n        sizePercent: 90\n        overprovisionRatio: 10" },
+        { t: 'code', lang: 'yaml', file: 'lvmcluster.yaml', code: "apiVersion: lvm.topolvm.io/v1alpha1\nkind: LVMCluster\nmetadata:\n  name: my-lvmcluster\n  namespace: openshift-lvm-storage\nspec:\n  storage:\n    deviceClasses:\n    - name: vg1\n      default: true\n      thinPoolConfig:\n        name: thin-pool-1\n        sizePercent: 90\n        overprovisionRatio: 10" },
         { t: 'callout', kind: 'tip', html: "LVMS crée une StorageClass nommée <code>lvms-&lt;deviceClass&gt;</code> (ici <code>lvms-vg1</code>). Le volume est <b>local à un nœud</b> : si le nœud tombe, les données sont indisponibles." },
         { t: 'text', html: "<p><b>Local Storage Operator (LSO)</b> : pas de provisionnement dynamique. Il découvre les disques (<code>LocalVolumeDiscovery</code>) et crée des <b>PV statiques</b> (<code>LocalVolume</code> / <code>LocalVolumeSet</code>) avec une StorageClass <code>no-provisioner</code>. Brique de base d'ODF sur bare metal.</p>" },
-        { t: 'callout', kind: 'warn', wide: true, html: "Les disques fournis à LVMS ou LSO doivent être <b>vierges</b> (sans signature de filesystem ou partition). Les versions récentes de LVMS ajoutent des options de sélection de disques : options disponibles en 4.20 à vérifier dans la doc de ta version." }
+        { t: 'callout', kind: 'warn', wide: true, html: "Les disques fournis à LVMS ou LSO doivent être <b>vierges</b> (sans signature de filesystem ou partition). LVMS n\'utilise que des disques vides ; la sélection se fait avec <code>deviceSelector</code> (chemins), et <code>forceWipeDevicesAndDestroyAllData</code> (défaut <code>false</code>) est <b>destructif</b>. Namespace par défaut de l\'opérateur LVMS en 4.20 : <code>openshift-lvm-storage</code> (<code>openshift-storage</code> reste celui d\'ODF)." }
       ]
     },
     {
@@ -99,7 +99,7 @@ COURSE.add({
         { t: 'table', head: ['Champ', 'Effet', 'Piège'], rows: [
           ['<code>is-default-class</code>', 'Utilisée par les PVC sans <code>storageClassName</code>', "Une seule par cluster : sinon comportement ambigu"],
           ['<code>volumeBindingMode</code>', '<code>WaitForFirstConsumer</code> : provisionne après placement du pod', "<code>Immediate</code> avec un backend à topologie : volume créé au mauvais endroit"],
-          ['<code>allowVolumeExpansion</code>', 'Autorise l\'agrandissement', "Impossible de l'activer rétroactivement sur certains drivers : à vérifier"],
+          ['<code>allowVolumeExpansion</code>', 'Autorise l\'agrandissement', "Exige <code>allowVolumeExpansion: true</code> sur la StorageClass <b>et</b> un driver CSI qui supporte l'expansion"],
           ['<code>reclaimPolicy</code>', '<code>Delete</code> : PV et données supprimés avec le PVC', "<code>Retain</code> : le PV reste en <code>Released</code>, à nettoyer à la main"]
         ] }
       ]
@@ -143,7 +143,7 @@ COURSE.add({
           "<b>Nœuds dédiés</b> : label <code>cluster.ocs.openshift.io/openshift-storage=\"\"</code> et taint <code>node.ocs.openshift.io/storage=true:NoSchedule</code>.",
           "Minimum <b>3 nœuds</b> avec disques, un par domaine de panne (hôte, rack ou zone).",
           "Réseau : <b>10 GbE minimum</b> recommandé ; réseaux public/cluster séparables via Multus.",
-          "Stretch : latence inter-sites faible exigée (de l'ordre de 10 ms RTT, à vérifier dans le guide de planification)."
+          "Stretch : latence inter-sites faible exigée (≤ 10 ms RTT entre les deux zones de données ; l\'arbitre est testé jusqu\'à 100 ms ; minimum 5 nœuds sur 3 zones)."
         ] },
         { t: 'callout', kind: 'onprem', html: "ODF est <b>coûteux</b> : CPU et RAM significatifs par nœud de stockage (ordre de grandeur : des dizaines de vCPU et centaines de Go de RAM sur l'ensemble du cluster Ceph), souscription dédiée, disques en SSD/NVMe. Consulte le guide de planification ODF de ta version pour les chiffres exacts." }
       ]
@@ -242,7 +242,7 @@ COURSE.add({
       blocks: [
         { t: 'text', html: "<p>Par défaut, <b>Prometheus et Alertmanager n'ont pas de stockage persistant</b> sur un cluster fraîchement installé : au redémarrage du pod, les métriques sont perdues. Il faut le demander dans le ConfigMap de monitoring (configuration complète : module 05).</p>" },
         { t: 'code', lang: 'yaml', file: 'cluster-monitoring-config.yaml', code: "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: cluster-monitoring-config\n  namespace: openshift-monitoring\ndata:\n  config.yaml: |\n    prometheusK8s:\n      retention: 15d\n      volumeClaimTemplate:\n        spec:\n          storageClassName: fast-block\n          resources:\n            requests:\n              storage: 100Gi\n    alertmanagerMain:\n      volumeClaimTemplate:\n        spec:\n          storageClassName: fast-block\n          resources:\n            requests:\n              storage: 2Gi" },
-        { t: 'callout', kind: 'ocp', html: "<b>Logging</b> : le stockage des logs est désormais de l'<b>objet S3</b> via <b>LokiStack</b> (Loki Operator). Prévois un bucket (ODF/NooBaa, MinIO, baie S3) en plus d'un PVC pour les composants Loki. Elasticsearch est déprécié pour cet usage : à vérifier dans les release notes de ta version." },
+        { t: 'callout', kind: 'ocp', html: "<b>Logging</b> : le stockage des logs est désormais de l'<b>objet S3</b> via <b>LokiStack</b> (Loki Operator). Prévois un bucket (ODF/NooBaa, MinIO, baie S3) en plus d'un PVC pour les composants Loki. Elasticsearch n\'est plus géré par le logging depuis Logging 6 (retiré, non seulement déprécié) : stockage = LokiStack, collecte = Vector." },
         { t: 'callout', kind: 'tip', html: "Mets le monitoring sur du <b>bloc rapide</b> (RWO). Les TSDB Prometheus ne supportent pas bien NFS." }
       ]
     },
