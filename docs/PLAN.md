@@ -204,7 +204,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 04, 06 et 08) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 04, 06, 08 et 09) ; les lignes des modules à venir restent le plan.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -217,7 +217,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 06 | E0 ou E1 | (bonus : audit) |
 | 07 | E1 | E2 (MetalLB, EgressIP) |
 | 08 | E1 (LVMS ou StorageClass CSI) | E1 (provoquer une erreur de PVC) ; ODF (E2) non rédigé |
-| 09 | E1 | E1 |
+| 09 | E1 (pod refusé et diagnostic, SCC dédiée + RBAC, installation du Compliance Operator et `ScanSettingBinding` CIS) ; lab fusible J3 | E1 : lecture du scan et d'une remédiation, PSA warn/audit, chiffrement etcd (cluster jetable), File Integrity Operator |
 | 10 | E0/E1 + dépôt Git | — |
 | 11 | E1 + S3 | E1 jetable (restauration etcd) |
 | 12 | E1 | E1/E2 (mise à jour réelle) |
