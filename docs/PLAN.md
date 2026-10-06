@@ -127,7 +127,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : Prometheus/Alertmanager/Thanos de plateforme (`cluster-monitoring-config`), persistance et rétention ; monitoring des workloads utilisateur (`user-workload-monitoring-config`, `ServiceMonitor`, `PrometheusRule`) ; routage d'alertes (Alertmanager, receivers, silences) ; tableaux de bord de la console (Grafana retiré) ; alertes clés (etcd, certificats, nœuds) ; **logging** (P2) : Logging 6, Vector, `ClusterLogForwarder`, LokiStack, transfert vers SIEM (dont logs d'audit) ; survol Network Observability et Cluster Observability Operator.
 - **Renvoyé** : stockage de Prometheus/Loki (StorageClass, S3) → 08 ; politique d'audit de l'API → 06 ; métriques disque etcd → 08 ; RBAC d'accès aux métriques → 06.
 - **Durée** : ≈ 70 min + lab 20 min. **Lab** : E1 (activer le monitoring utilisateur, `ServiceMonitor` + `PrometheusRule`, receiver webhook) ; bonus : LokiStack taille démo sur MinIO, `ClusterLogForwarder` vers un syslog.
-- **À vérifier** : API Logging 6 (`observability.openshift.io/v1`) ; tailles LokiStack ; périmètre du Cluster Observability Operator ; nom exact des ConfigMaps et options de rétention.
+- **À vérifier** : forme exacte des blocs `authentication` / TLS de la sortie `lokiStack` ; canaux d'abonnement Logging 6.x ; statut du plugin de monitoring du Cluster Observability Operator et du Network Observability Operator en 4.20 ; noms et sévérités des alertes livrées (seuls `Watchdog` et `etcdMembersDown` vérifiés). Confirmés : `observability.openshift.io/v1`, LokiStack `loki.grafana.com/v1` et ses tailles, ConfigMaps et rétention (15 j plateforme, 24 h utilisateur).
 
 #### 06 — HBAC / RBAC ✅
 - **Objectif** : authn/authz, IdP, rôles, groupes, multi-tenance, « HBAC », break-glass, audit.
@@ -204,7 +204,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 04, 06, 08 et 09) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 06, 08 et 09) ; les lignes des modules à venir restent le plan.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -213,7 +213,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 02 | E1 | E1 : MachineConfig `/etc/motd` (redémarre le SNO). MHC et quorum etcd (E2) non rédigés |
 | 03 | Poste de travail (E0 suffit) | E1 (lecture de `clusterversion`) ; `oc-mirror` en simulation (accès réseau, pull secret) |
 | 04 | E1 (chrony avec reboot, Operator en approbation manuelle) | E1 : certificat Ingress (cluster jetable, retour arrière), bannière console, OLM v1 |
-| 05 | E1 | E1 + S3 (LokiStack) |
+| 05 | E1 (monitoring utilisateur, `ServiceMonitor` + `PrometheusRule`, receiver webhook Alertmanager, silence) | E1 : PVC du monitoring ; E1 + S3 (MinIO) : LokiStack `1x.demo` + `ClusterLogForwarder` ; sortie syslog avec pipeline audit |
 | 06 | E0 ou E1 | (bonus : audit) |
 | 07 | E1 | E2 (MetalLB, EgressIP) |
 | 08 | E1 (LVMS ou StorageClass CSI) | E1 (provoquer une erreur de PVC) ; ODF (E2) non rédigé |
