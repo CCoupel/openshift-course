@@ -61,5 +61,20 @@ for (const file of files) {
   if (mod.num !== 15 && !labs) warn(file, 'aucun lab');
   console.log(`${errors ? '…' : 'ok '}      ${path.basename(file)} : ${mod.slides.length} slides, ${quizzes} quiz, ${labs} lab`);
 }
+// Cohérence manifeste (assets/plan.js) ↔ modules ↔ index.html (contrôles globaux, seulement sans arguments).
+if (process.argv.length <= 2) {
+  const root = path.join(__dirname, '..');
+  let plan = null;
+  try { vm.runInNewContext(fs.readFileSync(path.join(root, 'assets', 'plan.js'), 'utf8'), { COURSE: { set plan(p) { plan = p; } } }, { filename: 'plan.js' }); }
+  catch (e) { err('plan.js', 'ne s\'exécute pas : ' + e.message); }
+  if (plan) {
+    const ids = new Set(plan.map(p => p.id));
+    for (const f of files) { const m = /^(m\d+)/.exec(path.basename(f)); if (m && !ids.has(m[1])) err(f, 'module absent du manifeste assets/plan.js'); }
+    plan.forEach(p => { if (!p.id || p.num === undefined || !p.emoji || !p.title) err('plan.js', `entrée incomplète : ${JSON.stringify(p)}`); });
+    const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    for (const m of html.matchAll(/<script src="([^"]+)"/g)) if (!fs.existsSync(path.join(root, m[1]))) err('index.html', `script inexistant (404) : ${m[1]}`);
+    for (const f of files) if (!html.includes('modules/' + path.basename(f))) warn(f, 'module non chargé par index.html');
+  }
+}
 console.log(`\n${files.length} module(s), ${errors} erreur(s), ${warns} avertissement(s).`);
 process.exit(errors ? 1 : 0);
