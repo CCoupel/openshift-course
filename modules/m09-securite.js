@@ -259,13 +259,14 @@ groups: []` },
           { label: 'CheckResult', sub: 'PASS / FAIL / MANUAL' },
           { label: 'Remediation', sub: 'correctif proposé' }
         ], caption: 'Même logique que RBAC : tu <b>lies</b> des profils à des réglages (planning, stockage), l\'Operator fait le reste. Namespace de l\'Operator : <code>openshift-compliance</code>.' },
-        { t: 'table', head: ['Profil', 'Portée'], rows: [
-          ['<code>ocp4-cis</code> / <code>ocp4-cis-node</code>', 'Benchmark CIS : plateforme OpenShift / nœuds'],
-          ['<code>ocp4-moderate</code> / <code>ocp4-moderate-node</code>', 'NIST 800-53 Moderate : plateforme / nœuds'],
-          ['<code>ocp4-pci-dss</code> / <code>ocp4-pci-dss-node</code>', 'PCI-DSS : plateforme / nœuds'],
-          ['<code>rhcos4-moderate</code>', 'NIST 800-53 Moderate pour RHCOS']
+        { t: 'table', head: ['Famille', 'Profils (plateforme / nœuds)'], rows: [
+          ['CIS', '<code>ocp4-cis</code>, <code>ocp4-cis-node</code> (versions épinglées : <code>ocp4-cis-1-9</code>…)'],
+          ['FedRAMP Moderate / High', '<code>ocp4-moderate</code>, <code>ocp4-moderate-node</code>, <code>rhcos4-moderate</code> ; <code>ocp4-high</code>…'],
+          ['PCI-DSS', '<code>ocp4-pci-dss</code>, <code>ocp4-pci-dss-node</code> (versions <code>3-2</code> et <code>4-0</code>)'],
+          ['STIG', '<code>ocp4-stig</code>, <code>ocp4-stig-node</code>, <code>rhcos4-stig</code>'],
+          ['BSI, Essential Eight, NERC-CIP', '<code>ocp4-bsi</code>…, <code>ocp4-e8</code> / <code>rhcos4-e8</code>, <code>ocp4-nerc-cip</code>…']
         ] },
-        { t: 'callout', kind: 'warn', html: "Liste des profils disponibles en 4.20 (dont un éventuel profil ANSSI) : <b>à vérifier</b> avec <code>oc get profiles.compliance -n openshift-compliance</code> sur ton cluster et dans la doc du Compliance Operator." }
+        { t: 'callout', kind: 'warn', html: "<b>Aucun profil ANSSI</b> n'apparaît dans la liste des profils supportés de la doc 4.20 : si ton contexte l'exige, <b>à vérifier</b> (autre mécanisme ou version). Liste réelle sur ton cluster : <code>oc get profiles.compliance -n openshift-compliance</code>." }
       ]
     },
     {
