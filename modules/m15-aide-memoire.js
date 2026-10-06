@@ -15,7 +15,7 @@ COURSE.add({
       blocks: [
         { t: 'text', html: 'Ce module ne contient <b>aucun fait nouveau</b> : chaque commande, objet, valeur et affirmation est repris à l\'identique d\'un module du cours, avec le renvoi « module NN » à côté. Pour le détail, ouvre ce module.' },
         { t: 'bullets', frag: true, items: [
-          '<b>14 fiches <code>oc</code></b> par thème, puis un <b>dictionnaire</b> K8s ↔ OCP, des <b>tableaux de décision</b> et un <b>quiz final</b> qui couvre les modules 00 à 14.',
+          '<b>Des fiches <code>oc</code></b> par thème, puis un <b>dictionnaire</b> K8s ↔ OCP, des <b>tableaux de décision</b> et un <b>quiz final</b> qui couvre les modules 00 à 14.',
           'Version de référence : <b>OpenShift 4.20 EUS</b> (note 4.22 au module 01). Les points que les modules marquent « à vérifier » le restent ici.',
           'Les noms de projets, de nœuds et de ressources (<code>team-a</code>, <code>worker-3</code>, <code>demo</code>…) sont des <b>exemples</b> des modules : remplace-les par les tiens.'
         ] },
@@ -107,24 +107,32 @@ COURSE.add({
       ]
     },
     {
-      title: 'Fiche : maintenance d\'un nœud et CSR',
+      title: 'Fiche : maintenance d\'un nœud',
       tag: 'fiche',
       blocks: [
         { t: 'cmds', items: [
           ['oc adm cordon worker-3', 'Interdire les nouveaux pods sur le nœud'],
           ['oc adm drain worker-3 --ignore-daemonsets --delete-emptydir-data', 'Évacuer proprement ; <code>--delete-emptydir-data</code> supprime les données emptyDir'],
-          ['oc adm uncordon worker-3', 'Retour en service'],
-          ['oc get csr | grep Pending', 'Plus aucun CSR en attente ?'],
-          ['oc get csr -o custom-columns=NOM:.metadata.name,DEMANDEUR:.spec.username,SIGNATAIRE:.spec.signerName,ETAT:.status.conditions[*].type', 'Tous les CSR avec demandeur et signataire (ceux sans état sont en attente)'],
-          ['oc adm certificate approve NOM_DU_CSR', 'Approuver une demande <b>dont tu as vérifié le demandeur</b>']
+          ['oc adm uncordon worker-3', 'Retour en service']
         ] },
-        { t: 'callout', kind: 'trap', html: 'N\'approuve que les CSR <b>en <code>Pending</code></b> et dont tu as <b>vérifié le demandeur</b> (nom du nœud attendu, signataire) : un CSR approuvé à l\'aveugle peut donner à un intrus un certificat de nœud, donc un faux nœud dans ton cluster. Remplacement des certificats API et Ingress : module 04.' },
         { t: 'callout', kind: 'warn', html: '<b>Sur un SNO</b>, il n\'y a aucun autre nœud : le MCO <b>saute le drain</b> lors des mises à jour et tout redémarre avec le nœud ; un <code>drain</code> manuel couperait routeurs, console et OAuth : <b>seulement dans une fenêtre de maintenance</b>, avec <code>oc adm uncordon</code> comme retour arrière. (module 12)' },
         { t: 'callout', kind: 'warn', html: 'Un <b>PDB trop strict</b> ou des pods sans contrôleur font échouer le drain : le message dit lequel. Sur bare metal : si ton firmware impose un reboot, <b>drain avant</b> ; le MCO n\'est pas au courant de tes opérations manuelles. (module 12)' }
       ]
     },
     {
-      title: 'Fiche : réseau, Routes et policies',
+      title: 'Fiche : CSR des nœuds',
+      tag: 'fiche',
+      blocks: [
+        { t: 'cmds', items: [
+          ['oc get csr | grep Pending', 'Plus aucun CSR en attente ?'],
+          ['oc get csr -o custom-columns=NOM:.metadata.name,DEMANDEUR:.spec.username,SIGNATAIRE:.spec.signerName,ETAT:.status.conditions[*].type', 'Tous les CSR avec demandeur et signataire (ceux sans état sont en attente)'],
+          ['oc adm certificate approve NOM_DU_CSR', 'Approuver une demande <b>dont tu as vérifié le demandeur</b>']
+        ] },
+        { t: 'callout', kind: 'trap', html: 'N\'approuve que les CSR <b>en <code>Pending</code></b> et dont tu as <b>vérifié le demandeur</b> (nom du nœud attendu, signataire) : un CSR approuvé à l\'aveugle peut donner à un intrus un certificat de nœud, donc un faux nœud dans ton cluster. Remplacement des certificats API et Ingress : module 04.' }
+      ]
+    },
+    {
+      title: 'Fiche : réseau et Routes',
       tag: 'fiche',
       blocks: [
         { t: 'cmds', items: [
@@ -135,12 +143,18 @@ COURSE.add({
           ['oc get route web', 'Vérifie la Route'],
           ['oc annotate route web haproxy.router.openshift.io/timeout=60s', 'Annotation HAProxy sur la Route (délai de 60 s)'],
           ['oc get networkpolicy,adminnetworkpolicy -A', 'NetworkPolicy et AdminNetworkPolicy de tous les projets'],
-          ['dig +short api.ocp4.example.com', 'Le nom de l\'API résout-il ?'],
-          ['dig +short test.apps.ocp4.example.com', 'le wildcard doit répondre']
+          ['dig +short api.ocp4.example.com', 'Le nom de l\'API résout-il ?']
         ] },
-        { t: 'callout', kind: 'trap', html: '<b>Piège OCP</b> : un deny-all coupe aussi les <b>routeurs</b> : prévois <code>allow-from-openshift-ingress</code> (label <code>policy-group.network.openshift.io/ingress</code>) et, avec des routeurs en <b>HostNetwork</b> (défaut on-prem), <code>allow-from-hostnetwork</code> (label <code>policy-group.network.openshift.io/host-network</code>).' },
-        { t: 'callout', kind: 'warn', html: 'Les deux YAML <code>allow-from-openshift-ingress</code> et <code>allow-from-hostnetwork</code> sont ceux de la doc 4.20. <b>Laquelle suffit selon le mode de publication</b> de l\'<code>IngressController</code> (HostNetwork ou LoadBalancerService/NodePort) n\'est pas énoncé explicitement dans les pages lues : <b>à vérifier</b> ; en pratique, applique les deux puis teste. Attention : un deny-all mal ouvert te coupe l\'accès à tes propres applications.' },
         { t: 'callout', kind: 'trap', html: 'Créer un Service <code>LoadBalancer</code> sur bare metal sans MetalLB : il reste indéfiniment en <code>&lt;pending&gt;</code>. Ce n\'est pas un bug, c\'est l\'absence d\'implémentation (module 02, 03 : le LB de l\'API est un autre sujet).' }
+      ]
+    },
+    {
+      title: 'Fiche : NetworkPolicy',
+      tag: 'fiche',
+      blocks: [
+        { t: 'cmds', items: [['dig +short test.apps.ocp4.example.com', 'le wildcard doit répondre']] },
+        { t: 'callout', kind: 'trap', html: '<b>Piège OCP</b> : un deny-all coupe aussi les <b>routeurs</b> : prévois <code>allow-from-openshift-ingress</code> (label <code>policy-group.network.openshift.io/ingress</code>) et, avec des routeurs en <b>HostNetwork</b> (défaut on-prem), <code>allow-from-hostnetwork</code> (label <code>policy-group.network.openshift.io/host-network</code>).' },
+        { t: 'callout', kind: 'warn', html: 'Les deux YAML <code>allow-from-openshift-ingress</code> et <code>allow-from-hostnetwork</code> sont ceux de la doc 4.20. <b>Laquelle suffit selon le mode de publication</b> de l\'<code>IngressController</code> (HostNetwork ou LoadBalancerService/NodePort) n\'est pas énoncé explicitement dans les pages lues : <b>à vérifier</b> ; en pratique, applique les deux puis teste. Attention : un deny-all mal ouvert te coupe l\'accès à tes propres applications.' }
       ]
     },
     {
@@ -164,7 +178,7 @@ COURSE.add({
       ]
     },
     {
-      title: 'Fiche : monitoring et logs',
+      title: 'Fiche : monitoring de plateforme',
       tag: 'fiche',
       blocks: [
         { t: 'cmds', items: [
@@ -172,15 +186,23 @@ COURSE.add({
           ['oc get route thanos-querier -n openshift-monitoring', 'Route du Thanos Querier'],
           ['oc get cm cluster-monitoring-config -n openshift-monitoring', 'absent par défaut'],
           ['oc -n openshift-monitoring edit configmap cluster-monitoring-config', 'Configurer le monitoring de plateforme (par exemple <code>enableUserWorkload: true</code>)'],
-          ['oc -n openshift-user-workload-monitoring get pod', 'Pods du monitoring des projets utilisateur'],
+          ['oc -n openshift-user-workload-monitoring get pod', 'Pods du monitoring des projets utilisateur']
+        ] },
+        { t: 'callout', kind: 'trap', html: 'Une erreur de syntaxe dans <code>alertmanager.yaml</code> arrête la distribution des alertes : garde une copie avant d\'éditer (procédure du module 05). Watchdog est une alerte toujours active par conception : le « dead man\'s switch » de la chaîne d\'alerte (module 05).' }
+      ]
+    },
+    {
+      title: 'Fiche : alertes et logs',
+      tag: 'fiche',
+      blocks: [
+        { t: 'cmds', items: [
           ['oc adm policy add-role-to-user monitoring-edit alice -n team-a', 'Rôle de monitoring : créer des règles et des monitors dans un projet'],
           ['oc adm policy add-role-to-user alert-routing-edit alice -n team-a', 'Rôle de monitoring : routage d\'alertes d\'un projet'],
           ['oc exec alertmanager-main-0 -n openshift-monitoring -- amtool config routes show --alertmanager.url http://localhost:9093', 'Contrôler l\'arbre de routes Alertmanager (amtool est dans le pod)'],
           ['oc get co monitoring', 'Cluster Operator monitoring (à surveiller après un changement de configuration)'],
           ['oc create sa logging-collector -n openshift-logging', 'ServiceAccount du collecteur']
         ] },
-        { t: 'callout', kind: 'trap', html: 'Activer un PVC sur un Prometheus qui tourne déjà <b>redémarre</b> ses pods : fais-le à un moment calme et surveille <code>oc get co monitoring</code>. Dimensionnement : sers-toi de la consommation réelle (<code>prometheus_tsdb_*</code>) plutôt que d\'une valeur au hasard.' },
-        { t: 'callout', kind: 'trap', html: 'Une erreur de syntaxe dans <code>alertmanager.yaml</code> arrête la distribution des alertes : garde une copie avant d\'éditer (procédure du module 05). Watchdog est une alerte toujours active par conception : le « dead man\'s switch » de la chaîne d\'alerte (module 05).' }
+        { t: 'callout', kind: 'trap', html: 'Activer un PVC sur un Prometheus qui tourne déjà <b>redémarre</b> ses pods : fais-le à un moment calme et surveille <code>oc get co monitoring</code>. Dimensionnement : sers-toi de la consommation réelle (<code>prometheus_tsdb_*</code>) plutôt que d\'une valeur au hasard.' }
       ]
     },
     {
@@ -197,16 +219,22 @@ COURSE.add({
           ['oc adm upgrade status', 'Progression de la mise à jour'],
           ['watch oc get co', 'Opérateurs pendant la mise à jour']
         ] },
-        { t: 'code', lang: 'bash', file: 'terminal', code: `# Pause d'un pool de workers (module 12), puis reprise
-$ oc patch mcp/worker --type merge --patch '{"spec":{"paused":true}}'
-$ oc patch mcp/worker --type merge --patch '{"spec":{"paused":false}}'` },
-        { t: 'callout', kind: 'trap', wide: true, html: 'Un pool laissé <b>en pause</b> bloque les mises à jour mineures suivantes et <b>inhibe des tâches de maintenance comme la rotation des certificats</b> (avertissement de la doc) : ne l\'oublie jamais. Sur SNO, mise à jour = redémarrage de l\'unique nœud : fenêtre de maintenance (module 02).' },
-        { t: 'callout', kind: 'warn', html: '<b>À terminer sous 60 jours</b> : tu peux répartir la procédure sur plusieurs fenêtres, mais la doc demande de tout finir en 60 jours pour que les automatismes (dont la rotation des certificats) aboutissent. Valable seulement entre mineures <b>paires</b> (EUS). (module 12)' },
         { t: 'callout', kind: 'trap', html: 'N\'acquitte <b>jamais à l\'aveugle</b> : la doc rappelle que l\'admin est responsable de repérer et migrer les APIs retirées (le cluster ne voit pas les outils externes ni les charges inactives). Pour la 4.22, la doc indique <b>aucune suppression d\'API Kubernetes</b>.' }
       ]
     },
     {
-      title: 'Fiche : sauvegarde et reprise',
+      title: 'Fiche : pause des pools et Control Plane Only',
+      tag: 'fiche',
+      blocks: [
+        { t: 'code', lang: 'bash', file: 'terminal', code: `# Pause d'un pool de workers (module 12), puis reprise
+$ oc patch mcp/worker --type merge --patch '{"spec":{"paused":true}}'
+$ oc patch mcp/worker --type merge --patch '{"spec":{"paused":false}}'` },
+        { t: 'callout', kind: 'trap', wide: true, html: 'Un pool laissé <b>en pause</b> bloque les mises à jour mineures suivantes et <b>inhibe des tâches de maintenance comme la rotation des certificats</b> (avertissement de la doc) : ne l\'oublie jamais. Sur SNO, mise à jour = redémarrage de l\'unique nœud : fenêtre de maintenance (module 02).' },
+        { t: 'callout', kind: 'warn', html: '<b>À terminer sous 60 jours</b> : tu peux répartir la procédure sur plusieurs fenêtres, mais la doc demande de tout finir en 60 jours pour que les automatismes (dont la rotation des certificats) aboutissent. Valable seulement entre mineures <b>paires</b> (EUS). (module 12)' }
+      ]
+    },
+    {
+      title: 'Fiche : sauvegarde etcd et OADP',
       tag: 'fiche',
       blocks: [
         { t: 'code', lang: 'bash', file: 'terminal', code: `# Sauvegarde etcd (module 11) : UN seul nœud du control plane
@@ -214,13 +242,19 @@ $ oc debug --as-root node/master-0
 sh-5.1# chroot /host
 sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
         { t: 'cmds', items: [['oc get backupstoragelocation -n openshift-adp', 'OADP : l\'emplacement de stockage des sauvegardes est-il disponible ? (module 11)']] },
+        { t: 'callout', kind: 'warn', html: 'Ne sauvegarde <b>pas chaque nœud du control plane</b> : un seul snapshot suffit (doc). Attends aussi <b>24 heures après l\'installation</b> avant la première sauvegarde (rotation initiale des certificats).' }
+      ]
+    },
+    {
+      title: 'Fiche : reprise (renvoi uniquement)',
+      tag: 'fiche',
+      blocks: [
         { t: 'table', head: ['Situation', 'Procédure'], rows: [
           ['<b>Quorum perdu</b>, API en lecture seule', '<code>quorum-restore.sh</code> sur un hôte de reprise'],
           ['Erreur grave, retour à un <b>état antérieur</b>', 'Restauration depuis une sauvegarde (<code>cluster-restore.sh</code>)'],
           ['<b>Un membre etcd</b> défaillant', 'Remplacement du membre malsain'],
           ['<b>Certificats</b> du control plane expirés', 'Approbation des CSR <code>node-bootstrapper</code> (et <code>kubelet-serving</code> en UPI)']
         ] },
-        { t: 'callout', kind: 'warn', html: 'Ne sauvegarde <b>pas chaque nœud du control plane</b> : un seul snapshot suffit (doc). Attends aussi <b>24 heures après l\'installation</b> avant la première sauvegarde (rotation initiale des certificats).' },
         { t: 'callout', kind: 'warn', html: '<b>Ne restaure jamais depuis cette fiche.</b> La restauration d\'etcd est un dernier recours « destructif et déstabilisant » : procédures complètes, prérequis et risques aux slides 6 à 10 du module 11. Exerce-toi d\'abord sur un cluster jetable. OADP ne constitue pas une solution de reprise pour etcd (module 11).' }
       ]
     },
@@ -239,7 +273,15 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['oc get catalogsource -n openshift-marketplace', 'Catalogues disponibles'],
           ['oc get packagemanifest -n openshift-marketplace | head', 'Operators installables'],
           ['oc get packagemanifest lvms-operator -n openshift-marketplace -o jsonpath=\'{.status.defaultChannel}\'', 'Canal par défaut d\'un Operator (sinon : <code>oc describe</code>)'],
-          ['oc get sub,installplan,csv -n openshift-lvm-storage', 'Où en est l\'installation d\'un Operator'],
+          ['oc get sub,installplan,csv -n openshift-lvm-storage', 'Où en est l\'installation d\'un Operator']
+        ] }
+      ]
+    },
+    {
+      title: 'Fiche : Operators, approbation et sources',
+      tag: 'fiche',
+      blocks: [
+        { t: 'cmds', items: [
           ['oc get csv -n openshift-lvm-storage', 'Phase <code>Succeeded</code> = installé'],
           ['oc get installplan -n openshift-lvm-storage', 'InstallPlan en attente (approbation Manual)'],
           ['oc get operatorhub cluster -o yaml', 'Sources par défaut de l\'OperatorHub'],
@@ -249,7 +291,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
       ]
     },
     {
-      title: 'Fiche : sécurité, SCC et conformité',
+      title: 'Fiche : SCC, diagnostic et attribution',
       tag: 'fiche',
       blocks: [
         { t: 'cmds', items: [
@@ -257,14 +299,22 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['oc get scc', 'Liste des SCC'],
           ['oc adm policy who-can use scc privileged', 'Audit : qui peut créer des pods privilégiés ?'],
           ['oc adm policy scc-subject-review -f pod.yaml', 'Quels SCC admettraient ce pod pour moi ?'],
-          ['oc adm policy scc-subject-review -z mon-sa -n team-a -f root-pod.yaml', 'Quelles SCC admettraient ce pod pour un ServiceAccount donné ?'],
+          ['oc adm policy scc-subject-review -z mon-sa -n team-a -f root-pod.yaml', 'Quelles SCC admettraient ce pod pour un ServiceAccount donné ?']
+        ] },
+        { t: 'callout', kind: 'trap', html: 'Le réflexe « <code>add-scc-to-user anyuid</code> » règle le symptôme et ouvre une faille : l\'image n\'est <b>pas réparée</b> et plus rien ne limite ses privilèges. Ordre de préférence : <b>réparer l\'image</b>, puis <code>nonroot-v2</code> ou une SCC dédiée, puis (en dernier recours, tracé) <code>anyuid</code>.' }
+      ]
+    },
+    {
+      title: 'Fiche : SCC dédiée et conformité',
+      tag: 'fiche',
+      blocks: [
+        { t: 'cmds', items: [
           ['oc create sa mon-sa -n team-a', 'ServiceAccount utilisé par la charge'],
           ['oc create clusterrole use-nonroot-bind80 --verb=use --resource=scc --resource-name=nonroot-bind80', 'Rôle qui n\'autorise <b>que</b> cette SCC (verbe <code>use</code>)'],
           ['oc create rolebinding mon-sa-scc --clusterrole=use-nonroot-bind80 --serviceaccount=team-a:mon-sa -n team-a', 'Lien limité au namespace'],
           ['oc get compliancesuite -n openshift-compliance -w', 'Suivre un scan de conformité'],
           ['oc get compliancecheckresult -n openshift-compliance -l compliance.openshift.io/check-status=FAIL', 'Contrôles en échec (un FAIL n\'est pas toujours une faute)']
         ] },
-        { t: 'callout', kind: 'trap', html: 'Le réflexe « <code>add-scc-to-user anyuid</code> » règle le symptôme et ouvre une faille : l\'image n\'est <b>pas réparée</b> et plus rien ne limite ses privilèges. Ordre de préférence : <b>réparer l\'image</b>, puis <code>nonroot-v2</code> ou une SCC dédiée, puis (en dernier recours, tracé) <code>anyuid</code>.' },
         { t: 'callout', kind: 'warn', html: '<b>Ne modifie jamais</b> les SCC par défaut : la doc prévient que les personnaliser peut poser problème au déploiement de pods de la plateforme ou à la mise à jour. Pour un besoin particulier, <b>crée une SCC dédiée</b>.' }
       ]
     },
@@ -328,7 +378,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
       ]
     },
     {
-      title: 'Dictionnaire : objets de plateforme',
+      title: 'Dictionnaire : objets de plateforme (1/2)',
       tag: 'dictionnaire',
       blocks: [
         { t: 'table', head: ['Objet / sigle', 'Ce que c\'est', 'Module'], rows: [
@@ -336,7 +386,15 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['<b>ClusterOperator</b>', 'Chaque opérateur publie un objet ClusterOperator avec ses conditions', 'module 02'],
           ['<b>MachineSet</b> / <b>Machine</b>', 'Un nœud = un objet Machine, un groupe homogène = un MachineSet (comme un ReplicaSet de machines)', 'module 02'],
           ['<b>MachineHealthCheck</b>', 'Surveille les nœuds d\'un ensemble de machines et supprime la Machine si le nœud reste malade', 'module 02'],
-          ['<b>MachineConfig</b>', 'Un fragment de config OS (fichiers, units systemd, kernel args…) avec un rôle cible', 'module 02'],
+          ['<b>MachineConfig</b>', 'Un fragment de config OS (fichiers, units systemd, kernel args…) avec un rôle cible', 'module 02']
+        ] }
+      ]
+    },
+    {
+      title: 'Dictionnaire : objets de plateforme (2/2)',
+      tag: 'dictionnaire',
+      blocks: [
+        { t: 'table', head: ['Objet / sigle', 'Ce que c\'est', 'Module'], rows: [
           ['<b>MachineConfigPool</b> (MCP)', 'Un groupe de nœuds (master, worker, infra…) et ses MachineConfig', 'module 02'],
           ['<b>MCD</b> / <b>MCS</b>', 'MCD : DaemonSet sur chaque nœud, applique, drain, reboot si nécessaire ; MCS : sert l\'Ignition aux nouveaux nœuds sur le port 22623', 'module 02'],
           ['<b>OLM</b> : CatalogSource, Subscription, InstallPlan, CSV', 'Catalogue d\'Operators, canal + approbation, étapes d\'installation, l\'Operator installé', 'module 04'],
@@ -346,7 +404,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
       ]
     },
     {
-      title: 'Dictionnaire : réseau, sécurité, applications',
+      title: 'Dictionnaire : réseau, sécurité, applications (1/2)',
       tag: 'dictionnaire',
       blocks: [
         { t: 'table', head: ['Objet / sigle', 'Ce que c\'est', 'Module'], rows: [
@@ -354,7 +412,15 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['<b>Route</b>', 'Plus riche qu\'un Ingress classique : terminaison TLS intégrée (edge, passthrough, re-encrypt), poids pour le A/B, annotations HAProxy', 'module 01'],
           ['<b>ImageStream</b>', 'Un pointeur logique vers des images (internes ou externes) ; un changement de tag peut déclencher un build ou un rollout', 'module 01'],
           ['<b>SCC</b>', 'Objet cluster qui décrit un ensemble de droits d\'exécution (utilisateur, capabilities, volumes, accès à l\'hôte, SELinux…) ; elle valide et modifie', 'module 09'],
-          ['<b>AdminNetworkPolicy</b> / <b>BaselineAdminNetworkPolicy</b>', 'ANP : objet cluster évalué avant les NetworkPolicy ; BANP : un seul objet, garde-fou par défaut', 'module 07'],
+          ['<b>AdminNetworkPolicy</b> / <b>BaselineAdminNetworkPolicy</b>', 'ANP : objet cluster évalué avant les NetworkPolicy ; BANP : un seul objet, garde-fou par défaut', 'module 07']
+        ] }
+      ]
+    },
+    {
+      title: 'Dictionnaire : réseau, sécurité, applications (2/2)',
+      tag: 'dictionnaire',
+      blocks: [
+        { t: 'table', head: ['Objet / sigle', 'Ce que c\'est', 'Module'], rows: [
           ['<b>UserDefinedNetwork</b> (UDN)', 'UDN (par namespace) et ClusterUserDefinedNetwork (plusieurs namespaces) : segmentation et isolation avancées au niveau d\'OVN-Kubernetes', 'module 07'],
           ['<b>OADP</b>', 'API : Backup, Restore, Schedule, BackupStorageLocation, VolumeSnapshotLocation', 'module 11'],
           ['<b>Application</b> / <b>AppProject</b> / <b>ApplicationSet</b>', 'Un dépôt + chemin + révision synchronisés vers une destination ; périmètre d\'autorisation ; plusieurs Applications depuis un modèle', 'module 10'],
@@ -400,7 +466,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
       ]
     },
     {
-      title: 'Décision : quelle reprise, quel canal ?',
+      title: 'Décision : quelle reprise ?',
       tag: 'décision',
       layout: 'two',
       blocks: [
@@ -410,56 +476,81 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['<b>Un membre etcd</b> défaillant', 'Remplacement du membre malsain'],
           ['<b>Certificats</b> du control plane expirés', 'Approbation des CSR <code>node-bootstrapper</code> (et <code>kubelet-serving</code> en UPI)']
         ] },
+        { t: 'callout', kind: 'warn', html: 'Reprise etcd : toute reprise suppose au moins un nœud de control plane sain ; tu choisis la procédure la moins destructrice qui résout ton problème (module 11). Aucune commande de restauration n\'est donnée ici.' }
+      ]
+    },
+    {
+      title: 'Décision : quel canal de mise à jour ?',
+      tag: 'décision',
+      layout: 'two',
+      blocks: [
         { t: 'table', head: ['Canal', 'Contenu'], rows: [
           ['<code>candidate-4.x</code>', 'Nouvelles releases dès leur construction, avant les tests finaux'],
           ['<code>fast-4.x</code>', 'Releases testées et supportées, publiées avec un erratum'],
           ['<code>stable-4.x</code>', 'Après un délai sur <code>fast</code> : de l\'ordre d\'une à deux semaines pour un correctif, plus long (de l\'ordre de 45 à 90 jours) pour le tout premier chemin vers une nouvelle version mineure'],
           ['<code>eus-4.x</code>', 'Releases du <code>stable</code> en même temps ; sert surtout aux mises à jour <b>Control Plane Only</b> (EUS → EUS)']
         ] },
-        { t: 'callout', kind: 'warn', html: 'Reprise etcd : toute reprise suppose au moins un nœud de control plane sain ; tu choisis la procédure la moins destructrice qui résout ton problème (module 11). Aucune commande de restauration n\'est donnée ici.' },
         { t: 'callout', kind: 'tip', html: 'En production : <b>stable</b>. <b>candidate</b> et <b>fast</b> pour tester avant les autres clusters. Le choix du canal ne met rien à jour : il décide ce qui t\'est <b>proposé</b>.' }
       ]
     },
     {
-      title: 'Quiz final 1/4',
+      title: 'Quiz final 1/7',
       tag: 'quiz',
       blocks: [
         { t: 'quiz', q: 'Quel niveau d\'environnement le module 00 recommande-t-il pour couvrir presque tout le cours ?', options: ['E0 : OpenShift Local suffit pour tout', 'E2 : un compact 3 nœuds est obligatoire', 'E1 : un SNO bien dimensionné', 'E3 : du bare metal est obligatoire'], answer: 2, explain: 'Un SNO (E1) bien dimensionné couvre presque tout le cours ; un compact (E2) n\'est utile que pour les étapes bonus qui le demandent (module 00).' },
         { t: 'quiz', q: 'Que devient l\'objet <code>Ingress</code> de Kubernetes sur OpenShift ?', options: ['Il reste supporté : il est converti en Route en coulisses', 'Il est retiré : seule la Route existe', 'Il exige obligatoirement un contrôleur Ingress à installer', 'Il n\'est valable que sur les clusters cloud'], answer: 0, explain: 'Dans le dictionnaire du module 01 : Ingress → Route, « Ingress reste supporté (converti en Route en coulisses) ».' },
-        { t: 'quiz', q: 'Un cluster etcd à trois membres : combien de pannes de membres tolère-t-il ?', options: ['Aucune', 'Deux', 'Trois', 'Une seule : le quorum est de 2'], answer: 3, explain: 'Quorum = ⌊n/2⌋ + 1 : avec 3 membres il faut 2 vivants, donc une panne tolérée ; passer à 2 membres ne protège de rien (module 02).' },
-        { t: 'quiz', q: 'À quoi sert <code>maxUnhealthy</code> dans un MachineHealthCheck ?', options: ['À limiter le nombre de nœuds qu\'un MachineSet peut créer', 'De garde-fou : si trop de nœuds sont malades en même temps, le MHC ne remédie plus pour ne pas tout détruire', 'À fixer la durée avant la remédiation d\'un nœud', 'À désactiver le MHC pendant les mises à jour'], answer: 1, explain: 'maxUnhealthy est le garde-fou du MHC ; ne le mets jamais à 100 % (module 02).' },
-        { t: 'quiz', q: 'Une installation semble avancer, puis <code>install-complete</code> n\'aboutit jamais : console et OAuth injoignables. Quelle est la panne n°1 ?', options: ['Le port 6443 fermé sur le poste d\'installation', 'Le wildcard DNS <code>*.apps</code> oublié', 'Un pull secret trop ancien', 'Un nombre pair de masters'], answer: 1, explain: 'Le wildcard <code>*.apps</code> oublié est la panne n°1 des installations (module 03).' }
+        { t: 'quiz', q: 'Un cluster etcd à trois membres : combien de pannes de membres tolère-t-il ?', options: ['Aucune', 'Deux', 'Trois', 'Une seule : le quorum est de 2'], answer: 3, explain: 'Quorum = ⌊n/2⌋ + 1 : avec 3 membres il faut 2 vivants, donc une panne tolérée ; passer à 2 membres ne protège de rien (module 02).' }
       ]
     },
     {
-      title: 'Quiz final 2/4',
+      title: 'Quiz final 2/7',
       tag: 'quiz',
       blocks: [
-        { t: 'quiz', q: 'Une <code>Subscription</code> OLM est en approbation <b>Manual</b>. Une nouvelle version arrive dans le canal. Que se passe-t-il ?', options: ['L\'Operator est mis à jour immédiatement', 'La Subscription est supprimée', 'Le cluster bloque la mise à jour de l\'Operator', 'OLM crée un InstallPlan en attente : rien ne bouge tant que tu ne l\'approuves pas'], answer: 3, explain: 'Manual : OLM crée un InstallPlan en attente. Un InstallPlan oublié en Pending laisse l\'Operator en version courante (module 04).' },
+        { t: 'quiz', q: 'À quoi sert <code>maxUnhealthy</code> dans un MachineHealthCheck ?', options: ['À limiter le nombre de nœuds qu\'un MachineSet peut créer', 'De garde-fou : si trop de nœuds sont malades en même temps, le MHC ne remédie plus pour ne pas tout détruire', 'À fixer la durée avant la remédiation d\'un nœud', 'À désactiver le MHC pendant les mises à jour'], answer: 1, explain: 'maxUnhealthy est le garde-fou du MHC ; ne le mets jamais à 100 % (module 02).' },
+        { t: 'quiz', q: 'Une installation semble avancer, puis <code>install-complete</code> n\'aboutit jamais : console et OAuth injoignables. Quelle est la panne n°1 ?', options: ['Le port 6443 fermé sur le poste d\'installation', 'Le wildcard DNS <code>*.apps</code> oublié', 'Un pull secret trop ancien', 'Un nombre pair de masters'], answer: 1, explain: 'Le wildcard <code>*.apps</code> oublié est la panne n°1 des installations (module 03).' },
+        { t: 'quiz', q: 'Une <code>Subscription</code> OLM est en approbation <b>Manual</b>. Une nouvelle version arrive dans le canal. Que se passe-t-il ?', options: ['L\'Operator est mis à jour immédiatement', 'La Subscription est supprimée', 'Le cluster bloque la mise à jour de l\'Operator', 'OLM crée un InstallPlan en attente : rien ne bouge tant que tu ne l\'approuves pas'], answer: 3, explain: 'Manual : OLM crée un InstallPlan en attente. Un InstallPlan oublié en Pending laisse l\'Operator en version courante (module 04).' }
+      ]
+    },
+    {
+      title: 'Quiz final 3/7',
+      tag: 'quiz',
+      blocks: [
         { t: 'quiz', q: 'Tu appliques un MachineConfig chrony avec le label <code>role: worker</code>. Quels nœuds sont ciblés ?', options: ['Le pool worker seulement : les masters ont leur propre configuration (second MachineConfig avec <code>role: master</code>)', 'Tous les nœuds du cluster', 'Les nœuds infra uniquement', 'Aucun : il faut redémarrer le MCO'], answer: 0, explain: 'Le label <code>role: worker</code> ne cible que le pool worker ; tous les nœuds doivent partager la même source de temps (module 04).' },
         { t: 'quiz', q: 'À quoi sert l\'alerte <code>Watchdog</code> ?', options: ['Elle signale la perte du quorum etcd', 'Elle signale un nœud NotReady', 'Elle est toujours active par conception : un « dead man\'s switch » pour vérifier que la chaîne d\'alerte fonctionne', 'Elle avertit d\'une mise à jour qui échoue'], answer: 2, explain: 'Watchdog doit arriver régulièrement à ton récepteur : c\'est le test de la chaîne d\'alerte (module 05).' },
-        { t: 'quiz', q: 'Avant de supprimer le secret <code>kubeadmin</code>, que dois-tu avoir vérifié ?', options: ['Que le secret est recréé automatiquement par l\'opérateur', 'Que le cluster n\'a qu\'un seul nœud', 'Que le certificat de l\'Ingress est remplacé', 'Un vrai login IdP avec un groupe cluster-admin, et le kubeconfig admin copié dans un coffre'], answer: 3, explain: 'Supprimer kubeadmin est irréversible : vérifie d\'abord un vrai login IdP cluster-admin (module 06).' },
-        { t: 'quiz', q: 'Tu appliques un <code>deny-all</code> dans un projet : l\'application n\'est plus joignable par sa Route. Pourquoi ?', options: ['Le deny-all coupe aussi les routeurs : il faut <code>allow-from-openshift-ingress</code> et, avec des routeurs en HostNetwork, <code>allow-from-hostnetwork</code> (laquelle suffit selon le mode de publication : à vérifier ; applique les deux puis teste)', 'La Route doit être recréée en mode passthrough', 'Les NetworkPolicy ne s\'appliquent qu\'aux pods en HostNetwork', 'Le deny-all supprime la Route'], answer: 0, explain: 'Piège OCP : un deny-all coupe aussi les routeurs ; ces policies d\'ouverture vont dans le project template. Laquelle des deux suffit selon le mode de publication de l\'IngressController n\'est pas énoncé explicitement : à vérifier, et en pratique applique les deux puis teste (module 07).' }
+        { t: 'quiz', q: 'Avant de supprimer le secret <code>kubeadmin</code>, que dois-tu avoir vérifié ?', options: ['Que le secret est recréé automatiquement par l\'opérateur', 'Que le cluster n\'a qu\'un seul nœud', 'Que le certificat de l\'Ingress est remplacé', 'Un vrai login IdP avec un groupe cluster-admin, et le kubeconfig admin copié dans un coffre'], answer: 3, explain: 'Supprimer kubeadmin est irréversible : vérifie d\'abord un vrai login IdP cluster-admin (module 06).' }
       ]
     },
     {
-      title: 'Quiz final 3/4',
+      title: 'Quiz final 4/7',
       tag: 'quiz',
       blocks: [
+        { t: 'quiz', q: 'Tu appliques un <code>deny-all</code> dans un projet : l\'application n\'est plus joignable par sa Route. Pourquoi ?', options: ['Le deny-all coupe aussi les routeurs : il faut <code>allow-from-openshift-ingress</code> et, avec des routeurs en HostNetwork, <code>allow-from-hostnetwork</code> (laquelle suffit selon le mode de publication : à vérifier ; applique les deux puis teste)', 'La Route doit être recréée en mode passthrough', 'Les NetworkPolicy ne s\'appliquent qu\'aux pods en HostNetwork', 'Le deny-all supprime la Route'], answer: 0, explain: 'Piège OCP : un deny-all coupe aussi les routeurs ; ces policies d\'ouverture vont dans le project template. Laquelle des deux suffit selon le mode de publication de l\'IngressController n\'est pas énoncé explicitement : à vérifier, et en pratique applique les deux puis teste (module 07).' },
         { t: 'quiz', q: 'Une Deployment avec un PVC <code>RWO</code> subit un rolling update et tu obtiens « Multi-Attach error ». Pourquoi ?', options: ['Le PVC est plein', 'RWO signifie « un seul nœud » : le nouveau pod atterrit sur un autre nœud', 'La StorageClass est supprimée', 'Un PVC RWO n\'accepte aucun pod'], answer: 1, explain: 'RWO ≠ « un seul pod » : c\'est « un seul nœud ». Solutions : stratégie Recreate, RWX, ou StatefulSet (module 08).' },
-        { t: 'quiz', q: 'Une image ne démarre pas à cause de la SCC. Quelle est la bonne démarche ?', options: ['Donner <code>anyuid</code> au ServiceAccount, c\'est le plus rapide', 'Modifier la SCC restricted-v2 du cluster', 'Réparer l\'image : la SCC par défaut est restricted-v2, on n\'accorde <code>anyuid</code> qu\'en dernier recours', 'Désactiver l\'admission des SCC'], answer: 2, explain: 'Ordre de préférence : réparer l\'image, puis nonroot-v2 ou une SCC dédiée, puis anyuid en dernier recours, tracé ; ne modifie jamais les SCC par défaut (module 09).' },
+        { t: 'quiz', q: 'Une image ne démarre pas à cause de la SCC. Quelle est la bonne démarche ?', options: ['Donner <code>anyuid</code> au ServiceAccount, c\'est le plus rapide', 'Modifier la SCC restricted-v2 du cluster', 'Réparer l\'image : la SCC par défaut est restricted-v2, on n\'accorde <code>anyuid</code> qu\'en dernier recours', 'Désactiver l\'admission des SCC'], answer: 2, explain: 'Ordre de préférence : réparer l\'image, puis nonroot-v2 ou une SCC dédiée, puis anyuid en dernier recours, tracé ; ne modifie jamais les SCC par défaut (module 09).' }
+      ]
+    },
+    {
+      title: 'Quiz final 5/7',
+      tag: 'quiz',
+      blocks: [
         { t: 'quiz', q: 'Argo CD signale en boucle <code>OutOfSync</code> sur une ressource modifiée par un opérateur. Que fais-tu ?', options: ['Ignorer les champs gérés ailleurs avec <code>ignoreDifferences</code> plutôt que de laisser selfHeal combattre l\'opérateur', 'Activer selfHeal pour qu\'Argo CD l\'emporte', 'Supprimer l\'opérateur', 'Désactiver Argo CD sur ce namespace'], answer: 0, explain: 'Un selfHeal qui annule en boucle un champ géré par un opérateur peut générer des redémarrages en cascade (module 10).' },
         { t: 'quiz', q: 'Que ne contient pas une sauvegarde etcd ?', options: ['Les Secrets', 'Les ConfigMaps et la configuration RBAC', 'L\'état des opérateurs', 'Le contenu des volumes persistants'], answer: 3, explain: 'Le contenu des PV ne fait jamais partie du snapshot etcd : la sauvegarde etcd restaure le cluster, pas les données de tes applications (module 11).' },
         { t: 'quiz', q: 'Que dit la documentation d\'OADP sur etcd ?', options: ['OADP remplace la sauvegarde etcd', 'OADP sauvegarde etcd mais pas les volumes', 'OADP ne constitue pas une solution de reprise pour etcd ni pour les Operators OpenShift', 'OADP ne fonctionne qu\'avec le stockage objet d\'ODF'], answer: 2, explain: 'Les sauvegardes etcd et OADP sont complémentaires (module 11).' }
       ]
     },
     {
-      title: 'Quiz final 4/4',
+      title: 'Quiz final 6/7',
       tag: 'quiz',
       blocks: [
         { t: 'quiz', q: 'Le cluster est <code>Upgradeable=False</code> avec <code>AdminAckRequired</code>. Que fais-tu ?', options: ['J\'acquitte tout de suite pour débloquer', 'Je vérifie que les APIs retirées ne sont plus utilisées, puis j\'acquitte dans <code>admin-acks</code>', 'Je supprime la ConfigMap admin-acks', 'Je force la mise à jour d\'une option'], answer: 1, explain: 'N\'acquitte jamais à l\'aveugle : l\'admin est responsable de repérer et migrer les APIs retirées (module 12).' },
         { t: 'quiz', q: 'Que demande la check-list de mise à jour (module 12) à propos des <code>MachineHealthCheck</code> ?', options: ['De les mettre en pause pendant l\'opération (annotation <code>cluster.x-k8s.io/paused=""</code>)', 'De les supprimer définitivement', 'De monter leur <code>maxUnhealthy</code> à 100 %', 'Rien : ils s\'adaptent seuls'], answer: 0, explain: 'Pour éviter qu\'ils ne remplacent un nœud qui redémarre pendant la mise à jour (module 12).' },
-        { t: 'quiz', q: 'OpenShift Serverless 1.37 est supporté sur quelles versions d\'OCP ?', options: ['OCP 4.12 à 4.16', 'OCP 4.19 à 4.22', 'Uniquement OCP 4.20', 'OCP 4.16 à 4.20'], answer: 3, explain: 'Page « OpenShift Operator Life Cycles » de Red Hat, d\'après le module 13 (disponibilité générale le 24 novembre 2025).' },
+        { t: 'quiz', q: 'OpenShift Serverless 1.37 est supporté sur quelles versions d\'OCP ?', options: ['OCP 4.12 à 4.16', 'OCP 4.19 à 4.22', 'Uniquement OCP 4.20', 'OCP 4.16 à 4.20'], answer: 3, explain: 'Page « OpenShift Operator Life Cycles » de Red Hat, d\'après le module 13 (disponibilité générale le 24 novembre 2025).' }
+      ]
+    },
+    {
+      title: 'Quiz final 7/7',
+      tag: 'quiz',
+      blocks: [
         { t: 'quiz', q: 'Ton control plane à trois nœuds tourne à 80 % de CPU en régime normal. Quelle est la règle de la doc 4.20 ?', options: ['80 % est la cible recommandée', 'Rester à 60 % au plus de la capacité : les deux autres nœuds doivent absorber la charge lors d\'une panne ou d\'une mise à jour', 'Seule la mémoire compte, pas le CPU', 'Il suffit d\'ajouter un quatrième master'], answer: 1, explain: 'Le control plane est mis à jour en série et subit les pannes : garde l\'usage à 60 % au plus de la capacité (module 14).' },
         { t: 'quiz', q: 'Un nœud d\'infra : que recommande la doc 4.20 pour le label <code>worker</code> ?', options: ['Le retirer systématiquement', 'Le remplacer par le label master', 'Le conserver (double label <code>infra,worker</code>) et gérer le placement par taints ; sans lui, un pool personnalisé est obligatoire', 'Le retirer pour que le nœud ne soit pas facturé deux fois'], answer: 2, explain: 'Sans le label worker, le MCO ne reconnaît pas le nœud sans pool personnalisé (modules 02 et 14).' }
       ]
