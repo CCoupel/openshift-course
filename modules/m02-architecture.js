@@ -131,7 +131,7 @@ $ oc get co etcd
 $ oc rsh -n openshift-etcd -c etcdctl etcd-master-0
 sh-5$ etcdctl endpoint status --cluster -w table
 sh-5$ etcdctl endpoint health --cluster -w table` },
-        { t: 'callout', kind: 'tip', html: 'Un script de sauvegarde est fourni sur les masters : <code>/usr/local/bin/cluster-backup.sh</code>, à lancer via <code>oc debug node/master-0</code> puis <code>chroot /host</code>. Le sujet est traité au module 11 (Backup &amp; DR).' },
+        { t: 'callout', kind: 'tip', html: 'Un script de sauvegarde est fourni sur les masters : <code>/usr/local/bin/cluster-backup.sh</code>, à lancer via <code>oc debug --as-root node/master-0</code> puis <code>chroot /host</code>. Le sujet est traité au module 11 (Backup &amp; DR).' },
         { t: 'callout', kind: 'trap', html: 'Ne redimensionne pas/ne supprime pas à la main des membres etcd, et ne restaure pas un snapshot sans suivre la procédure officielle : un restore mal fait casse le cluster entier.' }
       ]
     },
