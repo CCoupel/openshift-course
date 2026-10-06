@@ -200,12 +200,13 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Objectif** : réviser et emporter les commandes essentielles.
 - **Traité** : fiches `oc` par domaine (reprises des modules), dictionnaire K8s ↔ OCP, quiz final (≈ 10 questions couvrant J1–J3). Pas de lab (exception prévue dans `CONVENTIONS.md`).
 - **Durée** : ≈ 30 min.
+- **Rédigé** : 39 slides (1 mode d'emploi, 21 slides de fiches `oc` (13 thèmes, plusieurs sur 2 slides), 5 slides de dictionnaires, 4 slides de décision, 7 slides de quiz final de 2 à 3 questions couvrant les modules 00 à 14, 1 slide de pistes) ; aucune commande ne vient d'ailleurs que des modules, aucune commande de restauration etcd.
 
 ---
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 14) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 15) : tous les modules sont rédigés.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -224,7 +225,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 12 | E1 (état de mise à jour en lecture, `must-gather` et `oc adm inspect`, quota et LimitRange, cordon / drain / uncordon) | E1 jetable ou E2 : mise à jour mineure réelle ; E2 : pause d'un pool `worker`, ajout d'un nœud (`oc adm node-image create` ou MachineSet) |
 | 13 | E1 (Serverless : Operator, `KnativeServing`/`KnativeEventing`, service Knative, scale-to-zero, répartition de trafic) | E3 : OpenShift Virtualization, VM depuis une boot source, `virtctl` ; E3 multi-nœuds + stockage RWX : migration à chaud ; vCenter de test : migration MTV cold |
 | 14 | E1 (audit en lecture seule d'un cluster avec la check-list : `oc get`, `describe`, `top`, sans modification) | Go / no-go sur un cluster fictif (sans cluster) ; revue des `Subscription` (E1, lecture seule ; approbation manuelle) |
-| 15 | — | — |
+| 15 | — (pas de lab : fiches, décisions et quiz final, sans cluster) | — |
 
 ---
 
