@@ -53,12 +53,14 @@ COURSE.add({
           ['<code>nested-container</code>', 'Comme <code>restricted-v2</code> avec SELinux <code>container_engine_t</code>, <code>runAsUser: MustRunAsRange</code> et user namespace imposé : exécuter un moteur de conteneurs <b>dans</b> un pod (nouveauté 4.20)'],
           ['<code>nonroot-v2</code>', 'Autorise un UID fixe non-root (avec capabilities supprimées)'],
           ['<code>anyuid</code>', 'Restreint, mais <b>n\'importe quel UID/GID</b> (y compris root)'],
-          ['<code>hostnetwork-v2</code>, <code>hostaccess</code>, <code>hostmount-anyuid</code>', 'Accès au réseau ou à l\'hôte, de plus en plus larges'],
+          ['<code>nonroot</code>', 'Comme <code>restricted</code> mais UID non-root quelconque (le pod ou l\'image doit le fournir) ; <code>nonroot-v2</code> en est la version durcie'],
+          ['<code>hostnetwork</code> / <code>hostnetwork-v2</code>', 'Réseau et ports de l\'hôte, UID et SELinux toujours alloués au namespace'],
+          ['<code>hostaccess</code>, <code>hostmount-anyuid</code>', 'Accès à tous les namespaces de l\'hôte ; montages hôte avec n\'importe quel UID/GID'],
           ['<code>privileged</code>', 'Tout est permis : hôte, privilèges, n\'importe quel UID'],
           ['<code>node-exporter</code>', 'Réservé au node-exporter de Prometheus']
         ] },
         { t: 'callout', kind: 'warn', html: "<b>Ne modifie jamais</b> les SCC par défaut : la doc prévient que les personnaliser peut poser problème au déploiement de pods de la plateforme ou à la mise à jour. Pour un besoin particulier, <b>crée une SCC dédiée</b>." },
-        { t: 'callout', kind: 'tip', html: "Liste complète et à jour : <code>oc get scc</code>. Il existe aussi une SCC <code>restricted</code> historique ; elle n'est plus le choix par défaut." }
+        { t: 'callout', kind: 'tip', html: "Liste complète et à jour : <code>oc get scc</code>. La SCC <code>restricted</code> d\'origine refuse tout accès à l\'hôte et exige UID et SELinux alloués au namespace ; elle n\'est plus le choix par défaut." }
       ]
     },
     {
