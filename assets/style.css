@@ -267,3 +267,11 @@ details.reveal > div { margin-top: 8px; }
   #hint { display: none; }
   .cover h1, .home h1 { font-size: 2rem; }
 }
+
+/* Modules « à venir » (plan sans fichier chargé) : grisés, non cliquables */
+.nav-mod.soon .nav-mod-h, .mcard.soon { cursor: default; color: var(--muted); }
+.nav-mod.soon .nav-mod-h .e, .mcard.soon .e { opacity: .55; }
+.mcard.soon h3 { color: var(--muted); }
+.nav-mod.soon .nav-mod-h:hover { background: none; }
+.mcard.soon { border-style: dashed; box-shadow: none; }
+.mcard.soon:hover { transform: none; border-color: var(--border); }

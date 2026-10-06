@@ -81,11 +81,14 @@
   }
 
   /* ---------- Liste plate des slides ---------- */
-  let modules = [];
+  let modules = [];   // modules rédigés (chargés)
+  let upcoming = [];  // modules du plan sans fichier chargé (« à venir »)
   let flat = [];
 
   function build() {
     modules = COURSE.modules.slice().sort((a, b) => a.num - b.num);
+    const loaded = new Set(modules.map(m => m.id));
+    upcoming = (COURSE.plan || []).filter(p => !loaded.has(p.id)).sort((a, b) => a.num - b.num);
     flat = [{ kind: 'home', title: 'Accueil', uid: 'home' }];
     modules.forEach(m => {
       flat.push({ kind: 'cover', mod: m, title: m.title, uid: m.id + '/0' });
@@ -93,6 +96,9 @@
       if (m.takeaways && m.takeaways.length) flat.push({ kind: 'recap', mod: m, title: 'À retenir', uid: m.id + '/' + (m.slides.length + 1) });
     });
   }
+
+  // Plan complet trié par num : modules chargés + modules « à venir » (soon: true).
+  const planList = () => modules.concat(upcoming.map(p => Object.assign({ soon: true }, p))).sort((a, b) => a.num - b.num);
 
   const quizTotal = m => m.slides.reduce((n, s) => n + (s.blocks || []).filter(b => b.t === 'quiz').length, 0);
   const quizScore = m => Object.keys(state.quiz).filter(k => k.startsWith(m.id + '/') && state.quiz[k] === 1).length;
@@ -106,10 +112,13 @@
       const total = flat.length - 1, seen = flat.filter(x => x.mod && state.visited[x.uid]).length;
       const cont = state.last && flat.find(x => x.uid === state.last && x.mod);
       return `<div class="home"><h1>🔴 OpenShift, du K8s à OCP</h1>
-        <p class="sub">Support perso · on-premise · pour qui maîtrise déjà Kubernetes. ${modules.length} modules, ${total} slides, ${seen} déjà vues.</p>
+        <p class="sub">Support perso · on-premise · pour qui maîtrise déjà Kubernetes. ${modules.length}/${modules.length + upcoming.length} modules rédigés, ${total} slides, ${seen} déjà vues.</p>
         <div class="actions">${cont ? `<a class="btn primary" href="#${cont.uid}">▶ Reprendre : ${esc(cont.mod.title)}</a>` : `<a class="btn primary" href="#${modules[0] ? modules[0].id : 'home'}/0">▶ Commencer</a>`}
         <button class="btn" id="reset" type="button">↺ Réinitialiser la progression</button></div>
-        <div class="mgrid">${modules.map(m => `<a class="mcard" href="#${m.id}/0"><div class="e">${m.emoji}</div><div class="n">MODULE ${pad(m.num)}</div>
+        <div class="mgrid">${planList().map(m => m.soon
+          ? `<div class="mcard soon" aria-disabled="true"><div class="e">${m.emoji}</div><div class="n">MODULE ${pad(m.num)}</div>
+          <h3>${esc(m.title)}</h3><p>À venir</p></div>`
+          : `<a class="mcard" href="#${m.id}/0"><div class="e">${m.emoji}</div><div class="n">MODULE ${pad(m.num)}</div>
           <h3>${esc(m.title)}</h3><p>${m.tagline || ''}</p><div class="bar"><i style="width:${modPct(m)}%"></i></div></a>`).join('')}</div>
         <div class="legend">Légende : <span class="tag onprem">🏢 on-prem</span> ce qui compte sur ton infra · <span class="tag cloud">☁️ écart cloud</span> ce qui change en ROSA/ARO/OSD · <span class="tag k8s">K8s</span> <span class="tag ocp">OCP</span></div></div>`;
     }
@@ -164,7 +173,9 @@
   function renderNav() {
     const q = $('#search').value.trim();
     if (q) return renderSearch(q);
-    $('#navlist').innerHTML = `<a class="nav-home ${cur.kind === 'home' ? 'on' : ''}" href="#home">🏠 Accueil</a>` + modules.map(m => {
+    $('#navlist').innerHTML = `<a class="nav-home ${cur.kind === 'home' ? 'on' : ''}" href="#home">🏠 Accueil</a>` + planList().map(m => {
+      if (m.soon) return `<div class="nav-mod soon" aria-disabled="true"><span class="nav-mod-h"><span class="e">${m.emoji}</span>
+        <span class="t"><b>${pad(m.num)}</b> ${esc(m.title)}</span><span class="pct">à venir</span></span></div>`;
       const open = cur.mod === m;
       return `<div class="nav-mod ${open ? 'open' : ''}"><a class="nav-mod-h" href="#${m.id}/0"><span class="e">${m.emoji}</span>
         <span class="t"><b>${pad(m.num)}</b> ${esc(m.title)}</span><span class="pct">${modPct(m)}%</span></a>${
