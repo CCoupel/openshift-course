@@ -112,7 +112,7 @@ spec:
           '<b>Chiffrement etcd</b> : désactivé par défaut ; une fois activé, la ré-écriture des objets prend du temps (suivi sur les conditions des opérateurs <code>kube-apiserver</code> et <code>openshift-apiserver</code>).',
           '<b>Certificats nommés</b> : slide suivante.'
         ] },
-        { t: 'callout', kind: 'warn', wide: true, html: "Le chiffrement etcd protège les données <b>au repos dans etcd</b>, pas les accès via l'API. Il s'applique aux objets ré-écrits après activation : fais une <b>nouvelle sauvegarde etcd</b> après l'activation et protège-la comme un secret (module 11). Ce que contient exactement un snapshot (dont les clés) et ce qu'il faut sauvegarder en plus : <b>à vérifier dans la doc OpenShift 4.20</b>. Types supportés et profils TLS exacts : à vérifier dans les release notes." }
+        { t: 'callout', kind: 'warn', wide: true, html: "Le chiffrement etcd protège les données <b>au repos dans etcd</b>, pas les accès via l'API. Fais une <b>nouvelle sauvegarde etcd</b> après l'activation (et une fois le chiffrement effectif sur les conditions des opérateurs) et protège-la comme un secret (module 11) ; comment les objets existants sont chiffrés (migration ou non) : à vérifier dans la doc 4.20. Ce que contient exactement un snapshot (dont les clés) et ce qu'il faut sauvegarder en plus : <b>à vérifier dans la doc OpenShift 4.20</b>. Types supportés et profils TLS exacts : à vérifier dans les release notes." }
       ]
     },
     {
@@ -423,7 +423,7 @@ spec:
           '(bonus, <b>risqué</b> : à faire sur un cluster jetable, dans cet ordre, avec le retour arrière prêt) Crée une CA de lab et un certificat wildcard <code>*.apps.&lt;cluster&gt;.&lt;domaine&gt;</code> avec <code>openssl</code>.',
           '(bonus) Déclare d\'abord ta CA de lab comme CA de confiance du cluster : ConfigMap <code>user-ca-bundle</code> dans <code>openshift-config</code> et <code>Proxy.spec.trustedCA</code> (voir la slide « Faire confiance à une CA » ; procédure à vérifier dans la doc 4.20).',
           '(bonus) Crée le Secret TLS dans <code>openshift-ingress</code> et patche <code>defaultCertificate</code> ; attends le redéploiement des routeurs, vérifie que <code>oc get co</code> reste sain et contrôle l\'émetteur avec <code>curl -vI</code> sur la console.',
-          '(bonus) <b>Retour arrière</b> : retire <code>spec.defaultCertificate</code> de l\'<code>IngressController</code> (<code>oc patch … --type=json -p \'[{"op":"remove","path":"/spec/defaultCertificate"}]\'</code>, à vérifier), attends le redéploiement des routeurs puis supprime le Secret.',
+          '(bonus) <b>Retour arrière</b> : retire <code>spec.defaultCertificate</code> de l\'<code>IngressController</code> (<code>oc patch … --type=json -p \'[{"op":"remove","path":"/spec/defaultCertificate"}]\'</code>, à vérifier), attends le redéploiement des routeurs puis supprime le Secret. La CA ajoutée dans <code>user-ca-bundle</code> / <code>Proxy.trustedCA</code> peut rester (inoffensif) ; la retirer est facultatif (à vérifier).',
           '(bonus) Crée un <code>ConsoleNotification</code> de type bandeau et vérifie qu\'il apparaît dans la console.',
           '(bonus) Essaie OLM v1 : crée un <code>ClusterExtension</code> pour un Operator compatible (périmètre et champs : à vérifier dans la doc 4.20) ; compare avec la Subscription de l\'étape précédente.'
         ] }
