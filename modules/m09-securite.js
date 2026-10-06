@@ -104,7 +104,7 @@ COURSE.add({
         ], caption: 'Les SCC sont triées : <b>priorité la plus haute</b> d\'abord ; à priorité égale, <b>de la plus restrictive à la moins restrictive</b> ; sinon par nom.' },
         { t: 'bullets', frag: true, items: [
           'La <b>première</b> SCC de la liste qui admet le pod est retenue et inscrite dans l\'annotation <code>openshift.io/scc</code>.',
-          'Donner <code>anyuid</code> à un ServiceAccount ne le force pas à tourner en root : si <code>restricted-v2</code> suffit, elle passe d\'abord.',
+          '<code>anyuid</code> a une <b>priorité</b> (10 par défaut) alors que <code>restricted-v2</code> n\'en a aucune : un ServiceAccount autorisé à utiliser les deux obtient <b><code>anyuid</code></b>. Elle n\'impose pas root, mais une image sans <code>USER</code> tourne alors <b>en root</b> : c\'est le danger.',
           'Pour <b>forcer</b> une SCC précise, annote la charge avec <code>openshift.io/required-scc</code>.'
         ] },
         { t: 'callout', kind: 'trap', html: "Le même pod peut <b>changer de SCC</b> si on accorde ou retire des droits : la SCC se recalcule à la création du pod, pas à celle du Deployment. Teste avec <code>scc-subject-review</code> (slide suivante)." }
@@ -329,7 +329,7 @@ spec:
       title: 'Quiz',
       tag: 'quiz',
       blocks: [
-        { t: 'quiz', q: 'Un ServiceAccount a le droit d\'utiliser <code>restricted-v2</code> et <code>anyuid</code>. Son pod ne demande rien de particulier. Quelle SCC est retenue ?', options: ['<code>anyuid</code>, car elle est plus permissive', 'Aucune, le pod est refusé : deux SCC sont en conflit', '<code>restricted-v2</code>, car à priorité égale la plus restrictive passe d\'abord', 'La plus récemment créée'], answer: 2, explain: 'Les SCC sont triées par priorité, puis de la plus restrictive à la moins restrictive, puis par nom ; la première qui admet le pod est retenue. Donner <code>anyuid</code> n\'impose donc pas root.' },
+        { t: 'quiz', q: 'Un ServiceAccount a le droit d\'utiliser <code>restricted-v2</code> et <code>anyuid</code>. Son pod ne demande rien de particulier. Quelle SCC est retenue ?', options: ['<code>restricted-v2</code>, car elle est plus restrictive', 'Aucune, le pod est refusé : deux SCC sont en conflit', 'La SCC la plus récemment créée', '<code>anyuid</code>, car sa priorité (10) passe avant <code>restricted-v2</code> qui n\'en a pas'], answer: 3, explain: 'Le tri place d\'abord les SCC de plus haute priorité : <code>anyuid</code> (10 par défaut) passe avant <code>restricted-v2</code> (sans priorité). La restrictivité ne départage que des SCC de <b>même priorité</b>. <code>anyuid</code> n\'impose pas root, mais une image sans <code>USER</code> tournera en root.' },
         { t: 'quiz', q: 'Quel label désactive ou active la synchronisation SCC ↔ PSA sur un namespace ?', options: ['<code>security.openshift.io/scc.podSecurityLabelSync</code>', '<code>pod-security.kubernetes.io/sync</code>', '<code>openshift.io/required-scc</code>', '<code>pod-security.kubernetes.io/enforce</code>'], answer: 0, explain: '<code>security.openshift.io/scc.podSecurityLabelSync=true|false</code> pilote la synchronisation. <code>enforce</code> pose le profil appliqué ; <code>required-scc</code> impose une SCC à une charge.' },
         { t: 'quiz', q: 'Quelle ressource déclenche l\'exécution d\'un scan avec le Compliance Operator ?', options: ['<code>ComplianceCheckResult</code>', '<code>ScanSettingBinding</code>', '<code>ComplianceRemediation</code>', '<code>FileIntegrity</code>'], answer: 1, explain: 'Le <code>ScanSettingBinding</code> lie des profils à un <code>ScanSetting</code> ; l\'Operator crée alors la suite et les scans. Les <code>ComplianceCheckResult</code> sont le résultat.' }
       ]
@@ -354,7 +354,7 @@ spec:
   ],
   takeaways: [
     'La SCC dit ce qu\'un pod peut demander <b>et</b> assigne UID, SELinux, capabilities ; <code>restricted-v2</code> est le défaut, <code>restricted-v3</code> (user namespace) arrive en 4.20.',
-    'Sélection : priorité, puis plus restrictive, puis nom ; accorde une SCC par RBAC (verbe <code>use</code>) au <b>ServiceAccount</b>, et crée une SCC dédiée plutôt que <code>anyuid</code>.',
+    'Sélection : priorité d\'abord (<code>anyuid</code> : 10, <code>restricted-v2</code> : aucune), puis plus restrictive, puis nom ; accorde une SCC par RBAC (verbe <code>use</code>) au <b>ServiceAccount</b>, et crée une SCC dédiée plutôt que <code>anyuid</code>.',
     'PSA : enforce <code>privileged</code> global, audit et warn <code>restricted</code> ; les labels se synchronisent depuis les SCC (<code>podSecurityLabelSync</code>), sauf namespaces système.',
     'Images : sources autorisées (module 04), miroirs (module 03), digests ; la signature sigstore (<code>ClusterImagePolicy</code>) est Tech Preview en 4.20.',
     'Secrets : chiffrer etcd ne suffit pas ; External Secrets Operator (GA 4.20+) ou Secrets Store CSI avec un coffre externe.',
