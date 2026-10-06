@@ -186,7 +186,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité — Serverless (≈ 50 %)** : OpenShift Serverless (Knative Serving : scale to zero, révisions, trafic ; Eventing : sources, brokers, Kafka) ; installation et ce que l'admin gère (`KnativeServing`, ingress, quotas) ; cas d'usage et limites ; Functions en survol.
 - **Renvoyé** : stockage RWX block → 08 ; Multus/NMState → 07 ; OADP → 11.
 - **Durée** : ≈ 60 min + lab 25 min. **Lab** : noyau E1 (Serverless : service Knative, scale to zero) + E3 (VM depuis un template, console, `virtctl`) ; bonus E2/E3 : migration à chaud.
-- **À vérifier** : fonctionnalités Virtualization et MTV alignées sur 4.20 ; support de la virtualisation imbriquée ; versions Serverless et statut des Functions.
+- **À vérifier** : compatibilité d'OpenShift Serverless 1.37 avec OCP 4.20 (matrice « Supported Configurations » réservée aux abonnés) ; exigences matérielles détaillées et plateformes supportées d'OpenShift Virtualization 4.20 ; `apiVersion` des instance types / CDI / boot sources ; statut des runtimes Functions autres que Python. Confirmés : MTV 2.10 pour OCP 4.18-4.20 (vSphere 6.5+, VDDK, `forklift.konveyor.io/v1beta1`), prérequis de la migration à chaud (RWX), Operator `kubevirt-hyperconverged` (canal stable, `openshift-cnv`), Serverless 1.37 (Knative 1.17, canal stable, `operator.knative.dev/v1beta1`), runtime Python des Functions GA en 1.37.
 
 #### 14 — Best practices (check-list de mise en production) ⬜ (`m14-best-practices.js`)
 - **Objectif** (P8) : disposer d'une **check-list transverse** de mise en production, réutilisable en mission.
@@ -204,7 +204,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 12) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 13) ; les lignes des modules à venir restent le plan.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -221,7 +221,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 10 | E0 ou E1 + dépôt Git joignable depuis le cluster (installation d'OpenShift GitOps, Application sur `ResourceQuota` et `ConfigMap`, dérive et `selfHeal`) | E1 : app-of-apps et sync wave ; E1 jetable : ClusterRole minimal pour Argo CD ; E2 : `ApplicationSet` sur deux clusters |
 | 11 | E1 (sauvegarde etcd non destructive, export hors du nœud, lecture de l'archive, installation d'OADP) | E1 + S3 (MinIO) : `DataProtectionApplication`, sauvegarde, suppression puis restauration d'un namespace ; cluster JETABLE (E1 jetable ou E2) : restauration etcd complète |
 | 12 | E1 (état de mise à jour en lecture, `must-gather` et `oc adm inspect`, quota et LimitRange, cordon / drain / uncordon) | E1 jetable ou E2 : mise à jour mineure réelle ; E2 : pause d'un pool `worker`, ajout d'un nœud (`oc adm node-image create` ou MachineSet) |
-| 13 | E1 + E3 | E2/E3 (migration à chaud) |
+| 13 | E1 (Serverless : Operator, `KnativeServing`/`KnativeEventing`, service Knative, scale-to-zero, répartition de trafic) | E3 : OpenShift Virtualization, VM depuis une boot source, `virtctl` ; E3 multi-nœuds + stockage RWX : migration à chaud ; vCenter de test : migration MTV cold |
 | 14 | E1 | — |
 | 15 | — | — |
 
