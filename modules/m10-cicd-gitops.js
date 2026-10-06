@@ -120,17 +120,19 @@ spec:
   server:
     route:
       enabled: true
+  sso:
+    provider: dex
+    dex:
+      openShiftOAuth: true
   rbac:
-    defaultPolicy: ''
-    policy: |
-      g, equipe-a-admins, role:admin
+    policy: 'g, equipe-a-admins, role:admin'
     scopes: '[groups]'` },
         { t: 'bullets', items: [
           '<code>spec.server.route.enabled</code> : crée une <b>Route OpenShift</b> vers l\'interface (module 07).',
-          'Connexion : bouton <b>« LOG IN VIA OPENSHIFT »</b> avec les comptes de ton fournisseur d\'identité (module 06).',
+          '<code>spec.sso.provider: dex</code> avec <code>dex.openShiftOAuth: true</code> : Dex s\'appuie sur le <b>serveur OAuth d\'OpenShift</b> ; la page de connexion propose alors <b>« LOG IN VIA OPENSHIFT »</b> avec les comptes et <b>groupes</b> de ton fournisseur d\'identité (module 06). L\'ancien champ <code>spec.dex</code> n\'est plus supporté depuis la 1.10.',
           'Les droits <b>dans Argo CD</b> (<code>rbac</code>) sont indépendants du RBAC d\'OpenShift : décris-les par <b>groupes</b>.'
         ] },
-        { t: 'callout', kind: 'warn', wide: true, html: "Champs <code>rbac</code> et attributs d'authentification (Dex, OpenShift OAuth) de la CR : <b>à vérifier</b> dans « Argo CD instance » de ta version (la doc 1.19 n'a pas été relue en détail ici). Une instance par équipe isole les droits et les erreurs." }
+        { t: 'callout', kind: 'warn', wide: true, html: "Structure <code>sso</code> et <code>rbac</code> conforme à l'exemple de la doc OpenShift GitOps 1.20 « Access control and user management » (le groupe <code>equipe-a-admins</code> est un exemple : prends un groupe de ton cluster). Keycloak n'est plus supporté (module 06 pour l'identité). Une instance par équipe isole les droits et les erreurs." }
       ]
     },
     {
