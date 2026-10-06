@@ -208,7 +208,7 @@ spec:
         { t: 'bullets', items: [
           'Ressources (<code>forklift.konveyor.io/v1beta1</code>) : <code>Provider</code> (source et destination), <code>StorageMap</code>, <code>NetworkMap</code>, <code>Plan</code>, <code>Migration</code>.',
           'Flux réseau : TCP 443 (vCenter/ESXi), 902 (transfert de disques ESXi).',
-          'Le VDDK est un SDK VMware à fournir comme <b>image</b> : à déclarer dans le <code>Provider</code> vSphere : <code>spec.settings.vddkInitImage</code> (d'après le manifeste CLI de la doc MTV) ; la doc MTV a aussi demandé de le renseigner dans <code>spec.vddkInitImage</code> du <code>HyperConverged</code> : <b>selon ta version de MTV, à vérifier</b>. Ce champ du provider n\'est pas obligatoire mais l\'omettre <b>ralentit fortement</b> le transfert des disques.'
+          'Le VDDK est un SDK VMware à fournir comme <b>image</b> : à déclarer dans le <code>Provider</code> vSphere : <code>spec.settings.vddkInitImage</code> (d\'après le manifeste CLI de la doc MTV) ; la doc MTV a aussi demandé de le renseigner dans <code>spec.vddkInitImage</code> du <code>HyperConverged</code> : <b>selon ta version de MTV, à vérifier</b>. Ce champ du provider n\'est pas obligatoire mais l\'omettre <b>ralentit fortement</b> le transfert des disques.'
         ] },
         { t: 'callout', kind: 'warn', wide: true, html: "Le parcours complet (inventaire, mappings de stockage et de réseau, fenêtre de basculement, pilotes invités) est dans la doc MTV : <b>à relire pour ta version</b> avant tout projet réel." }
       ]
