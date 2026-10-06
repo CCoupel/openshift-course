@@ -206,7 +206,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 15) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 15) : tous les modules sont rédigés.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
