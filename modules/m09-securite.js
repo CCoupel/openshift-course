@@ -48,8 +48,9 @@ COURSE.add({
       layout: 'two',
       blocks: [
         { t: 'table', head: ['SCC', 'En bref'], rows: [
-          ['<code>restricted-v2</code>', 'Défaut des utilisateurs authentifiés : non-root, capabilities supprimées, seccomp <code>runtime/default</code>'],
-          ['<code>restricted-v3</code>', 'Comme <code>restricted-v2</code> mais impose un <b>user namespace</b> (<code>hostUsers: false</code>) ; nouveauté 4.20'],
+          ['<code>restricted-v2</code>', 'Défaut des utilisateurs authentifiés (la doc 4.20 le dit dans sa table) : non-root, capabilities supprimées, seccomp <code>runtime/default</code>'],
+          ['<code>restricted-v3</code>', 'Comme <code>restricted-v2</code> mais impose un <b>user namespace</b> (<code>hostUsers: false</code>) ; nouveauté 4.20. La doc 4.20 le décrit aussi comme « la plus restrictive » et « utilisée par défaut » : formulation ambiguë à lire dans la doc ; <code>restricted-v2</code> reste celle que la table donne par défaut'],
+          ['<code>nested-container</code>', 'Comme <code>restricted-v2</code> avec SELinux <code>container_engine_t</code>, <code>runAsUser: MustRunAsRange</code> et user namespace imposé : exécuter un moteur de conteneurs <b>dans</b> un pod (nouveauté 4.20)'],
           ['<code>nonroot-v2</code>', 'Autorise un UID fixe non-root (avec capabilities supprimées)'],
           ['<code>anyuid</code>', 'Restreint, mais <b>n\'importe quel UID/GID</b> (y compris root)'],
           ['<code>hostnetwork-v2</code>, <code>hostaccess</code>, <code>hostmount-anyuid</code>', 'Accès au réseau ou à l\'hôte, de plus en plus larges'],
@@ -242,7 +243,7 @@ groups: []` },
           left: { title: '🔐 Protéger les Secrets dans le cluster', items: ['<b>Chiffrement etcd</b> : données au repos dans etcd (activation : module 04)', 'RBAC strict sur <code>secrets</code> (module 06)', 'Ne pas les mettre dans Git en clair'] },
           right: { title: '🏦 Garder le secret ailleurs', items: ['<b>External Secrets Operator</b> : synchronise un coffre (Vault, gestionnaires cloud, CyberArk Conjur…) vers des Secrets K8s', '<b>Secrets Store CSI Driver</b> : monte le secret dans le pod via un volume, sans Secret K8s obligatoire', 'Rotation et audit côté coffre'] },
           verdict: 'ESO : simple pour les applis qui lisent des Secrets. CSI : le secret n\'existe que dans le pod. Les deux supposent un coffre.' },
-        { t: 'callout', kind: 'ocp', html: "<b>External Secrets Operator for Red Hat OpenShift</b> est GA à partir de 4.20 (Operator du catalogue Red Hat, ressource <code>ExternalSecretsConfig</code> pour l'activer ; objets <code>SecretStore</code>, <code>ClusterSecretStore</code>, <code>ExternalSecret</code>). <code>apiVersion</code> exacte et statut du <b>Secrets Store CSI Driver</b> en 4.20 : à vérifier dans les release notes." },
+        { t: 'callout', kind: 'ocp', html: "<b>External Secrets Operator for Red Hat OpenShift</b> est GA à partir de 4.20 (Operator du catalogue Red Hat, ressource <code>ExternalSecretsConfig</code> pour l'activer ; objets <code>SecretStore</code>, <code>ClusterSecretStore</code>, <code>ExternalSecret</code>). <code>ExternalSecretsConfig</code> est en <code>operator.openshift.io/v1alpha1</code> d\'après la doc et des guides (confiance moyenne) ; <code>apiVersion</code> des <code>ExternalSecret</code> et statut du <b>Secrets Store CSI Driver</b> en 4.20 : à vérifier dans les release notes." },
         { t: 'callout', kind: 'onprem', wide: true, html: "On-prem, le coffre (Vault, CyberArk…) est le tien : accès réseau, haute disponibilité et CA à prévoir. En cloud, le gestionnaire de secrets du fournisseur s'intègre nativement." }
       ]
     },
