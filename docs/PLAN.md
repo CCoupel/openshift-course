@@ -141,7 +141,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : OVN-Kubernetes (seul CNI ; migration depuis SDN mentionnée) ; plages réseau (`clusterNetwork`, `serviceNetwork`, `machineNetwork`) et leur caractère définitif ; DNS interne ; Services, Routes (edge/passthrough/reencrypt), IngressController (sharding, nœuds infra) ; Gateway API (statut à vérifier) ; NetworkPolicy, AdminNetworkPolicy/BaselineAdminNetworkPolicy ; egress (EgressIP, EgressFirewall, proxy) ; MetalLB (L2/BGP) ; NMState (bonds, VLAN) ; Multus et réseaux secondaires ; User-Defined Networks ; dépannage (`oc debug`, `ovnkube-trace`, must-gather réseau).
 - **Renvoyé** : LB API et ports → 02 ; proxy de cluster → 04 ; réseau des VM → 13 ; Network Observability → 05.
 - **Durée** : ≈ 70 min + lab 20 min. **Lab** : E1 (Route reencrypt, NetworkPolicy deny-all + ouverture, EgressFirewall) ; bonus E2 : MetalLB L2, EgressIP.
-- **À vérifier** : statut GA des UDN et d'AdminNetworkPolicy ; Gateway API en 4.20 ; nom et disponibilité d'`ovnkube-trace`.
+- **À vérifier** : statut GA d'AdminNetworkPolicy (API `v1alpha1`, aucun marquage Tech Preview dans la doc 4.20 lue) ; apiVersion de `NodeNetworkConfigurationPolicy`, canal et CR de MetalLB ; label `policy-group.network.openshift.io/ingress` ; `EgressService`. Confirmés : UDN GA depuis 4.18, Gateway API GA depuis 4.19, `ovnkube-trace` documenté en 4.20, SDN retiré en 4.17, règles de modification des plages réseau.
 
 #### 08 — Stockage ✅
 - **Objectif** : backends on-prem, StorageClass, ODF, snapshots/expansion, etcd et disques, stockage des briques plateforme, permissions, dépannage.
@@ -204,7 +204,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 06, 08 et 09) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 09) ; les lignes des modules à venir restent le plan.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -215,7 +215,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 04 | E1 (chrony avec reboot, Operator en approbation manuelle) | E1 : certificat Ingress (cluster jetable, retour arrière), bannière console, OLM v1 |
 | 05 | E1 (monitoring utilisateur, `ServiceMonitor` + `PrometheusRule`, receiver webhook Alertmanager, silence) | E1 : PVC du monitoring ; E1 + S3 (MinIO) : LokiStack `1x.demo` + `ClusterLogForwarder` ; sortie syslog avec pipeline audit |
 | 06 | E0 ou E1 | (bonus : audit) |
-| 07 | E1 | E2 (MetalLB, EgressIP) |
+| 07 | E1 (Route edge, NetworkPolicy `deny-all` + `allow-from-ingress`, test inter-projets) | E1 : EgressFirewall, MetalLB L2 (plage IP libre), UDN primaire ; EgressIP (E2 de préférence) ; NMState (cluster jetable) |
 | 08 | E1 (LVMS ou StorageClass CSI) | E1 (provoquer une erreur de PVC) ; ODF (E2) non rédigé |
 | 09 | E1 (pod refusé et diagnostic, SCC dédiée + RBAC, installation du Compliance Operator et `ScanSettingBinding` CIS) ; lab fusible J3 | E1 : lecture du scan et d'une remédiation, PSA warn/audit, chiffrement etcd (cluster jetable), File Integrity Operator |
 | 10 | E0/E1 + dépôt Git | — |
