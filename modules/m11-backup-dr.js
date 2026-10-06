@@ -84,10 +84,10 @@ COURSE.add({
       title: 'Quelle procédure de reprise ?',
       blocks: [
         { t: 'table', head: ['Situation', 'Procédure', 'Sauvegarde nécessaire ?'], rows: [
-          ['<b>Quorum perdu</b>, API en lecture seule', '<code>quorum-restore.sh</code> sur un hôte de reprise', '<b>Non requise</b> par la doc : on repart de l\'état local d\'un membre (en prendre une avant si c\'est encore possible)'],
+          ['<b>Quorum perdu</b>, API en lecture seule', '<code>quorum-restore.sh</code> sur un hôte de reprise', '<b>Non</b> : on repart de l\'état local d\'un membre'],
           ['Erreur grave, retour à un <b>état antérieur</b>', 'Restauration depuis une sauvegarde (<code>cluster-restore.sh</code>)', '<b>Oui</b> : les deux fichiers, même z-stream'],
-          ['<b>Un membre etcd</b> défaillant', 'Remplacement du membre malsain', '<b>Oui</b> : prérequis de la doc (« You have taken an etcd backup ») pour pouvoir restaurer en cas de souci'],
-          ['<b>Certificats</b> du control plane expirés', 'Approbation des CSR <code>node-bootstrapper</code> (et <code>kubelet-serving</code> en UPI)', 'Non requise (prérequis : <code>cluster-admin</code> et <code>oc</code>)']
+          ['<b>Un membre etcd</b> défaillant', 'Remplacement du membre malsain', '<b>Oui, avant</b> : prérequis de la doc (« You have taken an etcd backup ») pour pouvoir restaurer en cas de souci'],
+          ['<b>Certificats</b> du control plane expirés', 'Approbation des CSR <code>node-bootstrapper</code> (et <code>kubelet-serving</code> en UPI)', '<b>Non</b> (prérequis : <code>cluster-admin</code> et <code>oc</code>)']
         ] },
         { t: 'callout', kind: 'warn', html: "Toute reprise suppose <b>au moins un nœud de control plane sain</b>. La restauration à un état antérieur est un <b>dernier recours</b> : tu choisis la procédure la <b>moins destructrice</b> qui résout ton problème." },
         { t: 'callout', kind: 'trap', html: "<b>Règle de prudence</b> : <b>prends une sauvegarde etcd avant toute intervention sur etcd</b> quand c'est possible, même si la doc ne l'exige pas pour ta procédure : c'est ton filet de sécurité si l'opération tourne mal." },
@@ -126,14 +126,14 @@ COURSE.add({
         { t: 'flow', nodes: [
           { label: 'Hôte de reprise', sub: 'choisir, SSH vers tous les nœuds' },
           { label: 'Copier la sauvegarde', sub: 'répertoire dans /home/core de l\'hôte de reprise' },
-          { label: 'Désactiver etcd', sub: 'sur les autres nœuds du control plane' },
-          { label: 'cluster-restore.sh', sub: 'sur l\'hôte de reprise', hl: true },
+          { label: 'Désactiver etcd', sub: 'SSH sur chaque nœud du control plane' },
+          { label: 'cluster-restore.sh', sub: 'uniquement sur l\'hôte de reprise', hl: true },
           { label: 'Quorum guard', sub: 'désactiver après retour de l\'API' },
           { label: 'Attendre', sub: 'oc adm wait-for-stable-cluster (≈ 15 min)' },
           { label: 'Quorum guard', sub: 'réactiver', hl: true }
         ] },
-        { t: 'code', lang: 'bash', file: 'commandes citées par la doc 4.20', code: "# Copier le répertoire de sauvegarde (snapshot + static_kuberesources) dans /home/core\n# de l'hôte de reprise (méthode au choix : la doc ne la précise pas)\n\n# Sur les autres nœuds du control plane\n$ sudo -E /usr/local/bin/disable-etcd.sh\n\n# Sur l'hôte de reprise\n$ sudo -E /usr/local/bin/cluster-restore.sh /home/core/<repertoire-de-sauvegarde>\n\n# Quand l'API répond : désactiver le garde-fou de quorum\n$ oc patch etcd/cluster --type=merge -p '{\"spec\": {\"unsupportedConfigOverrides\": {\"useUnsupportedUnsafeNonHANonProductionUnstableEtcd\": true}}}'\n$ oc adm wait-for-stable-cluster\n\n# Puis le réactiver\n$ oc patch etcd/cluster --type=merge -p '{\"spec\": {\"unsupportedConfigOverrides\": null}}'" },
-        { t: 'callout', kind: 'warn', html: "L'<b>ordre exact et le détail</b> (arrêt des static pods, redémarrage du kubelet, remplacement de nœuds) sont dans la procédure officielle : <b>ne restaure jamais depuis ces seules lignes</b>. Les commandes ci-dessus sont celles que cite la doc ; relis-la en entier avant et pendant l'opération." }
+        { t: 'code', lang: 'bash', file: 'commandes citées par la doc 4.20', code: "# Copier le répertoire de sauvegarde (snapshot + static_kuberesources) dans /home/core\n# de l'hôte de reprise (méthode au choix : la doc ne la précise pas)\n\n# Par SSH sur CHAQUE nœud du control plane (doc : « connect to each control plane node »)\n$ sudo -E /usr/local/bin/disable-etcd.sh\n\n# Par SSH sur l'hôte de reprise UNIQUEMENT\n$ sudo -E /usr/local/bin/cluster-restore.sh /home/core/<repertoire-de-sauvegarde>\n\n# Quand l'API répond : désactiver le garde-fou de quorum\n$ oc patch etcd/cluster --type=merge -p '{\"spec\": {\"unsupportedConfigOverrides\": {\"useUnsupportedUnsafeNonHANonProductionUnstableEtcd\": true}}}'\n$ oc adm wait-for-stable-cluster\n\n# Puis le réactiver\n$ oc patch etcd/cluster --type=merge -p '{\"spec\": {\"unsupportedConfigOverrides\": null}}'" },
+        { t: 'callout', kind: 'warn', html: "L'<b>ordre exact et le détail</b> (arrêt des static pods, redémarrage du kubelet, remplacement de nœuds) sont dans la procédure officielle : <b>ne restaure jamais depuis ces seules lignes</b>. Les commandes ci-dessus sont celles que cite la doc ; relis-la en entier avant et pendant l'opération. Précision : la doc 4.20 lue dit d'exécuter <code>disable-etcd.sh</code> sur <b>chaque</b> nœud du control plane (y compris, d'après cette formulation, l'hôte de reprise : à confirmer sur la page OCP 4.20) et <code>cluster-restore.sh</code> <b>uniquement</b> sur l'hôte de reprise." }
       ]
     },
     {
