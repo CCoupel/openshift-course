@@ -21,6 +21,11 @@ jobs:
       - run: node --check assets/engine.js
       - run: node --check assets/plan.js
       - run: node tools/validate.js
+      - name: Export PowerPoint (dependances de dev, scripts d'installation desactives)
+        run: |
+          npm ci --ignore-scripts
+          node tools/export-pptx.js
+          sha256sum "dist/openshift-course-${VERSION}.pptx" > "dist/openshift-course-${VERSION}.pptx.sha256"
       - name: Livrable (archive du cours + somme de controle)
         run: |
           zip -r "openshift-course-${VERSION}.zip" index.html assets modules VERSION
@@ -33,4 +38,4 @@ jobs:
             awk -v v="$VERSION" '$0 ~ "^## \\[?"v {f=1; next} f && /^## / {exit} f' CHANGELOG.md > notes.md
           fi
           if [ -s notes.md ]; then NOTES=(--notes-file notes.md); else NOTES=(--generate-notes); fi
-          gh release create "$GITHUB_REF_NAME" "openshift-course-${VERSION}.zip" "openshift-course-${VERSION}.zip.sha256" --title "v${VERSION}" "${NOTES[@]}"
+          gh release create "$GITHUB_REF_NAME" "openshift-course-${VERSION}.zip" "openshift-course-${VERSION}.zip.sha256" "dist/openshift-course-${VERSION}.pptx" "dist/openshift-course-${VERSION}.pptx.sha256" --title "v${VERSION}" "${NOTES[@]}"
