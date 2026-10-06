@@ -16,11 +16,12 @@
 
 ### 1.1 Version de référence
 
-- **OpenShift Container Platform 4.20 (EUS)**, soit **Kubernetes 1.33** selon la règle 1.(N+13) — **à vérifier dans les release notes**.
-- Exemples de canaux : `stable-4.20`, `eus-4.20`. Mise à jour EUS → EUS illustrée par **4.18 → 4.20**.
+- **OpenShift Container Platform 4.20 (EUS)**, soit **Kubernetes 1.33** selon la règle 1.(N+13) (confirmé par les release notes 4.20).
+- **Note 4.22** : 4.22 est la dernière EUS (Kubernetes 1.35 ; GA en juin 2026 d'après des sources tierces) ; dates de cycle de vie à recouper sur access.redhat.com/product-life-cycles (**à vérifier**). Le cours reste sur la référence 4.20 EUS.
+- Exemples de canaux : `stable-4.20`, `eus-4.20`. Mise à jour EUS → EUS illustrée par **4.20 → 4.22** (4.18 → 4.20 reste valable).
 - Tout comportement introduit, déprécié ou retiré autour de 4.18–4.22 est **daté** dans la slide (« depuis 4.x », « retiré en 4.x ») et marqué « à vérifier dans les release notes » s'il n'est pas certain.
 - Prompt de `oc debug node/…` puis `chroot /host` : RHCOS est basé sur RHEL 9, donc `sh-5.1#`.
-- Faits structurants déjà acquis pour la v2 (à re-vérifier une fois à la rédaction) : OpenShift SDN retiré (4.17), seul CNI OVN-Kubernetes ; nœuds de calcul RHEL : dépréciation / retrait à vérifier (4.19) ; Logging 6 = Vector + LokiStack (Elasticsearch/Fluentd/Kibana retirés) ; Grafana retiré de la console ; OLM v1 (`ClusterExtension`) disponible à côté d'OLM v0.
+- Faits structurants déjà acquis pour la v2 (à re-vérifier une fois à la rédaction) : OpenShift SDN retiré (4.17), seul CNI OVN-Kubernetes ; nœuds de calcul RHEL : dépréciés en 4.16, retirés en 4.19 ; Logging 6 = Vector + LokiStack (Elasticsearch/Fluentd/Kibana retirés) ; Grafana retiré de la console ; OLM v1 (`ClusterExtension`) disponible à côté d'OLM v0.
 
 ---
 
@@ -88,7 +89,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Renvoyé** : méthodes d'installation détaillées, `install-config.yaml`, air-gap → 03 ; topologies → 02.
 - **Durée** : `'≈ 30 min'` (hors séance, avant J1 ; lab de préparation en autonomie, non compté dans le budget). **Taille** : 14–16 slides (seuil bas du validateur : 14), 2 quiz, 1 lab.
 - **Lab** : « Prépare ton cluster » (E0 ou E1, avant J1) : installer les CLI, se connecter, `oc whoami --show-server`, `oc get clusterversion`, `oc get nodes`, vérifier les ressources disponibles.
-- **À vérifier** : ressources minimales d'OpenShift Local et de SNO pour 4.20 ; option d'activation du monitoring dans OpenShift Local ; durée et modalités de l'essai ; statut et base OS d'OKD.
+- **À vérifier** : option d'activation du monitoring dans OpenShift Local ; modalités et expiration de l'essai (la durée de 60 jours et les minimums SNO / OpenShift Local sont confirmés).
 
 #### 01 — K8s vs OCP ✅
 - **Objectif** : situer OCP face au K8s vanilla, dictionnaire, verrous, éditions, cycle de vie, choix.
@@ -102,22 +103,22 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : tel que rédigé (22 slides). Propriétaire des **concepts** : MCO/MachineConfig, topologies, LB/DNS/VIP, ports, Machine API.
 - **Renvoyé** : mise en œuvre de LB/DNS/VIP et choix de méthode → 03 ; MachineConfig d'usage (chrony, kargs) → 04 ; admission SCC → 09 ; RBAC → 06.
 - **Durée** : ≈ 60 min + lab 20 min. **Lab** : E1 (reboot MachineConfig), bonus E2 (MHC, quorum).
-- **À vérifier** : topologies 2 nœuds (arbiter / fencing) en 4.20 ; node disruption policies ; HCP on-prem.
+- **À vérifier** : passage en GA du 2 nœuds avec fencing (Technology Preview en 4.20, GA en 4.22) ; l'arbitre est GA en 4.20, les node disruption policies existent depuis 4.17 et les plateformes HCP de 4.20 sont documentées.
 
 #### 03 — Installation ⬜ (`m03-installation.js`)
 - **Objectif** : choisir et dérouler une installation on-prem, connectée ou déconnectée, et la valider.
 - **Traité** : panorama des méthodes (Agent-based, Assisted, IPI, UPI ; plateformes `baremetal`, `vsphere`, `none`) et arbre de décision ; prérequis concrets (DNS `api`/`api-int`/`*.apps`, LB ou VIP, NTP, DHCP/statique, ports, certificats) ; `install-config.yaml` et `agent-config.yaml` commentés ; bootstrap et suivi (`wait-for`), CSR ; **installation déconnectée** (P6) : registre miroir, `oc-mirror` (v2), `ImageSetConfiguration`, `ImageDigestMirrorSet`/`ImageTagMirrorSet`, catalogues miroités, pull secret fusionné ; vérifications post-install (`oc get co`, `clusterversion`, nœuds) ; erreurs classiques.
 - **Renvoyé** : description des topologies et des rôles → 02 ; utilisation des catalogues (CatalogSource, OLM) → 04 ; IdP et suppression de kubeadmin → 06 ; choix du backend de stockage → 08 ; réseau des nœuds (NMState) → 07.
 - **Durée** : ≈ 75 min + lab 20 min. **Taille** : 20–22 slides.
-- **Lab** : noyau (poste de travail, sans cluster) : rédiger `install-config.yaml` + `agent-config.yaml` d'un SNO et générer les manifests (`openshift-install agent create cluster-manifests` : à vérifier) ; bonus (E1) : relire le journal d'installation du cluster du module 00, préparer un `ImageSetConfiguration` et lancer un `oc-mirror` vers disque.
-- **À vérifier** : statut d'`oc-mirror` v2 et `apiVersion` de l'`ImageSetConfiguration` ; champs `vsphere.failureDomains` ; plateformes supportées par l'Agent-based installer ; IDMS/ITMS vs ICSP (déprécié) ; sous-commandes exactes d'`openshift-install agent`.
+- **Lab** : noyau (poste de travail, sans cluster) : rédiger `install-config.yaml` + `agent-config.yaml` d'un SNO et générer les manifests (`openshift-install agent create cluster-manifests`) ; bonus (E1) : relire le journal d'installation du cluster du module 00, préparer un `ImageSetConfiguration` et lancer un `oc-mirror` vers disque.
+- **À vérifier** : `apiVersion` d'`AgentConfig` en 4.20 (v1beta1 documenté en 4.22) ; privilèges vCenter ; PTR exigé selon la méthode ; registres miroir supportés ; option `--dry-run` d'`oc-mirror` ; plateformes supportées par l'Agent-based installer ; IDMS/ITMS vs ICSP (déprécié) ; sous-commandes exactes d'`openshift-install agent`.
 
 #### 04 — Configuration ⬜ (`m04-configuration.js`)
 - **Objectif** : configurer un cluster fraîchement installé (« jour 1 ») de façon déclarative, et gérer les Operators.
 - **Traité** (P5) : ressources `config.openshift.io` (`Proxy`, `Image` / sources de registres autorisées, `APIServer` avec profil TLS, `Ingress` de cluster, `Scheduler`, `Console`) ; **certificats** (remplacement du certificat ingress par défaut et de l'API, CA de confiance du cluster) ; MachineConfig d'usage (chrony/NTP, kargs) via `butane` ; **OLM** : OperatorHub, `Subscription`, canaux, approbation manuelle des `InstallPlan`, `CatalogSource` miroités, OLM v1 (`ClusterExtension`) ; console et plugins ; check-list post-install.
 - **Renvoyé** : concept MCO → 02 ; IdP/OAuth → 06 ; IngressController (sharding, routes) → 07 ; stockage du registre → 08 ; rotation des certificats et CSR → 12 ; GitOps de cette configuration → 10.
 - **Durée** : ≈ 60 min + lab 20 min. **Lab** : E1 (MachineConfig chrony, certificat ingress auto-signé par une CA de lab, installation d'un Operator en approbation manuelle) ; bonus : ClusterExtension OLM v1.
-- **À vérifier** : périmètre GA d'OLM v1 en 4.20 ; champs exacts de `image.config` (`registrySources`) ; profils TLS de l'`APIServer`.
+- **À vérifier** : détails de l'API OLM v1 (OLM v1 est GA depuis 4.18) ; comportement des kubeconfig après remplacement du certificat de l'API ; label `inject-trusted-cabundle`.
 
 ### Jour 2 — Brancher, sécuriser, observer
 
@@ -133,7 +134,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : tel que rédigé (22 slides). Propriétaire : OAuth/IdP, RBAC, project template, quotas, kubeadmin, politique d'audit. SCC limités à l'**angle autorisation** (verbe `use`, ServiceAccount).
 - **Renvoyé** : SCC en profondeur → 09 ; NetworkPolicy → 07 ; expédition des logs d'audit → 05.
 - **Durée** : ≈ 60 min + lab 20 min. **Lab** : E0 (htpasswd/LDAP conteneurisé), suppression de kubeadmin sur cluster jetable uniquement.
-- **À vérifier** : authentification OIDC directe (sans serveur OAuth) en 4.20 ; synchronisation de groupes par claims.
+- **À vérifier** : rien de propre. `claims.groups` du serveur OAuth (IdP OpenID) existe depuis 4.10 et crée des objets Group ; l'OIDC direct (GA en 4.20) ne crée pas d'objets Group.
 
 #### 07 — Réseau ⬜ (`m07-reseau.js`)
 - **Objectif** : comprendre et exploiter le réseau d'un cluster on-prem, du nœud jusqu'à la sortie.
@@ -147,7 +148,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : tel que rédigé (21 slides). Permissions limitées à l'**angle volume** (fsGroup, NFS).
 - **Renvoyé** : SCC → 09 ; sauvegarde → 11 ; logging/monitoring (configuration) → 05 ; RWX block pour VM → 13.
 - **Durée** : ≈ 60 min + lab 20 min. **Lab** : E1 (LVMS) ; bonus E2 : ODF.
-- **À vérifier** : RWX vSphere (vSAN File Services) ; options LVMS en 4.20.
+- **À vérifier** : expansion à chaud selon le driver CSI (RWX vSphere via vSAN File Services et sélection de disques LVMS sont confirmés ; namespace LVMS 4.20 : `openshift-lvm-storage`).
 
 #### 09 — Sécurité avancée ⬜ (`m09-securite.js`)
 - **Objectif** : maîtriser la sécurité des workloads et de la plateforme au-delà du RBAC. **Propriétaire unique des SCC** (P7).
@@ -174,10 +175,10 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 #### 12 — Opérations jour 2 ⬜ (`m12-jour2.js`)
 - **Objectif** : maintenir le cluster en condition opérationnelle.
-- **Traité** : mises à jour (canaux, graphe, EUS → EUS 4.18 → 4.20, pause des MachineConfigPools, mise à jour du control plane seul, pré-checks, Operators) ; ajout/retrait de nœuds (Machine API ou manuel, CSR) ; rotation des certificats et approbation des CSR ; diagnostic (`must-gather`, `oc adm inspect`, `oc adm node-logs`, `oc debug`, Insights) ; capacité (requests/limits, overcommit, `ClusterAutoscaler` si Machine API) ; drain et maintenance matérielle.
+- **Traité** : mises à jour (canaux, graphe, EUS → EUS 4.20 → 4.22, pause des MachineConfigPools, mise à jour du control plane seul, pré-checks, Operators) ; ajout/retrait de nœuds (Machine API ou manuel, CSR) ; rotation des certificats et approbation des CSR ; diagnostic (`must-gather`, `oc adm inspect`, `oc adm node-logs`, `oc debug`, Insights) ; capacité (requests/limits, overcommit, `ClusterAutoscaler` si Machine API) ; drain et maintenance matérielle.
 - **Renvoyé** : cycle de vie et EUS (concepts) → 01 ; Machine API, MHC → 02 ; remplacement de certificats → 04 ; quotas par projet → 06.
 - **Durée** : ≈ 60 min + lab 20 min. **Lab** : E1 (must-gather ciblé, `oc adm upgrade` en lecture, simulation de maintenance par drain) ; bonus : mise à jour mineure réelle (E1/E2).
-- **À vérifier** : chemin EUS 4.18 → 4.20 ; commandes de recommandation de mise à jour récentes ; politiques de perturbation des nœuds.
+- **À vérifier** : chemin EUS 4.20 → 4.22 ; commandes de recommandation de mise à jour récentes ; politiques de perturbation des nœuds.
 
 #### 13 — Virtualisation & Serverless ⬜ (`m13-virt-serverless.js`) — **parts égales**
 - **Objectif** : exploiter des VM sur OpenShift et situer le serverless pour un admin plateforme.

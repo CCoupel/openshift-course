@@ -29,9 +29,9 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Rôle', 'Label', 'Contient', 'À savoir'], rows: [
           ['<b>master</b> (control plane)', '<code>node-role.kubernetes.io/master</code> (et <code>control-plane</code>)', 'apiserver, etcd, scheduler, controller-manager, opérateurs', 'Taint <code>NoSchedule</code> par défaut. RHCOS uniquement.'],
-          ['<b>worker</b>', '<code>node-role.kubernetes.io/worker</code>', 'Pods applicatifs', 'RHCOS (nœuds de calcul RHEL : dépréciation / retrait à vérifier dans les release notes)'],
+          ['<b>worker</b>', '<code>node-role.kubernetes.io/worker</code>', 'Pods applicatifs', 'RHCOS obligatoire : nœuds de calcul RHEL dépréciés en 4.16, <b>retirés depuis 4.19</b> (le layering d\'image RHCOS remplace l\'ajout de paquets)'],
           ['<b>infra</b>', '<code>node-role.kubernetes.io/infra</code>', 'Router, registre, Prometheus, logging', 'Convention : ce n\'est pas un rôle natif, tu le crées toi-même'],
-          ['<b>arbiter</b> / edge', 'selon topologie', 'Topologies 2 nœuds', 'Récent : statut en 4.20 (technology preview ou GA) à vérifier dans les release notes']
+          ['<b>arbiter</b> / edge', 'selon topologie', 'Topologies 2 nœuds', 'Arbitre : GA en 4.20 ; 2 nœuds avec fencing : Technology Preview en 4.20 (GA en 4.22 : à vérifier)']
         ] },
         { t: 'callout', kind: 'trap', html: 'Un nœud est « worker » parce qu\'il porte le label <code>worker</code> <b>et</b> appartient au MachineConfigPool <code>worker</code>. Le label seul ne change pas la configuration OS : c\'est le pool qui compte (slide MCO).' }
       ]
@@ -295,7 +295,7 @@ spec:
           'Le label <code>role</code> choisit le <b>pool</b> ciblé.',
           'Un nouveau <code>rendered-worker-…</code> est généré, puis les nœuds sont traités <b>un par un</b> (<code>maxUnavailable</code> = 1 par défaut) : <b>drain → apply → reboot</b>.',
           'Pour suspendre : <code>oc patch mcp/worker --type merge -p \'{"spec":{"paused":true}}\'</code> (ne pas oublier de reprendre !).',
-          'Certains changements peuvent éviter le reboot (node disruption policies) : statut en 4.20 à vérifier dans les release notes. MachineConfig d\'usage (chrony, kargs) : module 04.'
+          'Certains changements peuvent éviter le reboot (node disruption policies, disponibles depuis 4.17 via la ressource <code>MachineConfiguration</code> « cluster ») ; d\'autres imposent toujours un reboot. MachineConfig d\'usage (chrony, kargs) : module 04.'
         ] },
         { t: 'callout', kind: 'trap', wide: true, html: 'Un MachineConfig, c\'est <b>un rolling reboot de tout un pool</b>. 3 masters = 3 reboots successifs ; 40 workers = long. Regroupe tes changements, planifie-les, et vérifie les PodDisruptionBudgets avant. Un pool <b>Degraded</b> (fichier modifié à la main, mauvais Ignition) bloque aussi les upgrades.' }
       ]
@@ -307,7 +307,7 @@ spec:
           ['<b>Standard (3+N)</b>', '3 masters + N workers (+ infra)', 'Oui', 'Production générale'],
           ['<b>Compact 3 nœuds</b>', '3 masters <b>schedulables</b>, 0 worker', 'Oui (control plane)', 'Petits sites, labo, edge'],
           ['<b>SNO</b> (Single Node)', '1 nœud : master + worker', 'Non', 'Edge, télécom, labo'],
-          ['<b>2 nœuds</b> (arbiter / fencing)', '2 nœuds + arbitre ou fencing', 'Partielle', 'Edge, récent : statut en 4.20 à vérifier dans les release notes'],
+          ['<b>2 nœuds</b> (arbiter / fencing)', '2 nœuds + arbitre ou fencing', 'Partielle', 'Edge ; arbitre GA en 4.20, fencing en Technology Preview en 4.20 (GA en 4.22 : à vérifier)'],
           ['<b>Hosted Control Planes</b>', 'Control plane en pods, workers séparés', 'Oui', 'Parc de clusters, densification']
         ] },
         { t: 'callout', kind: 'tip', html: 'Compact : dans <code>install-config.yaml</code>, <code>compute.replicas: 0</code> ; l\'installeur rend alors les masters schedulables (<code>mastersSchedulable</code>). Prévois du CPU/RAM en conséquence : les opérateurs consomment déjà beaucoup.' },
@@ -322,7 +322,7 @@ spec:
           left: { title: '🧠 Standard', items: ['3 masters dédiés (VM ou serveurs)', 'etcd sur les masters', 'Un cluster = 3 machines de control plane', 'Simple à raisonner'] },
           right: { title: '☁️ Hosted Control Planes', items: ['Control plane = <b>pods</b> dans un cluster « de management »', 'etcd par cluster hébergé, en pods', 'Workers séparés (agent, KubeVirt, vSphere…)', 'Création de clusters rapide, moins de ressources'] },
           verdict: 'Idéal pour beaucoup de petits clusters ; ROSA HCP en est la version managée.' },
-        { t: 'callout', kind: 'onprem', wide: true, html: 'On-prem, HCP s\'appuie sur le cluster de management (avec MCE/ACM) et typiquement le provider <b>Agent</b> (bare metal) ou <b>KubeVirt</b>. Les plateformes supportées et le niveau de maturité évoluent vite : plateformes on-prem supportées en 4.20 à vérifier dans la doc « Hosted control planes ».' }
+        { t: 'callout', kind: 'onprem', wide: true, html: 'On-prem, HCP s\'appuie sur le cluster de management (avec MCE/ACM) et typiquement le provider <b>Agent</b> (bare metal) ou <b>KubeVirt</b>. En 4.20 : bare metal via le provider Agent, OpenShift Virtualization (KubeVirt) ; Agent hors bare metal en Technology Preview ; le support évolue vite, relis la doc « Hosted control planes ».' }
       ]
     },
     {

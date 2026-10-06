@@ -28,7 +28,7 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Niveau', 'Environnement', 'Ce qu\'il permet', 'Limites'], rows: [
           ['<b>E0</b>', 'Poste de travail seul, ou <b>OpenShift Local</b>, ou tout cluster en <code>cluster-admin</code>', '<code>oc</code>, RBAC, IdP htpasswd, Operators légers, GitOps', 'Un seul nœud, pas de Machine API, pas de mise à jour ; monitoring désactivé par défaut (à vérifier)'],
-          ['<b>E1</b>', '<b>SNO</b> (un nœud) sur KVM, vSphere ou bare metal', 'MachineConfig avec reboot, LVMS, monitoring et logging, sauvegarde etcd, mise à jour', 'Pas de quorum etcd réel, pas d\'ODF ; minimums à vérifier'],
+          ['<b>E1</b>', '<b>SNO</b> (un nœud) sur KVM, vSphere ou bare metal', 'MachineConfig avec reboot, LVMS, monitoring et logging, sauvegarde etcd, mise à jour', 'Pas de quorum etcd réel, pas d\'ODF ; minimum officiel 8 vCPU / 16 Go / 120 Go'],
           ['<b>E2</b>', '<b>Compact</b> 3 nœuds (ou 3 masters + 2 workers)', 'Quorum etcd, MachineHealthCheck, ODF, MetalLB, EgressIP, mise à jour progressive', 'Consomme beaucoup de ressources'],
           ['<b>E3</b>', 'Bare metal ou virtualisation imbriquée', 'OpenShift Virtualization (VM, migration à chaud)', 'Virtualisation imbriquée : acceptable en lab, pas en production (à vérifier)']
         ] },
@@ -54,12 +54,12 @@ COURSE.add({
       title: 'Options concrètes on-prem',
       blocks: [
         { t: 'table', head: ['Option', 'Pour qui', 'Permet', 'Ne permet pas / attention'], rows: [
-          ['<b>OpenShift Local</b> (ex-CRC)', 'Poste personnel, E0', 'Cluster à un nœud, rapide à lancer', 'Pas de mise à jour ni de Machine API ; ressources minimales à vérifier'],
+          ['<b>OpenShift Local</b> (ex-CRC)', 'Poste personnel, E0', 'Cluster à un nœud, rapide à lancer', 'Pas de mise à jour ni de Machine API ; preset <code>openshift</code> : 4 cœurs physiques, 10,5 Go de RAM libre, 35 Go de disque'],
           ['<b>SNO sur KVM / vSphere</b>', 'Poste ou serveur de lab, E1', 'Presque tous les labs du cours', 'Installation à faire (module 03) ; ressources à prévoir'],
           ['<b>SNO / compact sur bare metal</b>', 'Si tu as du matériel, E1 à E3', 'Le plus proche de la production', 'Matériel et réseau à ta charge'],
           ['<b>Compact 3 nœuds</b> (VM)', 'Étapes bonus E2', 'Quorum, MHC, ODF', 'RAM et disque ×3'],
-          ['<b>OKD</b>', 'Alternative communautaire', 'Même socle OCP sans support Red Hat', 'Écarts de comportement possibles : à vérifier (base OS : CentOS Stream CoreOS)'],
-          ['<b>Developer Sandbox</b> ☁️', 'Découvrir la console', 'Console et <code>oc</code> en espace partagé', '<b>Pas de <code>cluster-admin</code></b> : inadapté à ce cours']
+          ['<b>OKD</b>', 'Alternative communautaire', 'Même socle OCP sans support Red Hat', 'Écarts de comportement possibles (base OS : CentOS Stream CoreOS depuis OKD 4.16)'],
+          ['<b>Developer Sandbox</b> ☁️', 'Découvrir la console', 'Console et <code>oc</code> en espace partagé', '<b>Pas de <code>cluster-admin</code></b> : inadapté à ce cours ; cluster partagé, quotas limités (≈ 3 cœurs / 14 Go / 40 Go, essai de 30 jours : chiffres datés, à recouper)']
         ] },
         { t: 'callout', kind: 'cloud', html: "Le Developer Sandbox ne donne pas <code>cluster-admin</code>. Les offres managées (ROSA, ARO, OSD) <b>restreignent</b> certaines actions (nœuds, MachineConfig, OAuth, etcd : détail à vérifier selon l\'offre) et sortent du périmètre on-prem de ce cours. Pour les labs, choisis un environnement <b>à toi</b>." }
       ]
@@ -74,7 +74,7 @@ COURSE.add({
           'Tu obtiens deux comptes : <code>kubeadmin</code> (<code>cluster-admin</code> temporaire) et <code>developer</code>.',
           'Le monitoring est désactivé par défaut (option d\'activation et ressources associées : à vérifier).'
         ] },
-        { t: 'callout', kind: 'warn', wide: true, html: "Ressources minimales (CPU, RAM, disque), systèmes supportés, noms exacts des presets et options de <code>crc config</code> : <b>à vérifier dans la documentation d'OpenShift Local</b> pour ta version ; elles évoluent d'une version à l'autre." }
+        { t: 'callout', kind: 'warn', wide: true, html: "Les ressources du preset <code>openshift</code> (4 cœurs physiques, 10,5 Go de RAM libre, 35 Go) sont celles de la documentation actuelle ; systèmes supportés et options de <code>crc config</code> : <b>à vérifier dans la documentation d'OpenShift Local</b> pour ta version." }
       ]
     },
     {
@@ -100,7 +100,7 @@ COURSE.add({
       layout: 'two',
       blocks: [
         { t: 'bullets', frag: true, items: [
-          'Un <b>essai de 60 jours</b> est proposé via console.redhat.com (durée et conditions : à vérifier au moment de la souscription).',
+          'Un <b>essai de 60 jours</b> (auto-support, compte Red Hat suffisant) est proposé via console.redhat.com ; conditions précises : à vérifier au moment de la souscription.',
           'Le <b>pull secret</b> (compte Red Hat) est requis pour installer et tirer les images de la plateforme : télécharge-le depuis la console.',
           'Pense à l\'<b>échéance</b> : passé l\'essai, le cluster continue de fonctionner mais n\'est plus sous souscription (conséquences : à vérifier).'
         ] },
@@ -112,10 +112,10 @@ COURSE.add({
       title: 'Dimensionner sa machine de lab',
       blocks: [
         { t: 'table', head: ['Environnement', 'vCPU', 'RAM', 'Disque'], rows: [
-          ['SNO minimal (ordre de grandeur)', '8', '16 Go', '120 Go'],
+          ['SNO minimal (minimum officiel 4.20)', '8', '16 Go', '120 Go'],
           ['SNO <b>recommandé</b> pour tout le cours', '16', '48 à 64 Go', '≥ 200 Go (à ajuster)'],
-          ['Compact 3 nœuds', '≈ 3 × (4 à 8)', '≈ 3 × 16 Go', '≈ 3 × 120 Go'],
-          ['OpenShift Local', 'à vérifier', 'à vérifier', 'à vérifier']
+          ['Compact 3 nœuds (minimum par control plane)', '3 × 4', '3 × 16 Go', '3 × 100 Go'],
+          ['OpenShift Local (preset <code>openshift</code>)', '4 cœurs physiques', '10,5 Go de RAM libre', '35 Go']
         ] },
         { t: 'bullets', items: [
           'Les <b>minimums</b> ci-dessus sont des ordres de grandeur : vérifie la documentation de 4.20 pour ta version.',
@@ -142,7 +142,7 @@ COURSE.add({
       title: 'Ton poste de travail : les outils',
       blocks: [
         { t: 'cmds', items: [
-          ['oc version --client', 'Client OpenShift (inclut <code>kubectl</code> : à vérifier selon ta version)'],
+          ['oc version --client', 'Client OpenShift (inclut une copie de <code>kubectl</code>)'],
           ['openshift-install version', 'Programme d\'installation (module 03)'],
           ['oc-mirror version', 'Miroir d\'images pour les installations déconnectées (syntaxe et version : à vérifier)'],
           ['butane --version', 'MachineConfig en YAML lisible (module 04)'],
@@ -150,7 +150,7 @@ COURSE.add({
           ['podman --version', 'Conteneurs et authentification aux registres']
         ] },
         { t: 'bullets', items: [
-          'Récupère <code>oc</code> et <code>openshift-install</code> depuis la console Red Hat ou le miroir officiel (à vérifier) ; prends une version <b>proche de 4.20</b> (décalage de version : à vérifier).',
+          'Récupère <code>oc</code> et <code>openshift-install</code> depuis la console Red Hat ou le miroir officiel (à vérifier) ; prends une version <b>proche de 4.20</b> (la doc avertit qu\'un <code>oc</code> trop différent du cluster peut ne pas accéder à toutes ses fonctionnalités).',
           'Système : Linux (ou WSL) recommandé ; macOS possible pour <code>oc</code>.',
           'Ajoute aussi <code>openssl</code> pour les labs sur les certificats (module 04).'
         ] },
@@ -201,7 +201,7 @@ COURSE.add({
           { front: 'Lab « cassé » dès le début', back: '<b>RAM ou CPU insuffisants</b> : opérateurs Degraded, pods Pending.' },
           { front: 'Console injoignable', back: '<b>DNS wildcard</b> <code>*.apps</code> manquant (module 03).' },
           { front: 'Je n\'ai pas cluster-admin', back: '<b>Sandbox</b> : pas de <code>cluster-admin</code>. Managé : actions restreintes (à vérifier selon l\'offre). Prends un environnement à toi.' },
-          { front: 'Pull secret dans Git', back: 'À <b>révoquer</b> et à régénérer (procédure à vérifier sur console.redhat.com) ; ne jamais le committer.' },
+          { front: 'Pull secret dans Git', back: 'Re-télécharge-le depuis la console Red Hat ; en cas de fuite, contacte le support Red Hat ; ne jamais le committer.' },
           { front: 'Lab dormant', back: 'Licence expirée ou <b>certificats</b> périmés : plan de maintenance.' },
           { front: 'Version décalée', back: '<code>oc</code> ou installeur d\'une autre version que le cluster : comportements surprenants.' }
         ] },

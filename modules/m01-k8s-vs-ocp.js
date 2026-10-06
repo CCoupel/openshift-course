@@ -53,7 +53,7 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Sujet', '☸️ K8s vanilla', '🔴 OpenShift'], rows: [
           ['Installation', 'kubeadm, Kubespray, Cluster API…', '<code>openshift-install</code> (IPI/UPI), Assisted/Agent installer'],
-          ['OS des nœuds', 'Libre (Ubuntu, RHEL…)', 'RHCOS (control plane), RHCOS (workers : nœuds RHEL : dépréciation / retrait à vérifier dans les release notes)'],
+          ['OS des nœuds', 'Libre (Ubuntu, RHEL…)', 'RHCOS (control plane et workers) ; nœuds de calcul RHEL dépréciés en 4.16, <b>retirés depuis 4.19</b> (le layering d\'image RHCOS remplace l\'ajout de paquets)'],
           ['Réseau (CNI)', 'Calico, Cilium, Flannel…', 'OVN-Kubernetes (Cilium non supporté nativement)'],
           ['Exposition HTTP', 'Ingress + contrôleur à choisir', 'Router HAProxy via l\'Ingress Operator, objets <code>Route</code>'],
           ['Authentification', 'OIDC / webhook à configurer', 'OAuth server intégré + Identity Providers'],
@@ -167,10 +167,10 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Produit', 'C\'est quoi', 'Qui gère quoi'], rows: [
           ['<b>OCP</b> (self-managed)', 'La distribution officielle, installée sur ton infra', 'Toi : tout, y compris control plane'],
-          ['<b>OKD</b>', 'Version communautaire (base OS : CentOS Stream CoreOS, anciennement Fedora CoreOS ; à vérifier)', 'Toi, sans support Red Hat'],
+          ['<b>OKD</b>', 'Version communautaire (base OS : CentOS Stream CoreOS depuis OKD 4.16, anciennement Fedora CoreOS)', 'Toi, sans support Red Hat'],
           ['<b>SNO</b> / compact 3 nœuds', 'Topologies réduites d\'OCP (edge, lab)', 'Toi'],
           ['<b>Hosted Control Planes</b>', 'Control plane hébergé comme des pods d\'un autre cluster', 'Toi, mais control plane mutualisé'],
-          ['<b>MicroShift</b>', 'Version allégée pour devices edge (livrée sous l\'appellation Red Hat Device Edge : à vérifier)', 'Toi, sans console ni Operators complets'],
+          ['<b>MicroShift</b>', 'Version allégée pour devices edge ; sa distribution supportée est <b>Red Hat Device Edge</b> (MicroShift + RHEL)', 'Toi, sans console ni Operators complets'],
           ['<b>ROSA / ARO / OSD</b> ☁️', 'OpenShift managé (AWS / Azure / Google)', 'Red Hat + cloud : control plane, upgrades, SRE']
         ] },
         { t: 'callout', kind: 'cloud', html: 'En managé, tu n\'es pas <code>cluster-admin</code> : tu as <code>dedicated-admin</code>. Pas de MachineConfig libre, pas d\'accès aux namespaces plateforme, upgrades planifiés avec le fournisseur. Beaucoup de modules de ce cours (installation, MachineConfig, etcd) <b>ne te concerneraient plus</b>.' }
@@ -182,8 +182,9 @@ COURSE.add({
       blocks: [
         { t: 'bullets', items: [
           'Une release mineure OCP environ <b>tous les 4 mois</b>.',
-          'Règle pratique : <b>K8s 1.(N+13) = OCP 4.N</b> (4.18 → K8s 1.31, 4.20 → 1.33). Référence du cours : <b>4.20 EUS</b>. À vérifier dans les release notes.',
-          'Les releases <b>paires</b> (4.16, 4.18, 4.20…) bénéficient d\'<b>EUS</b> (Extended Update Support) : support plus long, chemin de mise à jour EUS → EUS (ex. 4.18 → 4.20). Procédure : module 12.',
+          'Règle pratique : <b>K8s 1.(N+13) = OCP 4.N</b> (4.18 → K8s 1.31, 4.20 → 1.33, 4.22 → 1.35). Référence du cours : <b>4.20 EUS</b>.',
+          'Note : <b>4.22</b> est la dernière EUS (K8s 1.35 ; GA en juin 2026 d\'après des sources tierces, dates de cycle de vie à recouper sur access.redhat.com/product-life-cycles : à vérifier). Le cours reste sur 4.20.',
+          'Les releases <b>paires</b> (4.16, 4.18, 4.20, 4.22…) bénéficient d\'<b>EUS</b> (Extended Update Support) : support plus long, chemin de mise à jour EUS → EUS (ex. 4.20 → 4.22). Procédure : module 12.',
           'Canaux de mise à jour : <code>stable-4.x</code>, <code>fast-4.x</code>, <code>eus-4.x</code>, <code>candidate-4.x</code>.'
         ] },
         { t: 'code', lang: 'bash', file: 'terminal', code: '$ oc get clusterversion\n$ oc adm upgrade\n# Versions disponibles dans le canal courant\n$ oc adm upgrade channel stable-4.20   # ou eus-4.20' },

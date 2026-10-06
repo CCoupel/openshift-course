@@ -45,7 +45,7 @@ COURSE.add({
         { t: 'table', head: ['Objet', 'Portée', 'Rôle'], rows: [
           ['<code>User</code>', 'Cluster', 'Créé à la 1re connexion (pas avant). Nom = <code>preferredUsername</code> de l\'IdP'],
           ['<code>Identity</code>', 'Cluster', 'Lien <code>&lt;idp&gt;:&lt;id externe&gt;</code> → User. Une identité = un IdP'],
-          ['<code>Group</code>', 'Cluster', 'Liste d\'utilisateurs ; créé à la main, par sync LDAP ou par claim OIDC'],
+          ['<code>Group</code>', 'Cluster', 'Liste d\'utilisateurs ; créé à la main, par sync LDAP ; avec le serveur OAuth + IdP OpenID, voir la slide OIDC ; en OIDC direct, aucun objet <code>Group</code>'],
           ['<code>ServiceAccount</code>', 'Namespace', 'Identité des pods/automates : <code>system:serviceaccount:&lt;ns&gt;:&lt;nom&gt;</code>'],
           ['Groupes système', '—', '<code>system:authenticated</code>, <code>system:authenticated:oauth</code>, <code>system:unauthenticated</code>']
         ] },
@@ -179,7 +179,7 @@ COURSE.add({
         { t: 'code', lang: 'bash', file: 'terminal', code: '# Simulation (sans --confirm : affiche seulement)\n$ oc adm groups sync --sync-config=ldap-sync.yaml\n# Application\n$ oc adm groups sync --sync-config=ldap-sync.yaml --confirm\n# Limiter à une liste de groupes LDAP\n$ oc adm groups sync --sync-config=ldap-sync.yaml --whitelist=whitelist.txt --confirm\n# Groupes devenus orphelins côté LDAP\n$ oc adm groups prune --sync-config=ldap-sync.yaml --confirm\n$ oc get groups' },
         { t: 'bullets', items: [
           'Mode d\'emploi officiel : un <b>CronJob</b> dans un namespace dédié, avec ServiceAccount, ClusterRole sur <code>groups</code>, ConfigMap (config + whitelist) et Secret (bind password).',
-          'Image : celle du CLI <code>oc</code> de la release (référence 4.20 ; référence exacte de l\'image à vérifier dans les release notes).',
+          'Image : <code>registry.redhat.io/openshift4/ose-cli</code> (la doc cite le tag <code>latest</code> ; épingle une version en production).',
           'Alternative : l\'opérateur communautaire <b>Group Sync Operator</b> (Red Hat COP), non fourni par le produit : à évaluer côté support.'
         ] },
         { t: 'callout', kind: 'warn', wide: true, html: 'Un groupe synchronisé est écrasé à chaque passage : <b>ne le modifie jamais à la main</b>. Il porte des annotations <code>openshift.io/ldap.*</code> qui permettent au sync de le reconnaître. Un utilisateur retiré de l\'annuaire perd son appartenance au prochain run, mais son token reste valable jusqu\'à expiration.' }
@@ -207,9 +207,9 @@ COURSE.add({
           '        groups: [groups]'
         ].join('\n') },
         { t: 'bullets', items: [
-          'Avec <code>claims.groups</code>, les groupes du jeton sont <b>synchronisés au login</b> (création/mise à jour des Group) : plus besoin de cronjob. Support selon version : à vérifier dans les release notes.',
+          '<b>Mode (a) : serveur OAuth + IdP <code>OpenID</code></b> (ci-dessus) : <code>claims.groups</code> (champ de l\'IdP du serveur OAuth) existe depuis 4.10 et <b>crée des objets <code>Group</code></b> synchronisés au login.',
           'Le groupe n\'est mis à jour qu\'<b>à la connexion</b> : un retrait côté IdP n\'est visible qu\'au login suivant.',
-          'Authentification OIDC directe (CR <code>Authentication</code>, type <code>OIDC</code>, sans serveur OAuth intégré) : statut en 4.20 (GA ou technology preview) à vérifier dans les release notes.'
+          '<b>Mode (b) : OIDC direct</b> (CR <code>Authentication</code>, type <code>OIDC</code>) : GA en 4.20 (Technology Preview en 4.19). Un seul fournisseur ; le serveur OAuth intégré et les API <code>User</code>, <code>Group</code> et <code>OAuth</code> sont <b>retirés</b> : les groupes du jeton se déclarent dans <code>claimMappings.groups</code> (<code>claim</code> + <code>prefix</code>) et servent directement à l\'autorisation, <b>aucun objet Group n\'est créé</b>. Prérequis : une connexion admin de longue durée (kubeconfig à certificat, jeton de ServiceAccount).'
         ] },
         { t: 'callout', kind: 'onprem', html: 'Un SSO interne (Keycloak/RHBK, IdM + Keycloak, ADFS) doit être joignable depuis le <b>navigateur</b> et depuis le <b>serveur OAuth</b>, avec sa CA : deux chemins réseau à tester.' }
       ]
@@ -338,7 +338,7 @@ COURSE.add({
           verdict: 'Supprime kubeadmin, garde le kubeconfig admin… sous clé.' },
         { t: 'code', lang: 'bash', file: 'terminal', code: '# Après avoir validé qu\'un groupe de l\'IdP est cluster-admin\n$ oc adm policy add-cluster-role-to-group cluster-admin platform-admins\n$ oc delete secret kubeadmin -n kube-system\n\n# Break-glass (jamais pour le quotidien)\n$ export KUBECONFIG=/secure/vault/auth/kubeconfig\n$ oc whoami\nsystem:admin' },
         { t: 'callout', kind: 'warn', wide: true, html: 'Supprimer <code>kubeadmin</code> est <b>irréversible</b>. Vérifie d\'abord un vrai login IdP cluster-admin, et copie le kubeconfig admin dans un coffre (Vault, KeePass d\'équipe) avec accès tracé. Sur les nœuds control plane, des kubeconfig locaux existent aussi pour la reprise (procédures de recovery : à vérifier dans la doc de ta version).' },
-        { t: 'callout', kind: 'cloud', wide: true, html: 'ROSA/ARO/OSD : pas de kubeconfig d\'installation à toi. En ROSA, l\'IdP se configure via <code>rosa create idp</code> ou OpenShift Cluster Manager, et tu es <code>dedicated-admin</code> ; ARO fournit un compte <code>kubeadmin</code> via le portail/CLI Azure et s\'intègre à <b>Entra ID</b>. Périmètre exact : à vérifier selon l\'offre.' }
+        { t: 'callout', kind: 'cloud', wide: true, html: 'ROSA/ARO/OSD : pas de kubeconfig d\'installation à toi. En ROSA, l\'IdP se configure via <code>rosa create idp</code> ou OpenShift Cluster Manager, et tu es <code>dedicated-admin</code> (sur ROSA classic, <code>rosa grant user</code> permet aussi d\'accorder <code>cluster-admin</code> : à vérifier selon l\'offre) ; ARO fournit un compte <code>kubeadmin</code> via le portail/CLI Azure et s\'intègre à <b>Entra ID</b>. Périmètre exact : à vérifier selon l\'offre.' }
       ]
     },
     {
@@ -442,7 +442,7 @@ COURSE.add({
     }
   ],
   takeaways: [
-    'OAuth server + IdP + tokens : l\'identité vient de l\'extérieur ; User et Identity sont créés au 1er login, les Group par sync LDAP ou claims OIDC.',
+    'OAuth server + IdP + tokens : l\'identité vient de l\'extérieur ; User et Identity sont créés au 1er login, les Group par sync LDAP ou, selon le mode OIDC, par claims (avec l\'OIDC direct : pas d\'objet Group).',
     'RoleBinding + ClusterRole <code>admin/edit/view</code> sur des groupes : le trio gagnant. Évite ClusterRoleBinding et utilisateurs nominatifs.',
     '« HBAC » est un concept IdM/SSSD, pas un objet OCP : côté OCP, il se traduit par accès aux nœuds (<code>core</code>, <code>oc debug</code>), réseau, node-restriction, RBAC sur <code>nodes/*</code>, et filtres d\'authentification de l\'IdP.',
     'Multi-tenance : retirer <code>self-provisioner</code> (avec l\'annotation autoupdate) + project template (quota, LimitRange, NetworkPolicy, RoleBinding).',
