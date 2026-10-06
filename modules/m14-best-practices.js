@@ -4,7 +4,7 @@ COURSE.add({
   tagline: 'Une check-list de mise en production, transverse et réutilisable en mission : chaque point renvoie au module qui le traite, rien n\'est répété ici.',
   duration: '≈ 30 min + lab 15 min',
   objectives: [
-    'Utiliser une check-list par phase (avant l\'installation, jour 1, avant la production, exploitation, mise à jour, reprise après sinistre) où chaque point renvoie à son module',
+    'Utiliser une check-list par phase (avant l\'installation, jour 1, avant la production, exploitation, mise à jour, reprise après sinistre) où chaque point renvoie à son module : ces six slides sont <b>à consulter, hors exposé</b>',
     'Dimensionner un cluster on-prem : control plane, workers, nœuds d\'infra, densité, et ce que Red Hat garantit ou non',
     'Poser les décisions d\'architecture transverses : nœuds d\'infra et licences, multi-tenance, haute disponibilité des applications',
     'Reconnaître les anti-patterns et les erreurs fréquentes en mission, et décider d\'un go / no-go de passage en production',
@@ -25,6 +25,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           'Chaque module du cours a déjà ses bonnes pratiques : <b>elles ne sont pas recopiées</b>. Ici, chaque ligne est une <b>action à vérifier</b> suivie du <b>module propriétaire</b> à ouvrir pour le détail.',
           'Contenu propre à ce module : dimensionnement, nœuds d\'infra, multi-tenance, haute disponibilité des applications, multi-cluster, critères de go / no-go.',
+          '<b>Format</b> : les six slides « check-list · à consulter » sont un livrable de référence, <b>hors exposé</b> ; les 30 minutes d\'exposé portent sur le reste (dimensionnement, nœuds d\'infra, multi-tenance, HA, écart cloud, ACM, anti-patterns, go / no-go).',
           'Usage en mission : une colonne « état » (vert, orange, rouge) et un responsable par ligne ; un rouge sur un point <b>bloquant</b> (slide go / no-go) arrête la mise en production.'
         ] },
         { t: 'callout', kind: 'tip', html: 'Version de référence du cours : <b>OpenShift 4.20 EUS</b>. Les chiffres de dimensionnement viennent de la documentation 4.20 ; les règles de pratique (cadences, rôles) sont des <b>propositions à adapter</b> à ton contexte.' }
@@ -78,7 +79,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           '<b>Pods par nœud</b> : 250 par défaut (paramètre <code>maxPods</code> du kubelet). 2 500 est un maximum testé, qui exige un <code>hostPrefix</code> à 20 et un <code>maxPods</code> à 2500 : pas un objectif.',
           'Nombre de nœuds = pods attendus ÷ pods par nœud, puis <b>vérifie CPU, mémoire et disque</b> de l\'application.',
-          'Réservations système : par défaut <b>500m de CPU et 1 Gi de mémoire</b> pour <code>system-reserved</code> ; l\'ajustement automatique (<code>autoSizingReserved: true</code> dans une <code>KubeletConfig</code>) est <b>désactivé par défaut</b>.'
+          'Réservations système (<code>system-reserved</code>) : la doc cite <b>500m de CPU et 1 Gi de mémoire</b> par défaut, mais précise que les valeurs par défaut dépendent des versions d\'OpenShift et du MCO (à vérifier, voir module 12) ; l\'ajustement automatique (<code>autoSizingReserved: true</code> dans une <code>KubeletConfig</code>) est <b>désactivé par défaut</b>.'
         ] },
         { t: 'callout', kind: 'trap', html: 'Les maximums sont testés <b>un par un</b> : viser plusieurs maximums à la fois n\'est pas garanti. Un cluster qui dépasse ces chiffres reste exploitable mais sort de ce que Red Hat a validé. Quotas et capacité au quotidien : modules 06 et 12.' }
       ]
@@ -145,7 +146,7 @@ COURSE.add({
     },
     {
       title: 'Check-list 1 : avant et pendant l\'installation',
-      tag: 'check-list',
+      tag: 'check-list · à consulter',
       blocks: [
         { t: 'table', head: ['Phase', 'Point à vérifier', 'Module'], rows: [
           ['Avant', 'Méthode d\'installation et plateforme choisies (IPI, Agent, UPI, déconnecté)', 'module 03'],
@@ -163,7 +164,7 @@ COURSE.add({
     },
     {
       title: 'Check-list 2 : jour 1',
-      tag: 'check-list',
+      tag: 'check-list · à consulter',
       blocks: [
         { t: 'text', html: 'La liste détaillée de la configuration post-installation est dans le <b>module 04</b> (slide « Check-list de configuration post-installation »). Ici, seulement les points qui engagent d\'autres domaines.' },
         { t: 'table', head: ['Point à vérifier', 'Module'], rows: [
@@ -182,7 +183,7 @@ COURSE.add({
     },
     {
       title: 'Check-list 3 : avant la production',
-      tag: 'check-list',
+      tag: 'check-list · à consulter',
       blocks: [
         { t: 'table', head: ['Domaine', 'Point à vérifier', 'Module'], rows: [
           ['Supervision', 'Alertes routées vers un récepteur ; <code>Watchdog</code> reçu régulièrement', 'module 05'],
@@ -200,7 +201,7 @@ COURSE.add({
     },
     {
       title: 'Check-list 4 : en exploitation',
-      tag: 'check-list',
+      tag: 'check-list · à consulter',
       blocks: [
         { t: 'table', head: ['Point à vérifier', 'Module'], rows: [
           ['Alertes triées, silences datés et commentés', 'module 05'],
@@ -215,7 +216,7 @@ COURSE.add({
     },
     {
       title: 'Check-list 5 : avant chaque mise à jour',
-      tag: 'check-list',
+      tag: 'check-list · à consulter',
       blocks: [
         { t: 'table', head: ['Point à vérifier', 'Module'], rows: [
           ['Sauvegarde etcd toute fraîche, hors du cluster', 'module 11'],
@@ -232,7 +233,7 @@ COURSE.add({
     },
     {
       title: 'Check-list 6 : reprise après sinistre',
-      tag: 'check-list',
+      tag: 'check-list · à consulter',
       blocks: [
         { t: 'table', head: ['Point à vérifier', 'Module'], rows: [
           ['Procédure de reprise choisie selon la situation (quorum perdu, retour arrière, membre défaillant)', 'module 11'],
@@ -266,10 +267,10 @@ COURSE.add({
         { t: 'bullets', items: [
           'Red Hat Advanced Cluster Management for Kubernetes (ACM) : quatre capacités d\'après la doc : <b>cycle de vie des clusters</b> (créer, importer, gérer), <b>cycle de vie des applications</b>, <b>gouvernance</b> (politiques de conformité) et <b>observabilité</b> (état et métriques des clusters gérés).',
           'S\'installe comme Operator sur un cluster « hub » (ressource <code>MultiClusterHub</code>) qui pilote des clusters gérés.',
-          'ACM 2.14 : la matrice de support liste <b>OCP 4.20 EUS</b> pour le hub et pour les clusters gérés. Version d\'ACM à retenir pour ton cluster : <b>à vérifier</b> sur la matrice de support.',
+          'Les matrices de support d\'ACM <b>2.14</b> et <b>2.15</b> listent toutes deux <b>OCP 4.20 EUS</b> pour le hub et pour les clusters gérés ; consulte la matrice de la version d\'ACM que tu installes.',
           'Lien avec le cours : l\'application d\'une politique ou d\'une configuration <b>sur plusieurs clusters</b> (module 10) ; les Hosted Control Planes s\'appuient sur MCE/ACM (module 02).'
         ] },
-        { t: 'callout', kind: 'tip', html: 'ACM fait partie des composants que la doc 4.20 cite comme éligibles à l\'exécution sur des <b>nœuds d\'infra</b> (slide « quoi y mettre »). Souscription et prérequis du hub : <b>à vérifier</b> auprès de Red Hat.' },
+        { t: 'callout', kind: 'tip', html: 'ACM fait partie des composants que la doc 4.20 cite comme éligibles à l\'exécution sur des <b>nœuds d\'infra</b> (slide « quoi y mettre »). Souscription du hub : <b>à vérifier</b> auprès de Red Hat.' },
         { t: 'callout', kind: 'warn', html: 'Hors périmètre du cours : installation et exploitation d\'ACM. À étudier quand la check-list doit s\'appliquer à plusieurs clusters : une politique ACM remplace alors une vérification manuelle par cluster.' }
       ]
     },
