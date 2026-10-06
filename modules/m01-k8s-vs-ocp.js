@@ -53,7 +53,7 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Sujet', '☸️ K8s vanilla', '🔴 OpenShift'], rows: [
           ['Installation', 'kubeadm, Kubespray, Cluster API…', '<code>openshift-install</code> (IPI/UPI), Assisted/Agent installer'],
-          ['OS des nœuds', 'Libre (Ubuntu, RHEL…)', 'RHCOS (control plane), RHCOS (workers : nœuds RHEL déprécié / retrait à vérifier dans les release notes)'],
+          ['OS des nœuds', 'Libre (Ubuntu, RHEL…)', 'RHCOS (control plane), RHCOS (workers : nœuds RHEL : dépréciation / retrait à vérifier dans les release notes)'],
           ['Réseau (CNI)', 'Calico, Cilium, Flannel…', 'OVN-Kubernetes (Cilium non supporté nativement)'],
           ['Exposition HTTP', 'Ingress + contrôleur à choisir', 'Router HAProxy via l\'Ingress Operator, objets <code>Route</code>'],
           ['Authentification', 'OIDC / webhook à configurer', 'OAuth server intégré + Identity Providers'],

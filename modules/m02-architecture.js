@@ -29,7 +29,7 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Rôle', 'Label', 'Contient', 'À savoir'], rows: [
           ['<b>master</b> (control plane)', '<code>node-role.kubernetes.io/master</code> (et <code>control-plane</code>)', 'apiserver, etcd, scheduler, controller-manager, opérateurs', 'Taint <code>NoSchedule</code> par défaut. RHCOS uniquement.'],
-          ['<b>worker</b>', '<code>node-role.kubernetes.io/worker</code>', 'Pods applicatifs', 'RHCOS (nœuds de calcul RHEL : déprécié / retrait à vérifier dans les release notes)'],
+          ['<b>worker</b>', '<code>node-role.kubernetes.io/worker</code>', 'Pods applicatifs', 'RHCOS (nœuds de calcul RHEL : dépréciation / retrait à vérifier dans les release notes)'],
           ['<b>infra</b>', '<code>node-role.kubernetes.io/infra</code>', 'Router, registre, Prometheus, logging', 'Convention : ce n\'est pas un rôle natif, tu le crées toi-même'],
           ['<b>arbiter</b> / edge', 'selon topologie', 'Topologies 2 nœuds', 'Récent : statut en 4.20 (technology preview ou GA) à vérifier dans les release notes']
         ] },
