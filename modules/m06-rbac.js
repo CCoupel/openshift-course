@@ -2,7 +2,7 @@ COURSE.add({
   id: 'm06', num: 6, emoji: '🔐',
   title: 'HBAC / RBAC',
   tagline: 'Qui es-tu, que peux-tu faire, sur quoi, et depuis où ? Authentification, RBAC, groupes, projets, accès aux nœuds et audit.',
-  duration: '≈ 60 min',
+  duration: '≈ 60 min + lab 20 min',
   objectives: [
     'Comprendre la chaîne authn/authz d\'OpenShift (OAuth server, tokens, User/Identity/Group, ServiceAccounts)',
     'Maîtriser les rôles par défaut et les commandes <code>oc adm policy</code> / <code>oc auth can-i</code>',
@@ -179,7 +179,7 @@ COURSE.add({
         { t: 'code', lang: 'bash', file: 'terminal', code: '# Simulation (sans --confirm : affiche seulement)\n$ oc adm groups sync --sync-config=ldap-sync.yaml\n# Application\n$ oc adm groups sync --sync-config=ldap-sync.yaml --confirm\n# Limiter à une liste de groupes LDAP\n$ oc adm groups sync --sync-config=ldap-sync.yaml --whitelist=whitelist.txt --confirm\n# Groupes devenus orphelins côté LDAP\n$ oc adm groups prune --sync-config=ldap-sync.yaml --confirm\n$ oc get groups' },
         { t: 'bullets', items: [
           'Mode d\'emploi officiel : un <b>CronJob</b> dans un namespace dédié, avec ServiceAccount, ClusterRole sur <code>groups</code>, ConfigMap (config + whitelist) et Secret (bind password).',
-          'Image : celle du CLI <code>oc</code> de la release (à vérifier selon version).',
+          'Image : celle du CLI <code>oc</code> de la release (référence 4.20 ; référence exacte de l\'image à vérifier dans les release notes).',
           'Alternative : l\'opérateur communautaire <b>Group Sync Operator</b> (Red Hat COP), non fourni par le produit : à évaluer côté support.'
         ] },
         { t: 'callout', kind: 'warn', wide: true, html: 'Un groupe synchronisé est écrasé à chaque passage : <b>ne le modifie jamais à la main</b>. Il porte des annotations <code>openshift.io/ldap.*</code> qui permettent au sync de le reconnaître. Un utilisateur retiré de l\'annuaire perd son appartenance au prochain run, mais son token reste valable jusqu\'à expiration.' }
@@ -209,7 +209,7 @@ COURSE.add({
         { t: 'bullets', items: [
           'Avec <code>claims.groups</code>, les groupes du jeton sont <b>synchronisés au login</b> (création/mise à jour des Group) : plus besoin de cronjob. Support selon version : à vérifier dans les release notes.',
           'Le groupe n\'est mis à jour qu\'<b>à la connexion</b> : un retrait côté IdP n\'est visible qu\'au login suivant.',
-          'Mode récent « authentification OIDC directe » (CR <code>Authentication</code>, sans serveur OAuth intégré) : maturité à vérifier dans les release notes de ta version.'
+          'Authentification OIDC directe (CR <code>Authentication</code>, type <code>OIDC</code>, sans serveur OAuth intégré) : statut en 4.20 (GA ou technology preview) à vérifier dans les release notes.'
         ] },
         { t: 'callout', kind: 'onprem', html: 'Un SSO interne (Keycloak/RHBK, IdM + Keycloak, ADFS) doit être joignable depuis le <b>navigateur</b> et depuis le <b>serveur OAuth</b>, avec sa CA : deux chemins réseau à tester.' }
       ]
@@ -221,7 +221,7 @@ COURSE.add({
         { t: 'text', html: '<p><b>Soyons honnêtes :</b> « HBAC » (<i>Host-Based Access Control</i>) n\'est <b>pas</b> un objet OpenShift. C\'est un concept <b>FreeIPA / Red Hat IdM</b> : des règles « <i>l\'utilisateur ou groupe X peut utiliser le service Y sur l\'hôte Z</i> », évaluées par <b>SSSD / PAM</b> sur les machines Linux. OpenShift n\'évalue aucune règle HBAC lui-même.</p>' },
         { t: 'table', head: ['Question « qui → quoi → où »', 'Mécanisme dans l\'écosystème OCP'], rows: [
           ['Qui peut ouvrir un shell sur un nœud ?', 'Clé SSH de <code>core</code>, <code>oc debug node</code> (RBAC + SCC), et en amont un bastion éventuellement soumis à des règles HBAC IdM'],
-          ['Qui peut joindre l\'API / les nœuds ?', 'Pare-feu, LB, segmentation réseau, <code>NetworkPolicy</code> (module 7)'],
+          ['Qui peut joindre l\'API / les nœuds ?', 'Pare-feu, LB, segmentation réseau, <code>NetworkPolicy</code> (module 07)'],
           ['Quel nœud peut lire quoi ?', 'Node authorizer + admission <code>NodeRestriction</code>'],
           ['Qui peut interroger le kubelet ?', 'RBAC sur <code>nodes/proxy</code>, <code>nodes/log</code>, <code>nodes/stats</code>'],
           ['Qui peut s\'authentifier à l\'IdP ?', 'Filtre d\'authentification de l\'IdP, règles HBAC <b>côté IdM</b> si le chemin passe par PAM/SSSD']
@@ -325,7 +325,7 @@ COURSE.add({
           '- name: PROJECT_NAME',
           '- name: PROJECT_ADMIN_USER'
         ].join('\n') },
-        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) plafonne la somme des ressources de <b>plusieurs projets</b> sélectionnés par label ou annotation (par équipe, par application). Un <code>deny-all</code> nu casse aussi la Route : prévois dans le template le <code>allow-from-ingress</code> (module 7).' }
+        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) plafonne la somme des ressources de <b>plusieurs projets</b> sélectionnés par label ou annotation (par équipe, par application). Un <code>deny-all</code> nu casse aussi la Route : prévois dans le template le <code>allow-from-ingress</code> (NetworkPolicy et AdminNetworkPolicy : module 07).' }
       ]
     },
     {
@@ -361,7 +361,7 @@ COURSE.add({
           ['oc adm policy who-can use scc privileged', 'Audit : qui peut créer des pods privilégiés ?'],
           ['oc adm policy scc-subject-review -f pod.yaml', 'Diagnostic avant déploiement']
         ] },
-        { t: 'callout', kind: 'trap', html: 'Donner un SCC à un <b>utilisateur</b> ne suffit pas pour un Deployment : le pod est créé par un contrôleur, c\'est le <b>ServiceAccount du pod</b> qui compte. Détails et bonnes pratiques SCC au module Sécurité.' }
+        { t: 'callout', kind: 'trap', html: 'Donner un SCC à un <b>utilisateur</b> ne suffit pas pour un Deployment : le pod est créé par un contrôleur, c\'est le <b>ServiceAccount du pod</b> qui compte. Stratégies, priorités et création de SCC : module 09.' }
       ]
     },
     {
@@ -375,7 +375,7 @@ COURSE.add({
           ['<code>None</code>', 'Aucun audit : déconseillé, et peut affecter le support']
         ] },
         { t: 'code', lang: 'bash', file: 'terminal', code: '$ oc patch apiserver cluster --type=merge \\\n    -p \'{"spec":{"audit":{"profile":"WriteRequestBodies"}}}\'\n\n# Lire l\'audit API (par rôle de nœud)\n$ oc adm node-logs --role=master --path=kube-apiserver/audit.log \\\n    | grep \'"verb":"delete"\' | head\n$ oc adm node-logs --role=master --path=oauth-server/audit.log   # logins\n$ oc adm node-logs --role=master --path=kube-apiserver/        # liste des fichiers' },
-        { t: 'callout', kind: 'tip', wide: true, html: 'Les logs sont stockés <b>sur les nœuds control plane</b>, avec rotation : peu de rétention. Pour de la conformité, expédie-les avec la stack de logging (<code>ClusterLogForwarder</code>, entrée <code>audit</code>) vers ton SIEM. Le CR permet aussi des <code>customRules</code> par groupe d\'utilisateurs (profil différent pour <code>system:authenticated:oauth</code>, par exemple).' },
+        { t: 'callout', kind: 'tip', wide: true, html: 'Les logs sont stockés <b>sur les nœuds control plane</b>, avec rotation : peu de rétention. Pour de la conformité, expédie-les avec la stack de logging (<code>ClusterLogForwarder</code>, entrée <code>audit</code>) vers ton SIEM (configuration : module 05). Le CR permet aussi des <code>customRules</code> par groupe d\'utilisateurs (profil différent pour <code>system:authenticated:oauth</code>, par exemple).' },
         { t: 'callout', kind: 'onprem', wide: true, html: 'Sur site, le SIEM (Splunk, Elastic, syslog central) est le tien : prévois le chemin réseau, le format et la rétention dès le départ.' }
       ]
     },
@@ -428,6 +428,7 @@ COURSE.add({
       tag: 'lab',
       blocks: [
         { t: 'lab', title: 'IdP, groupes, projet cadré et audit', goal: 'Cluster de test avec cluster-admin. Un HTPasswd suffit si tu n\'as pas de LDAP (remplace alors le sync par <code>oc adm groups new</code>).', steps: [
+          'Prérequis : environnement E0 (OpenShift Local) ou E1 (SNO) en cluster-admin, voir module 00',
           'Crée un fichier htpasswd avec <code>alice</code> et <code>bob</code>, un Secret dans <code>openshift-config</code>, puis un IdP <code>HTPasswd</code> dans <code>OAuth/cluster</code> ; attends le redéploiement du pod <code>oauth-openshift</code>.',
           'Connecte-toi en <code>alice</code>, puis <code>oc whoami</code> et <code>oc get projects</code> (vide ?).',
           'Crée les groupes : <code>oc adm groups new team-a-devs alice</code> et <code>oc adm groups new platform-admins bob</code>.',
@@ -435,7 +436,7 @@ COURSE.add({
           'Crée <code>team-a</code> en admin, puis <code>oc adm policy add-role-to-group edit team-a-devs -n team-a</code>.',
           'Teste : <code>oc auth can-i create deployments -n team-a --as alice</code> (oui) et <code>-n openshift-config</code> (non) ; <code>oc adm policy who-can delete pods -n team-a</code>.',
           'Donne <code>cluster-admin</code> à <code>platform-admins</code>, valide un login de <code>bob</code>, puis supprime <code>kubeadmin</code> (uniquement sur un cluster jetable).',
-          'Passe l\'audit en <code>WriteRequestBodies</code>, supprime un pod en tant qu\'alice, retrouve-le avec <code>oc adm node-logs --role=master --path=kube-apiserver/audit.log | grep alice</code>.'
+          '(bonus) Passe l\'audit en <code>WriteRequestBodies</code>, supprime un pod en tant qu\'alice, retrouve-le avec <code>oc adm node-logs --role=master --path=kube-apiserver/audit.log | grep alice</code>.'
         ] }
       ]
     }
