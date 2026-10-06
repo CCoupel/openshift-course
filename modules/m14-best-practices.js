@@ -61,7 +61,7 @@ COURSE.add({
           'Ordre de grandeur de la doc 4.20, mesuré sur AWS (<code>r5.4xlarge</code> en control plane) : à prendre comme <b>base de départ</b>, pas comme garantie. La doc précise que le dimensionnement varie avec le nombre d\'objets et leur activité.',
           '<b>Règle des 60 %</b> : garde l\'usage CPU et mémoire du control plane à <b>60 % au plus</b> de la capacité. Quand un master tombe, redémarre ou est mis à jour (drain et reboot en série), les deux autres absorbent la charge.',
           'Les minimums d\'installation (4 vCPU, 16 Go, 100 Go) sont au module 03 ; la latence disque d\'etcd au module 08.',
-          'OLM tourne sur le control plane : sa mémoire croît avec le nombre de namespaces et d\'Operators installés (module 04).'
+          'OLM tourne sur le control plane : sa mémoire croît avec le nombre de namespaces et d\'Operators installés (d\'après la doc de dimensionnement 4.20 ; point non traité dans les modules du cours).'
         ] },
         { t: 'callout', kind: 'warn', html: 'La doc 4.20 le dit elle-même : Red Hat ne fournit pas de <b>guide de dimensionnement</b> direct, elle valide des <b>maximums testés</b> (slide suivante). Valide ta taille par une mesure sur ton cluster, pas par un tableau.' }
       ]
@@ -207,7 +207,7 @@ COURSE.add({
           ['Alertes triées, silences datés et commentés', 'module 05'],
           ['Capacité : requests, quotas, control plane sous 60 %', 'module 12, ce module'],
           ['CSR des nœuds approuvés après vérification du demandeur', 'module 12'],
-          ['Revue périodique des bindings RBAC et des SCC accordées', 'module 06'],
+          ['Revue périodique des bindings RBAC et des SCC accordées (la cadence est une proposition de ce module, à adapter)', 'modules 06, 09'],
           ['Operators critiques en approbation manuelle, <code>InstallPlan</code> traités', 'module 04'],
           ['Incident : cluster d\'abord (<code>oc get co</code>, <code>mcp</code>, nœuds), puis <code>must-gather</code> pour le ticket', 'module 12']
         ] },
