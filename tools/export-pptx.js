@@ -10,26 +10,40 @@ const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
 
+function readVersion() {
+  const f = path.join(ROOT, 'VERSION');
+  if (!fs.existsSync(f)) throw new Error('fichier VERSION introuvable : ' + f);
+  const v = fs.readFileSync(f, 'utf8').trim();
+  if (!v) throw new Error('fichier VERSION vide');
+  return v;
+}
+
 /* ---------- Chargement des modules (même mécanisme que validate.js) ---------- */
 function loadModules(dir = path.join(ROOT, 'modules')) {
-  const modules = [], skipped = [];
+  const modules = [], skipped = [], failed = [];
   const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => /^m\d+.*\.js$/.test(f)).sort() : [];
   for (const f of files) {
     let mod = null;
-    try { vm.runInNewContext(fs.readFileSync(path.join(dir, f), 'utf8'), { COURSE: { add(m) { mod = m; } } }, { filename: f }); }
-    catch (e) { skipped.push({ file: f, reason: 'non évaluable : ' + e.message }); continue; }
-    if (!mod) { skipped.push({ file: f, reason: 'aucun appel COURSE.add' }); continue; }
+    // Attention : vm n'est pas un sandbox. Les modules sont du code du dépôt (revu en PR) ; ne pas exécuter l'export sur des PR de forks avec secrets.
+    try { vm.runInNewContext(fs.readFileSync(path.join(dir, f), 'utf8'), { COURSE: { add(m) { mod = m; } } }, { filename: f, timeout: 2000 }); }
+    catch (e) { failed.push({ file: f, reason: 'non évaluable : ' + e.message }); continue; }
+    if (!mod) { failed.push({ file: f, reason: 'aucun appel COURSE.add' }); continue; }
     if (!Array.isArray(mod.slides) || !mod.slides.length) { skipped.push({ file: f, reason: 'sans slides (module à venir)' }); continue; }
     mod.__file = f;
     modules.push(mod);
   }
   const num = m => (Number.isFinite(m.num) ? m.num : Infinity);
   modules.sort((a, b) => num(a) - num(b) || a.__file.localeCompare(b.__file));
-  return { modules, skipped };
+  return { modules, skipped, failed };
 }
 
 /* ---------- HTML minimal → runs de texte ---------- */
-const decode = s => s.replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, '&');
+const ENT = { nbsp: ' ', lt: '<', gt: '>', quot: '"', apos: "'", amp: '&', rarr: '→', larr: '←', harr: '↔', uarr: '↑', darr: '↓', mdash: '—', ndash: '–', hellip: '…', laquo: '«', raquo: '»',
+  times: '×', middot: '·', bull: '•', check: '✓', eacute: 'é', egrave: 'è', agrave: 'à', ecirc: 'ê', ccedil: 'ç', copy: '©', reg: '®', deg: '°', rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“' };
+const cp = n => { try { return String.fromCodePoint(n); } catch (e) { return ''; } };
+// une seule passe : pas de double décodage (&amp;lt; reste &lt;)
+const decode = s => s.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (m, e) =>
+  e[0] === '#' ? cp(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)) : (e in ENT ? ENT[e] : (e.toLowerCase() in ENT ? ENT[e.toLowerCase()] : m)));
 const MONO = 'Consolas';
 const SANS = 'Calibri';
 const C = { bg: 'FAF9F7', text: '1C1B1A', muted: '6B6560', border: 'E4E0DB', surface: 'FFFFFF', surface2: 'F3F1EE', accent: 'EE0000', accentSoft: 'FDE8E8', accentText: 'B80000',
@@ -50,7 +64,7 @@ function runs(html, base = {}) {
       if (tag === 'b' || tag === 'strong') bold = Math.max(0, bold + d);
       else if (tag === 'i' || tag === 'em') ital = Math.max(0, ital + d);
       else if (tag === 'code') code = Math.max(0, code + d);
-      else if (tag === 'br') out.push({ text: '\n', options: { ...base } });
+      else if (tag === 'br' || (d < 0 && /^(p|li|div|ul|ol|tr)$/.test(tag))) { if (out.length && out[out.length - 1].text !== '\n') out.push({ text: '\n', options: { ...base } }); }
       continue;
     }
     const text = decode(p).replace(/\s+/g, ' ');
@@ -64,7 +78,8 @@ function runs(html, base = {}) {
   if (!out.length) out.push({ text: '', options: { ...base } });
   return out;
 }
-const plain = html => runs(html).map(r => r.text).join('').trim();
+const plain = html => (Array.isArray(html) ? html : runs(html)).map(r => r.text).join('').trim();
+const raw = s => [{ text: String(s), options: {} }]; // texte brut (cmds[0]) : jamais interprété comme HTML
 
 /* Un paragraphe = runs dont le dernier porte breakLine ; le premier porte les options de paragraphe. */
 function paragraphs(items, base, para = {}) {
@@ -79,14 +94,27 @@ function paragraphs(items, base, para = {}) {
 }
 
 /* ---------- Estimation de hauteur (pouces) ---------- */
-const lineH = pt => pt * 1.25 / 72;
+const lineH = pt => pt * 1.3 / 72;
+const isWide = c => c.codePointAt(0) > 0x2000;
+const wlen = w => [...w].reduce((n, c) => n + (isWide(c) ? 2 : 1), 0);
+// Retour à la ligne par mot, largeur moyenne volontairement pessimiste (0,55 em proportionnel, 0,62 em mono)
 function lines(text, pt, w, mono) {
-  const per = Math.max(4, Math.floor(w / (pt * (mono ? 0.6 : 0.5) / 72)));
-  return String(text).split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / per)), 0);
+  const per = Math.max(4, Math.floor(w / (pt * (mono ? 0.62 : 0.55) / 72)));
+  return String(text).split('\n').reduce((n, para) => {
+    let l = 1, cur = 0;
+    for (const word of para.split(' ')) {
+      let len = wlen(word);
+      if (len > per) { if (cur) { l++; cur = 0; } l += Math.floor((len - 1) / per); len = len % per || per; cur = len + 1; continue; }
+      if (cur && cur + len > per) { l++; cur = 0; }
+      cur += len + 1;
+    }
+    return n + l;
+  }, 0);
 }
 const textH = (text, pt, w, mono) => lines(text, pt, w, mono) * lineH(pt);
 const listH = (items, pt, w, gap) => items.reduce((n, i) => n + textH(plain(i), pt, w - 0.3) + gap, 0);
-const fs_ = (pt, s) => Math.max(7, Math.round(pt * s));
+const MINPT = 10, MINS = 0.75; // police minimale lisible ; en dessous, on pagine
+const fs_ = (pt, s) => Math.max(MINPT, Math.round(pt * s));
 
 const GAP = 0.18;
 const BULLET = { indent: 16 };
@@ -110,25 +138,26 @@ function colWidths(head, rows, w) {
   return wt.map(x => w * x / sum);
 }
 function tableRowH(cells, cw, pt, mono0) {
-  return Math.max(...cells.map((c, j) => textH(plain(c), pt, cw[j] - 0.2, mono0 && j === 0))) + 0.1;
+  return Math.max(...cells.map((c, j) => textH(plain(c), pt, cw[j] - 0.25, mono0 && j === 0))) + 0.14;
 }
 function drawTable(ctx, head, rows, x, y, w, s, opts = {}) {
   const pt = fs_(opts.pt || 12, s), cw = colWidths(head, rows, w);
-  const cell = (c, o) => ({ text: Array.isArray(c) ? c : runs(c, { fontSize: pt, fontFace: SANS, ...o.run }), options: o.cell });
+  const cell = (c, o) => ({ text: Array.isArray(c) ? c.map(r => ({ text: r.text, options: { fontSize: pt, fontFace: SANS, ...o.run, ...r.options } })) : runs(c, { fontSize: pt, fontFace: SANS, ...o.run }), options: o.cell });
   const rowsX = [head.map(h => cell(h, { run: { bold: true, color: 'FFFFFF' }, cell: { fill: { color: C.head }, valign: 'middle' } }))];
   rows.forEach((r, i) => rowsX.push(r.map((c, j) => cell(c, opts.monoFirst && j === 0
     ? { run: { fontFace: MONO, color: C.accentText }, cell: { fill: { color: i % 2 ? C.surface2 : C.surface }, valign: 'top' } }
     : { run: { color: C.text }, cell: { fill: { color: i % 2 ? C.surface2 : C.surface }, valign: 'top' } }))));
-  const rowH = [tableRowH(head, cw, pt / s), ...rows.map(r => tableRowH(r, cw, pt / s, opts.monoFirst))].map(h => h * s);
+  // hauteurs minimales seulement : PowerPoint agrandit chaque ligne selon son texte (la pagination a déjà réservé une estimation pessimiste)
+  const rowH = rowsX.map(() => 0.3);
   ctx.slide.addTable(rowsX, { x, y, w, colW: cw, rowH, border: { type: 'solid', pt: 0.5, color: C.border }, margin: [0.04, 0.08, 0.04, 0.08] });
 }
 const tableH = (head, rows, w, s, mono0) => {
-  const cw = colWidths(head, rows, w);
-  return [tableRowH(head, cw, 12), ...rows.map(r => tableRowH(r, cw, 12, mono0))].reduce((a, c) => a + c, 0) * s;
+  const cw = colWidths(head, rows, w), pt = fs_(12, s);
+  return [tableRowH(head, cw, pt), ...rows.map(r => tableRowH(r, cw, pt, mono0))].reduce((a, c) => a + c, 0) + 0.05;
 };
 const tableSplit = (b, head, rowsKey, w, avail, s, mono0) => {
-  const cw = colWidths(head, b[rowsKey], w);
-  return splitItems(b, rowsKey, (r) => tableRowH(r, cw, 12, mono0) * s, w, avail, s, tableRowH(head, cw, 12) * s);
+  const cw = colWidths(head, b[rowsKey], w), pt = fs_(12, s);
+  return splitItems(b, rowsKey, (r) => tableRowH(r, cw, pt, mono0), w, avail, s, tableRowH(head, cw, pt) + 0.05);
 };
 
 const HANDLERS = {
@@ -147,7 +176,7 @@ const HANDLERS = {
     measure: (b, w, s) => 0.3 + codeLines(b, w, s) * lineH(fs_(11, s)) + 0.2 + (b.caption ? 0.3 : 0),
     split(b, w, avail, s) {
       const ls = String(b.code).replace(/\n$/, '').split('\n');
-      const per = Math.max(4, Math.floor((w - 0.4) / (fs_(11, s) * 0.6 / 72)));
+      const per = Math.max(4, Math.floor((w - 0.4) / (fs_(11, s) * 0.62 / 72)));
       let h = 0.5, n = 0;
       for (; n < ls.length; n++) { const lh = Math.max(1, Math.ceil(ls[n].length / per)) * lineH(fs_(11, s)); if (h + lh > avail) break; h += lh; }
       if (n < 3 || n >= ls.length) return null;
@@ -168,9 +197,13 @@ const HANDLERS = {
     }
   },
   cmds: {
-    measure: (b, w, s) => tableH(['Commande', 'Rôle'], b.items.map(([c, d]) => [esc(c), d]), w, s, true),
-    split: (b, w, avail, s) => tableSplit(b, ['Commande', 'Rôle'], 'items', w, avail, s, true),
-    draw(ctx, b, x, y, w, s) { drawTable(ctx, ['Commande', 'Rôle'], b.items.map(([c, d]) => [esc(c), d]), x, y, w, s, { monoFirst: true }); }
+    measure: (b, w, s) => tableH(['Commande', 'Rôle'], cmdRows(b), w, s, true),
+    split(b, w, avail, s) {
+      const r = tableSplit({ rows: cmdRows(b) }, ['Commande', 'Rôle'], 'rows', w, avail, s, true);
+      const back = rows => ({ ...b, items: rows.map(([c, d]) => [plain(c), d]) });
+      return r && [back(r[0].rows), back(r[1].rows)];
+    },
+    draw(ctx, b, x, y, w, s) { drawTable(ctx, ['Commande', 'Rôle'], cmdRows(b), x, y, w, s, { monoFirst: true }); }
   },
   table: {
     measure: (b, w, s) => tableH(b.head, b.rows, w, s),
@@ -203,30 +236,34 @@ const HANDLERS = {
     }
   },
   flow: {
-    measure(b, w, s) { const g = flowGeo(b, w); return g.rows * 0.85 * s + (b.caption ? 0.3 : 0); },
+    measure(b, w, s) { const g = flowGeo(b, w, s); return g.rows * g.pitch + (b.caption ? 0.3 : 0); },
     draw(ctx, b, x, y, w, s) {
-      const g = flowGeo(b, w), nh = 0.75 * s;
+      const g = flowGeo(b, w, s), nh = g.nh;
       b.nodes.forEach((n, i) => {
         const o = typeof n === 'string' ? { label: n } : n, r = Math.floor(i / g.per), c = i % g.per;
-        const nx = x + c * (g.nw + 0.35), ny = y + r * 0.85 * s;
+        const nx = x + c * (g.nw + 0.35), ny = y + r * g.pitch;
         ctx.slide.addShape(ctx.pptx.ShapeType.roundRect, { x: nx, y: ny, w: g.nw, h: nh, fill: { color: o.hl ? C.accentSoft : C.surface }, line: { color: o.hl ? C.accent : C.border, width: 1.25 }, rectRadius: 0.08 });
         const rs = runs(o.label, { fontSize: fs_(13, s), bold: true, color: C.text, fontFace: SANS, breakLine: !!o.sub });
         if (o.sub) rs.push(...runs(o.sub, { fontSize: fs_(10, s), color: C.muted, fontFace: SANS }));
         ctx.slide.addText(rs, { x: nx + 0.05, y: ny, w: g.nw - 0.1, h: nh, align: 'center', valign: 'middle', margin: 0 });
         if (c < g.per - 1 && i < b.nodes.length - 1) ctx.slide.addText('→', { x: nx + g.nw, y: ny, w: 0.35, h: nh, align: 'center', valign: 'middle', fontSize: 16, color: C.muted, margin: 0 });
       });
-      if (b.caption) ctx.slide.addText(runs(b.caption, { fontSize: fs_(11, s), italic: true, color: C.muted, fontFace: SANS }), { x, y: y + g.rows * 0.85 * s, w, h: 0.25, margin: 0 });
+      if (b.caption) ctx.slide.addText(runs(b.caption, { fontSize: fs_(11, s), italic: true, color: C.muted, fontFace: SANS }), { x, y: y + g.rows * g.pitch, w, h: 0.25, margin: 0 });
     }
   },
   layers: {
-    measure: (b, w, s) => b.items.length * 0.62 * s,
-    split: (b, w, avail, s) => splitItems(b, 'items', () => 0.62 * s, w, avail, s),
+    measure: (b, w, s) => b.items.reduce((n, l) => n + layerH(l, w, s) + 0.07, 0),
+    split: (b, w, avail, s) => splitItems(b, 'items', (l) => layerH(l, w, s) + 0.07, w, avail, s),
     draw(ctx, b, x, y, w, s) {
-      b.items.forEach((l, i) => {
-        const ly = y + i * 0.62 * s, hh = 0.55 * s;
-        ctx.slide.addShape(ctx.pptx.ShapeType.roundRect, { x, y: ly, w, h: hh, fill: { color: l.hl ? C.accentSoft : l.base ? C.surface2 : C.surface }, line: { color: l.hl ? C.accent : C.border, width: 1 }, rectRadius: 0.05 });
-        ctx.slide.addText(runs(l.name, { fontSize: fs_(14, s), bold: true, color: C.text, fontFace: SANS }), { x: x + 0.15, y: ly, w: w * 0.3, h: hh, valign: 'middle', margin: 0 });
-        ctx.slide.addText(runs(l.desc || '', { fontSize: fs_(12, s), color: C.muted, fontFace: SANS }), { x: x + w * 0.3 + 0.2, y: ly, w: w * 0.7 - 0.35, h: hh, valign: 'middle', margin: 0 });
+      let ly = y;
+      b.items.forEach((l) => {
+        const hh = layerH(l, w, s), cy = ly;
+        ly += hh + 0.07;
+        {
+        ctx.slide.addShape(ctx.pptx.ShapeType.roundRect, { x, y: cy, w, h: hh, fill: { color: l.hl ? C.accentSoft : l.base ? C.surface2 : C.surface }, line: { color: l.hl ? C.accent : C.border, width: 1 }, rectRadius: 0.05 });
+        ctx.slide.addText(runs(l.name, { fontSize: fs_(14, s), bold: true, color: C.text, fontFace: SANS }), { x: x + 0.15, y: cy, w: w * 0.3, h: hh, valign: 'middle', margin: 0 });
+        ctx.slide.addText(runs(l.desc || '', { fontSize: fs_(12, s), color: C.muted, fontFace: SANS }), { x: x + w * 0.3 + 0.2, y: cy, w: w * 0.7 - 0.35, h: hh, valign: 'middle', margin: 0 });
+        }
       });
     }
   },
@@ -248,7 +285,8 @@ const HANDLERS = {
       ctx.slide.addText(runs(b.q, { fontSize: fs_(16, s), bold: true, color: C.text, fontFace: SANS }), { x: x + 0.2, y: y + 0.35, w: w - 0.4, h: qh, margin: 0, valign: 'top' });
       const opts = b.options.map((o, i) => [{ text: String.fromCharCode(65 + i) + '.  ', options: { bold: true, color: C.accentText, fontSize: fs_(14, s), fontFace: SANS } }, ...runs(o, { fontSize: fs_(14, s), fontFace: SANS, color: C.text })]);
       ctx.slide.addText(paragraphs(opts, {}, { paraSpaceAfter: 6 }), { x: x + 0.2, y: y + 0.35 + qh + 0.05, w: w - 0.4, h: h - qh - 0.5, margin: 0, valign: 'top' });
-      ctx.notes.push(`QUIZ — réponse : ${String.fromCharCode(65 + b.answer)}. ${plain(b.options[b.answer] || '')}${b.explain ? '\n' + plain(b.explain) : ''}`);
+      if (Number.isInteger(b.answer) && b.options[b.answer] !== undefined) ctx.notes.push(`QUIZ — réponse : ${String.fromCharCode(65 + b.answer)}. ${plain(b.options[b.answer])}${b.explain ? '\n' + plain(b.explain) : ''}`);
+      else ctx.warn('quiz sans réponse valide');
     }
   },
   reveal: {
@@ -264,7 +302,7 @@ const HANDLERS = {
     split(b, w, avail, s) {
       const base = 0.6 + (b.goal ? textH(plain(b.goal), fs_(13, s), w - 0.4) + 0.08 : 0);
       const r = splitItems(b, 'steps', (t) => textH(plain(t), fs_(14, s), w - 0.9) + 0.08, w, avail, s, base);
-      return r && [{ ...r[0], __n: 0 }, { ...r[1], __n: (b.__n || 0) + r[0].steps.length, goal: undefined }];
+      return r && [{ ...r[0], __n: b.__n || 0 }, { ...r[1], __n: (b.__n || 0) + r[0].steps.length, goal: undefined }];
     },
     draw(ctx, b, x, y, w, s, h) {
       ctx.slide.addShape(ctx.pptx.ShapeType.roundRect, { x, y, w, h, fill: { color: C.surface }, line: { color: C.border, width: 1 }, rectRadius: 0.08 });
@@ -289,14 +327,19 @@ const HANDLERS = {
     }
   }
 };
-const esc = s => String(s);
+// cmds[0] est du texte brut (le moteur HTML l'échappe) : on le passe en runs bruts, jamais dans le parseur HTML.
+const cmdRows = b => b.items.map(([c, d]) => [raw(c), d]);
+const layerH = (l, w, s) => Math.max(0.55, textH(plain(l.desc || ''), fs_(12, s), w * 0.7 - 0.45) + 0.16, textH(plain(l.name), fs_(14, s), w * 0.3 - 0.2) + 0.16);
 function codeLines(b, w, s) {
-  const per = Math.max(4, Math.floor((w - 0.4) / (fs_(11, s) * 0.6 / 72)));
+  const per = Math.max(4, Math.floor((w - 0.4) / (fs_(11, s) * 0.62 / 72)));
   return String(b.code).replace(/\n$/, '').split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / per)), 0);
 }
-function flowGeo(b, w) {
+function flowGeo(b, w, s = 1) {
   const n = b.nodes.length, per = Math.max(1, Math.min(n, Math.floor((w + 0.35) / (1.7 + 0.35))));
-  return { per, rows: Math.ceil(n / per), nw: (w - (per - 1) * 0.35) / per };
+  const nw = (w - (per - 1) * 0.35) / per;
+  const nh = Math.max(0.75 * s, ...b.nodes.map(x => { const o = typeof x === 'string' ? { label: x } : x;
+    return textH(plain(o.label), fs_(13, s), nw - 0.2) + (o.sub ? textH(plain(o.sub), fs_(10, s), nw - 0.2) : 0) + 0.2; }));
+  return { per, rows: Math.ceil(n / per), nw, nh, pitch: nh + 0.1 };
 }
 const UNKNOWN = { measure: () => 0.7, draw(ctx, b, x, y, w, s, h) {
   ctx.slide.addText(`Bloc « ${b.t} » non exporté`, { x, y, w, h, fontSize: 12, color: C.muted, italic: true, fontFace: SANS, margin: 0 });
@@ -307,7 +350,7 @@ const handler = b => HANDLERS[b.t] || UNKNOWN;
 /* ---------- Pagination : répartit les blocs d'une slide sur 1..n pages PowerPoint ---------- */
 const SW = 13.333, SH = 7.5, MX = 0.55, TOP = 1.3, BOTTOM = 7.0, CW = SW - 2 * MX;
 
-function paginate(blocks, layout) {
+function paginate(blocks, layout, warn = () => {}) {
   const two = layout === 'two', cw = two ? (CW - 0.35) / 2 : CW;
   const fresh = () => ({ items: [], ys: two ? [TOP, TOP] : [TOP] });
   const colX = c => MX + c * (cw + 0.35);
@@ -321,7 +364,8 @@ function paginate(blocks, layout) {
     const isTop = pg.ys.every(y => y === TOP);
     const fit = cols.find(col => hd.measure(b, w, 1) <= BOTTOM - col.y);
     const place = (blk, col, s) => {
-      const h = Math.min(handler(blk).measure(blk, w, s), BOTTOM - col.y);
+      const need = handler(blk).measure(blk, w, s), h = Math.min(need, BOTTOM - col.y);
+      if (need > h + 0.01) warn(`bloc « ${blk.t} » trop haut pour la page (${need.toFixed(1)} in > ${h.toFixed(1)} in) : débordement possible, à vérifier visuellement`);
       pg.items.push({ b: blk, x: full ? MX : colX(col.c), y: col.y, w, h, s });
       if (full) pg.ys = pg.ys.map(() => col.y + h + GAP); else pg.ys[col.c] = col.y + h + GAP;
     };
@@ -333,11 +377,11 @@ function paginate(blocks, layout) {
     const sp = hd.split && avail >= 1.0 ? hd.split(b, w, avail, 1) : null;
     if (sp) { place(sp[0], col, 1); queue.unshift(sp[1]); pages.push(fresh()); continue; }
     if (!isTop) { pages.push(fresh()); queue.unshift(b); continue; }
-    // page vierge : découper si possible, sinon réduire la police (jusqu'à 60 %)
+    // page vierge : découper si possible, sinon réduire la police (jusqu'à 75 %, jamais sous 10 pt)
     const sp2 = hd.split ? hd.split(b, w, BOTTOM - TOP, 1) : null;
     if (sp2) { place(sp2[0], col, 1); queue.unshift(sp2[1]); pages.push(fresh()); continue; }
     let s = 1;
-    while (s > 0.6 && hd.measure(b, w, s) > BOTTOM - TOP) s = Math.round((s - 0.1) * 10) / 10;
+    while (s > MINS && hd.measure(b, w, s) > BOTTOM - TOP) s = Math.round((s - 0.05) * 100) / 100;
     place(b, col, s);
   }
   return pages.filter(p => p.items.length);
@@ -409,7 +453,7 @@ function buildDeck(modules, opts = {}) {
 
     // Slides
     for (const sl of m.slides) {
-      const pages = paginate(sl.blocks || [], sl.layout);
+      const pages = paginate(sl.blocks || [], sl.layout, warn);
       pages.forEach((pg, pi) => {
         const s = newSlide(null, footer), notes = [];
         title(s, sl.title || '', sl.tag, pi > 0);
@@ -439,13 +483,15 @@ function buildDeck(modules, opts = {}) {
 /* ---------- CLI ---------- */
 async function main() {
   const i = process.argv.indexOf('--out');
-  const version = (fs.existsSync(path.join(ROOT, 'VERSION')) ? fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf8').trim() : '') || '0.0.0';
+  const version = readVersion();
   const out = path.resolve(ROOT, i > -1 ? process.argv[i + 1] : `dist/openshift-course-${version}.pptx`);
-  const { modules, skipped } = loadModules();
+  const { modules, skipped, failed } = loadModules();
   skipped.forEach(s => console.log(`info    ${s.file} ignoré : ${s.reason}`));
+  if (failed.length) { failed.forEach(f => console.error(`ERREUR  ${f.file} : ${f.reason}`)); console.error('Export annulé : un module présent en fichier est inutilisable.'); process.exit(1); }
   if (!modules.length) { console.error('ERREUR  aucun module exportable.'); process.exit(1); }
   const { pptx, manifest } = buildDeck(modules, { version });
   manifest.skipped = skipped;
+  manifest.failed = failed;
   fs.mkdirSync(path.dirname(out), { recursive: true });
   await pptx.writeFile({ fileName: out });
   fs.writeFileSync(out.replace(/\.pptx$/, '.manifest.json'), JSON.stringify(manifest, null, 2));
@@ -454,5 +500,5 @@ async function main() {
   console.log(`\n${modules.length} module(s), ${manifest.total} slide(s) → ${path.relative(process.cwd(), out)}`);
 }
 
-module.exports = { loadModules, buildDeck, plain, runs };
+module.exports = { loadModules, buildDeck, plain, runs, readVersion, decode };
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });

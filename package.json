@@ -1,7 +1,6 @@
 {
   "name": "openshift-course",
   "private": true,
-  "version": "0.1.0",
   "description": "Support de cours OpenShift — outils de dev (export PPTX). Le cours HTML reste sans dépendance.",
   "scripts": {
     "validate": "node tools/validate.js",
@@ -9,6 +8,7 @@
     "check:pptx": "node tools/check-pptx.js"
   },
   "devDependencies": {
+    "jszip": "^3.10.2",
     "pptxgenjs": "^4.0.1"
   }
 }
