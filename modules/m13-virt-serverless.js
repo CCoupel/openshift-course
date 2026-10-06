@@ -199,7 +199,7 @@ spec:
       blocks: [
         { t: 'table', head: ['Élément', 'Ce qu\'il faut savoir'], rows: [
           ['<b>Outil</b>', '<b>Migration Toolkit for Virtualization</b> (Operator) : migre à grande échelle depuis vSphere (aussi RHV, OpenStack, autres clusters)'],
-          ['<b>Version</b>', 'MTV 2.10 : OCP 4.18, 4.19 et 4.20 ; vSphere 6.5 ou plus récent'],
+          ['<b>Version</b>', 'MTV 2.10 : OCP 4.18 à 4.20 ; <b>2.11</b> : 4.19 à 4.21 ; <b>2.12</b> : 4.20 à 4.22 (cycle de vie) ; vSphere 6.5 ou plus récent (doc 2.10)'],
           ['<b>Cold</b>', 'VM <b>éteinte</b>, pas de stockage partagé requis'],
           ['<b>Warm</b>', 'VM <b>allumée</b> pendant la copie ; exige un stockage commun'],
           ['<b>VDDK</b>', 'Fortement recommandé ; sans lui, les VM sur <b>vSAN</b> ne migrent pas']
@@ -240,7 +240,7 @@ spec:
           'Version courante de la doc : <b>1.37</b> (Knative Serving, Eventing et Kourier en 1.17).',
           'Cas d\'usage : API peu sollicitées, traitements à la demande, réactions à des événements ; pas pour des charges stables en continu.'
         ] },
-        { t: 'callout', kind: 'warn', html: "<b>Compatibilité avec OCP 4.20</b> : la matrice « Supported Configurations » de Red Hat est réservée aux abonnés : <b>à vérifier</b> avant d'installer (la doc d'installation 1.37 ne la liste pas)." }
+        { t: 'callout', kind: 'ocp', html: "<b>Compatibilité</b> (page « OpenShift Operator Life Cycles » de Red Hat) : <b>OpenShift Serverless 1.37</b> est supporté sur <b>OCP 4.16 à 4.20</b> ; disponibilité générale le 24 novembre 2025 ; support complet jusqu'à la sortie de la 1.38 + 1 mois. Sur OCP 4.21 et plus, des notes de version signalent un réglage de limite de fichiers ouverts de Kourier avec la 1.37.0 et les versions antérieures : à vérifier dans les notes de ta version." }
       ]
     },
     {
@@ -427,7 +427,7 @@ spec:
           ['<b>Bon usage</b>', 'Charges <b>intermittentes</b> ou événementielles, API peu utilisées, intégrations'],
           ['<b>Moins adapté</b>', 'Charges stables 24/7, latence strictement constante, démarrage très lent'],
           ['<b>Limites plateforme</b>', 'Cold start, quotas, réseaux d\'ingress, dépendances (Kafka, Service Mesh) à exploiter'],
-          ['<b>Statut du produit</b>', 'OpenShift Serverless 1.37 est documenté pour OCP (Knative 1.17) ; compatibilité 4.20 : à vérifier']
+          ['<b>Statut du produit</b>', 'OpenShift Serverless 1.37 (Knative 1.17) est supporté sur OCP 4.16 à 4.20 (cycle de vie des Operators Red Hat)']
         ] },
         { t: 'callout', kind: 'tip', html: "Avant d'ouvrir le serverless à des équipes, fixe <b>trois règles</b> : image de base et registre autorisés, quotas par projet, et <b>propriétaire</b> des événements (qui produit, qui consomme)." }
       ]
@@ -461,8 +461,8 @@ spec:
   takeaways: [
     'OpenShift Virtualization : une VM est un pod KVM ; Operator <code>kubevirt-hyperconverged</code> (canal <code>stable</code>, namespace <code>openshift-cnv</code>), CR <code>HyperConverged</code>.',
     'La migration à chaud exige un stockage partagé <b>RWX</b>, de la RAM et de la bande passante ; un réseau Multus dédié est recommandé ; dimensionne avant les mises à jour de nœuds.',
-    'Depuis VMware : MTV (2.10 pour OCP 4.18-4.20), cold ou warm, <b>VDDK</b> à fournir (obligatoire en pratique pour vSAN), ressources <code>forklift.konveyor.io/v1beta1</code>.',
-    'OpenShift Serverless : Operator <code>serverless-operator</code> (canal <code>stable</code>), CR <code>KnativeServing</code> et <code>KnativeEventing</code> en <code>operator.knative.dev/v1beta1</code> ; compatibilité 4.20 à vérifier.',
+    'Depuis VMware : MTV (2.10, 2.11 et 2.12 couvrent la 4.20), cold ou warm, <b>VDDK</b> à fournir (obligatoire en pratique pour vSAN), ressources <code>forklift.konveyor.io/v1beta1</code>.',
+    'OpenShift Serverless : Operator <code>serverless-operator</code> (canal <code>stable</code>), CR <code>KnativeServing</code> et <code>KnativeEventing</code> en <code>operator.knative.dev/v1beta1</code> ; supporté sur OCP 4.16 à 4.20 (1.37).',
     'Service Knative = scale-to-zero (min-scale 0 par défaut), révisions, répartition de trafic ; Eventing = brokers, triggers, CloudEvents ; relis les retraits d\'API avant chaque mise à jour.',
     'Admin plateforme : ingress (Kourier), quotas, capacité (cold starts, migrations), sauvegarde des VM (module 11), mises à jour (module 12), GitOps (module 10).'
   ]
