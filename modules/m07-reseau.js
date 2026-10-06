@@ -211,7 +211,7 @@ spec:
       layout: 'two',
       blocks: [
         { t: 'compare', wide: true,
-          left: { title: '👮 AdminNetworkPolicy (ANP)', items: ['Objet <b>cluster</b>, évalué <b>avant</b> les NetworkPolicy', 'Actions : <code>Allow</code>, <code>Deny</code>, <code>Pass</code>', '<code>priority</code> de 0 à 100 (la doc conseille 30-70)', 'Les équipes ne peuvent pas la contourner'] },
+          left: { title: '👮 AdminNetworkPolicy (ANP)', items: ['Objet <b>cluster</b>, évalué <b>avant</b> les NetworkPolicy', 'Actions : <code>Allow</code>, <code>Deny</code>, <code>Pass</code>', '<code>priority</code> de 0 à 99 (100 ANP au plus ; plus la valeur est basse, plus la priorité est haute ; la doc conseille 30-70)', 'Les équipes ne peuvent pas la contourner'] },
           right: { title: '🛟 BaselineAdminNetworkPolicy (BANP)', items: ['<b>Un seul</b> objet par cluster', 'Garde-fou <b>par défaut</b> si aucune NetworkPolicy ne correspond', 'Les NetworkPolicy des équipes peuvent la <b>surcharger</b>'] },
           verdict: 'ANP = ce que personne ne peut ouvrir ; BANP = le défaut que les équipes peuvent assouplir ; NetworkPolicy = règles des projets.' },
         { t: 'code', lang: 'yaml', file: 'anp-exemple.yaml', code: `apiVersion: policy.networking.k8s.io/v1alpha1
@@ -230,7 +230,7 @@ spec:
     to:
     - networks:
       - 10.99.0.0/16` },
-        { t: 'callout', kind: 'warn', wide: true, html: "L'API est en <code>policy.networking.k8s.io/v1alpha1</code> dans la doc 4.20. Statut exact (GA ou non) et champs <code>to</code> / <code>networks</code> de l'exemple : <b>à vérifier</b> dans « Admin network policy » 4.20 ; la doc ne marque pas de Tech Preview dans le texte consulté." }
+        { t: 'callout', kind: 'warn', wide: true, html: "L'API est en <code>policy.networking.k8s.io/v1alpha1</code> dans la doc 4.20. Historique : Technology Preview dès 4.14 (feature set <code>TechPreviewNoUpgrade</code>). <b>Statut GA en 4.20</b> : non confirmé dans les release notes lues (la doc 4.20 la présente comme fonctionnalité standard, sans marque Tech Preview) : à vérifier. Priorité : la doc 4.20 indique « 0-99 » pour OVN-Kubernetes (une autre section de la même doc parle de 0-100) ; champs <code>to</code> / <code>networks</code> de l'exemple : à vérifier." }
       ]
     },
     {
@@ -335,7 +335,7 @@ spec:
           'Les nœuds sont reconfigurés <b>à chaud</b> et la politique est annulée si le nœud perd sa connectivité.',
           'Pour les <b>IP statiques à l\'installation</b> : Agent-based et NMState dans <code>agent-config.yaml</code> (module 03).'
         ] },
-        { t: 'callout', kind: 'trap', html: "Tu ne peux <b>pas modifier</b> le bridge <code>br-ex</code> géré par OVN-Kubernetes, ni les interfaces, bonds ou VLAN qui lui sont rattachés. Plusieurs NNCP sur un nœud : ordre alphanumérique des noms (doc 4.20). <code>apiVersion</code> exacte de la CR : à vérifier." }
+        { t: 'callout', kind: 'trap', html: "Tu ne peux <b>pas modifier</b> le bridge <code>br-ex</code> géré par OVN-Kubernetes, ni les interfaces, bonds ou VLAN qui lui sont rattachés. Plusieurs NNCP sur un nœud : ordre alphanumérique des noms (doc 4.20). API <code>nmstate.io/v1</code> (doc 4.20)." }
       ]
     },
     {
