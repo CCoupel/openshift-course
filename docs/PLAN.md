@@ -178,7 +178,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : mises à jour (canaux, graphe, EUS → EUS 4.20 → 4.22, pause des MachineConfigPools, mise à jour du control plane seul, pré-checks, Operators) ; ajout/retrait de nœuds (Machine API ou manuel, CSR) ; rotation des certificats et approbation des CSR ; diagnostic (`must-gather`, `oc adm inspect`, `oc adm node-logs`, `oc debug`, Insights) ; capacité (requests/limits, overcommit, `ClusterAutoscaler` si Machine API) ; drain et maintenance matérielle.
 - **Renvoyé** : cycle de vie et EUS (concepts) → 01 ; Machine API, MHC → 02 ; remplacement de certificats → 04 ; quotas par projet → 06.
 - **Durée** : ≈ 60 min + lab 20 min. **Lab** : E1 (must-gather ciblé, `oc adm upgrade` en lecture, simulation de maintenance par drain) ; bonus : mise à jour mineure réelle (E1/E2).
-- **À vérifier** : chemin EUS 4.20 → 4.22 ; commandes de recommandation de mise à jour récentes ; politiques de perturbation des nœuds.
+- **À vérifier** : commandes détaillées de la procédure Control Plane Only en 4.20 et contraintes de skew ; clé `admin-acks` de la montée 4.20 → 4.21 (sigstore) ; option `--to-image` et procédure déconnectée ; défaut d'`autoSizingReserved`. Confirmés : `oc adm upgrade recommend` GA en 4.20, canaux, pause des pools, `admin-acks` 4.20, `oc adm node-image create`, durées de rotation des certificats.
 
 #### 13 — Virtualisation & Serverless ⬜ (`m13-virt-serverless.js`) — **parts égales**
 - **Objectif** : exploiter des VM sur OpenShift et situer le serverless pour un admin plateforme.
@@ -204,7 +204,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 09) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 09 et 12) ; les lignes des modules à venir restent le plan.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -220,7 +220,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 09 | E1 (pod refusé et diagnostic, SCC dédiée + RBAC, installation du Compliance Operator et `ScanSettingBinding` CIS) ; lab fusible J3 | E1 : lecture du scan et d'une remédiation, PSA warn/audit, chiffrement etcd (cluster jetable), File Integrity Operator |
 | 10 | E0/E1 + dépôt Git | — |
 | 11 | E1 + S3 | E1 jetable (restauration etcd) |
-| 12 | E1 | E1/E2 (mise à jour réelle) |
+| 12 | E1 (état de mise à jour en lecture, `must-gather` et `oc adm inspect`, quota et LimitRange, cordon / drain / uncordon) | E1 jetable ou E2 : mise à jour mineure réelle ; E2 : pause d'un pool `worker`, ajout d'un nœud (`oc adm node-image create` ou MachineSet) |
 | 13 | E1 + E3 | E2/E3 (migration à chaud) |
 | 14 | E1 | — |
 | 15 | — | — |
