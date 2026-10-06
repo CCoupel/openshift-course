@@ -1,0 +1,86 @@
+{
+  "name": "openshift-course",
+  "team_name": "openshift-course-team",
+  "org": "CCoupel",
+  "project": "openshift-course",
+  "description": "Support de cours OpenShift on-premise (HTML interactif + export PowerPoint) pour admins K8s et ingénieurs plateforme. Libre et réutilisable.",
+  "version": "0.1.0",
+  "initialized_at": "2026-10-06T15:40:00+02:00",
+  "initialized_from": "workshop",
+  "template_version": { "tag": "v3.10.0", "commit": "c620b204c976c789d9039dc14c6958632f804672" },
+  "src_dir": ".",
+  "version_file": "VERSION",
+  "stack": {
+    "backend": null,
+    "frontend": { "language": "javascript", "framework": "vanilla" },
+    "mobile": null,
+    "firmware": null,
+    "plugin": null,
+    "database": null
+  },
+  "infrastructure": {
+    "cicd": "github-actions",
+    "environments": [
+      {
+        "name": "QUALIF",
+        "order": 1,
+        "publish": { "mode": "promote", "target": "build/qualif_v{X.Y.Z}/" },
+        "deploy": { "mechanism": "paas", "target": "GitHub Pages (prévisualisation)" }
+      },
+      {
+        "name": "PROD",
+        "order": 2,
+        "publish": { "mode": "rebuild-ci", "trigger": "git-tag", "pipeline": ".github/workflows/release.yml" },
+        "deploy": { "mechanism": "paas", "target": "GitHub Pages" }
+      }
+    ]
+  },
+  "testing": {
+    "backend": [],
+    "frontend": [],
+    "e2e": [],
+    "components": {
+      "engine": ["assets/**", "index.html"],
+      "modules": ["modules/**"],
+      "tools": ["tools/**"]
+    },
+    "regression_at_qa": "gated",
+    "full_regression_at": "qualif",
+    "coverage_min": 70,
+    "lot_max_tests": 50
+  },
+  "security": {
+    "concerns": []
+  },
+  "commands": {
+    "build": "node tools/validate.js",
+    "test": "node tools/validate.js",
+    "lint": "node --check assets/engine.js",
+    "audit": "",
+    "typecheck": "",
+    "coverage": "",
+    "test_fast": "node tools/validate.js",
+    "test_targeted": "node tools/validate.js {TARGETS}",
+    "smoke": ""
+  },
+  "docs": {
+    "mockup_dir": "docs/mockup"
+  },
+  "marketing": {
+    "site": false
+  },
+  "agents": {
+    "idle_ttl_minutes": 15,
+    "idle_warning_interval_minutes": 5
+  },
+  "workshop": {
+    "audience": ["admins K8s qui passent à OpenShift", "ingénieurs plateforme / DevOps", "débutants en conteneurs (prérequis K8s non couverts)"],
+    "use_cases": ["apprendre module par module", "s'entraîner avec les labs", "réutiliser en mission / animer une formation", "réviser avec quiz et aide-mémoire"],
+    "out_of_scope": ["OpenShift managé en détail (encarts « écart cloud » seulement)", "développement applicatif", "hébergement / suivi des apprenants côté serveur"],
+    "differentiators": ["orienté admin K8s et on-prem", "interactif et ludique", "libre et réutilisable"],
+    "distribution": "GitHub public + GitHub Pages",
+    "constraints": ["HTML/JS sans dépendance (file://)", "export PowerPoint (.pptx) à partir du même contenu"],
+    "risks": ["contenu inexact ou périmé", "deux formats à maintenir (HTML + PPTX)"],
+    "conventions": { "branches": "main + feature/*, bugfix/*", "commits": "Conventional Commits", "review": "auto-revue assistée par l'agent code-reviewer" }
+  }
+}

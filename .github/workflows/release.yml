@@ -1,0 +1,35 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - name: Le tag fait foi pour la version (verification, jamais d'ecriture)
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "Tag non SemVer: $GITHUB_REF_NAME"; exit 1; }
+          [ "$(cat VERSION)" = "$VERSION" ] || { echo "VERSION ($(cat VERSION)) != tag ($VERSION)"; exit 1; }
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - run: node --check assets/engine.js
+      - run: node tools/validate.js
+      - name: Livrable (archive du cours + somme de controle)
+        run: |
+          zip -r "openshift-course-${VERSION}.zip" index.html assets modules VERSION
+          sha256sum "openshift-course-${VERSION}.zip" > "openshift-course-${VERSION}.zip.sha256"
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            awk -v v="$VERSION" '$0 ~ "^## \\[?"v {f=1; next} f && /^## / {exit} f' CHANGELOG.md > notes.md
+          fi
+          if [ -s notes.md ]; then NOTES=(--notes-file notes.md); else NOTES=(--generate-notes); fi
+          gh release create "$GITHUB_REF_NAME" "openshift-course-${VERSION}.zip" "openshift-course-${VERSION}.zip.sha256" --title "v${VERSION}" "${NOTES[@]}"
