@@ -200,6 +200,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Objectif** : réviser et emporter les commandes essentielles.
 - **Traité** : fiches `oc` par domaine (reprises des modules), dictionnaire K8s ↔ OCP, quiz final (≈ 10 questions couvrant J1–J3). Pas de lab (exception prévue dans `CONVENTIONS.md`).
 - **Durée** : ≈ 30 min.
+- **Rédigé** : 26 slides (1 mode d'emploi, 14 fiches `oc`, 3 dictionnaires, 3 tableaux de décision, 4 slides de quiz final de 5 questions couvrant les modules 00 à 14, 1 slide de pistes) ; aucune commande ne vient d'ailleurs que des modules, aucune commande de restauration etcd.
 
 ---
 
