@@ -312,17 +312,18 @@ metadata:
 spec:
   template:
     metadata:
+      name: showcase-v1          # nom de la révision (préfixé par le nom du Service)
       annotations:
         autoscaling.knative.dev/max-scale: "5"
     spec:
       containers:
       - image: quay.io/openshift-knative/showcase` },
-        { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc get ksvc -n serverless-demo\n$ kn service list -n serverless-demo\n# Équivalent en une commande\n$ kn service create showcase --image quay.io/openshift-knative/showcase" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc apply -f service-knative.yaml\n$ oc get ksvc -n serverless-demo\n$ oc get revision -n serverless-demo   # showcase-v1\n$ kn service list -n serverless-demo" },
         { t: 'bullets', wide: true, items: [
-          'Un seul objet <code>Service</code> (<code>serving.knative.dev/v1</code>) crée la <b>Configuration</b>, la <b>Route</b> Knative et les <b>révisions</b>.',
+          'Un seul objet <code>Service</code> (<code>serving.knative.dev/v1</code>) crée la <b>Configuration</b>, la <b>Route</b> Knative et les <b>révisions</b>. Sans <code>template.metadata.name</code>, Knative <b>génère</b> le nom (par exemple <code>showcase-00001</code>) : nomme la révision pour pouvoir la citer dans <code>spec.traffic</code>.',
           '<b>Scale-to-zero</b> : sans trafic, le nombre de réplicas descend à <b>0</b> ; la première requête redémarre un pod (<i>cold start</i>).'
         ] },
-        { t: 'callout', kind: 'warn', wide: true, html: "Image d'exemple et options de <code>kn</code> : celles de la doc OpenShift Serverless ; adapte-les à ton registre, notamment en réseau déconnecté (module 03)." }
+        { t: 'callout', kind: 'warn', wide: true, html: "Image d'exemple : celle de la doc OpenShift Serverless ; adapte-la à ton registre, notamment en réseau déconnecté (module 03). La commande <code>kn service create</code> crée un Service équivalent mais avec un <b>nom de révision généré</b> : pour le partage de trafic, utilise le YAML nommé ci-dessus." }
       ]
     },
     {
@@ -349,7 +350,7 @@ spec:
   - revisionName: showcase-v2
     percent: 20` },
         { t: 'bullets', items: [
-          'Chaque changement de <code>spec.template</code> crée une <b>révision</b> immuable ; les anciennes restent disponibles.',
+          'Chaque changement de <code>spec.template</code> crée une <b>révision</b> immuable ; les anciennes restent disponibles. Ici le template reçoit le nom <code>showcase-v2</code> alors que <code>showcase-v1</code> existe déjà (slide B4) : chaque <code>revisionName</code> doit <b>désigner une révision existante</b> et les pourcentages totaliser <b>100</b> (doc Knative).',
           '<code>spec.traffic</code> répartit le trafic par pourcentage : déploiement <b>canari</b>, retour arrière immédiat en remettant 100 % sur l\'ancienne révision.'
         ] },
         { t: 'callout', kind: 'tip', html: "Nomme tes révisions (<code>metadata.name</code> du template) pour pouvoir les référencer : c'est ce qui permet aussi de les piloter en <b>GitOps</b> (module 10)." }
@@ -447,9 +448,9 @@ spec:
         { t: 'lab', title: 'OpenShift Serverless : service, scale-to-zero, répartition de trafic', goal: 'Noyau en séance sur un SNO (E1). La partie virtualisation (VM, migration) demande un environnement E3 : étapes (bonus).', steps: [
           'Prérequis : environnement E1 (SNO) avec <code>cluster-admin</code>, voir module 00 ; accès à l\'image d\'exemple (ou à ton registre miroir) ; la partie VM demande <b>E3</b> (bare metal ou virtualisation imbriquée).',
           'Installe l\'<b>OpenShift Serverless Operator</b> (OperatorHub, namespace <code>openshift-serverless</code>, canal <code>stable</code>), puis crée les namespaces et les CR <code>KnativeServing</code> et <code>KnativeEventing</code> de la slide dédiée et vérifie les conditions <code>Ready</code>.',
-          'Dans un projet <code>serverless-demo</code>, déploie le <code>Service</code> Knative <code>showcase</code> (slide B4) et teste l\'URL donnée par <code>oc get ksvc</code> avec <code>curl</code>.',
+          'Crée le projet (<code>oc new-project serverless-demo</code>), puis applique le <code>Service</code> Knative <code>showcase</code> <b>nommé</b> de la slide B4 (révision <code>showcase-v1</code>) et teste l\'URL donnée par <code>oc get ksvc</code> avec <code>curl</code>.',
           'Observe le <b>scale-to-zero</b> : cesse tout trafic, suis les pods avec <code>oc get pods -w -n serverless-demo</code> jusqu\'à zéro, puis relance un <code>curl</code> et note le délai de réveil.',
-          'Crée une seconde révision (modifie une variable d\'environnement) et répartis le trafic <b>80/20</b> comme à la slide B5 ; vérifie la répartition en répétant les requêtes. <b>Retour arrière</b> : remets 100 % sur la première révision puis supprime le projet.',
+          'Applique le <b>YAML de la slide B5</b> (même Service : le template devient <code>showcase-v2</code> avec une variable d\'environnement, le trafic est réparti <b>80/20</b> entre <code>showcase-v1</code> et <code>showcase-v2</code>) ; contrôle avec <code>oc get revision</code> puis répète les requêtes pour voir la répartition. <b>Retour arrière</b> : remets 100 % sur la première révision puis supprime le projet.',
           '(bonus, E3) Installe <b>OpenShift Virtualization</b> (OperatorGroup, Subscription et <code>HyperConverged</code> de la slide A3), crée une VM depuis une boot source avec la console et ouvre sa console avec <code>virtctl console</code> ; contrôle <code>oc get vm,vmi</code>.',
           '(bonus, E3 multi-nœuds avec stockage RWX) Lance une <b>migration à chaud</b> de la VM vers un autre nœud et observe la <code>VirtualMachineInstanceMigration</code> ; sur un stockage RWO, constate qu\'elle n\'est pas possible.',
           '(bonus, avec un vCenter de test) Prépare une migration MTV : <code>Provider</code> vSphere, image VDDK, <code>StorageMap</code>, <code>NetworkMap</code> et <code>Plan</code> en migration <b>cold</b> d\'une VM éteinte.'
