@@ -67,7 +67,7 @@ COURSE.add({
         { t: 'cmds', wide: true, items: [
           ['openshift-install version', 'Version de l\'installeur (et release embarquée)'],
           ['oc version --client', 'Version du client oc'],
-          ['oc adm release info quay.io/openshift-release-dev/ocp-release:<version>-x86_64', 'Contenu d\'une release (composants, images) ; remplace <version>'],
+          ['oc adm release info quay.io/openshift-release-dev/ocp-release:<version>-x86_64', 'Contenu d\'une release (composants, images) ; remplace &lt;version&gt;'],
           ['butane --version', 'Outil pour écrire des MachineConfig / Ignition en YAML (utile en UPI)']
         ] }
       ]
