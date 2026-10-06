@@ -29,7 +29,7 @@ COURSE.add({
 
 Le moteur génère seul la slide de couverture (titre, objectifs) et la slide « À retenir » (avec le score des quiz).
 **Cible : 16 à 22 slides par module** (module 00 : 14 à 16), dont au moins 1 slide de quiz (2 à 3 quiz) et 1 lab (module 15 exclu).
-`duration` suit le format `'≈ X min + lab Y min'` (budget : `docs/PLAN.md` §2).
+`duration` suit le format `'≈ X min + lab Y min'` (budget : `docs/PLAN.md` §2). Sans lab en séance (module 00, préparation avant J1 ; module 15) : `'≈ 30 min'` seul. Le lab du module 00 reste obligatoire (en autonomie, hors budget).
 Le `title` d'une slide est du **texte brut** (pas de HTML, pas de backticks). `tag` est un petit badge optionnel (« lab », « piège n°1 », « quiz »).
 `layout: 'two'` met les blocs sur 2 colonnes ; `wide: true` sur un bloc le fait occuper toute la largeur.
 `frag: true` sur un bloc (ou une liste) le fait apparaître progressivement au clic/→ (à utiliser pour les listes de points et les layers, pas partout).
@@ -77,7 +77,7 @@ Pas de HTML dans les blocs `code` et `cmds[0]` : le moteur échappe. Dans les ch
 | 02 | m02 | m02-architecture.js | Architecture |
 | 03 | m03 | m03-installation.js | Installation |
 | 04 | m04 | m04-configuration.js | Configuration |
-| 05 | m05 | m05-monitoring.js | Supervision & monitoring (métriques, alertes, logs) |
+| 05 | m05 | m05-monitoring.js | Supervision & monitoring |
 | 06 | m06 | m06-rbac.js | HBAC / RBAC |
 | 07 | m07 | m07-reseau.js | Réseau |
 | 08 | m08 | m08-stockage.js | Stockage |

@@ -1,7 +1,7 @@
 # Plan de formation — OpenShift on-premise, du K8s à OCP (v2)
 
 > Référence de conception du cours. **Source de vérité pour `dev-course`** (périmètre, frontières, durées, labs) ; `CONVENTIONS.md` reste la référence de forme (schéma des modules et des blocs).
-> v2 — 2026-10-06 — issue de la revue `_work/reports/planner-plan-revue.md` et des décisions utilisateur du même jour.
+> v2 — 2026-10-06 — issue d'une revue du plan v1 et des décisions du même jour (version de référence, module 00, modules « à venir »).
 
 ---
 
@@ -20,7 +20,7 @@
 - Exemples de canaux : `stable-4.20`, `eus-4.20`. Mise à jour EUS → EUS illustrée par **4.18 → 4.20**.
 - Tout comportement introduit, déprécié ou retiré autour de 4.18–4.22 est **daté** dans la slide (« depuis 4.x », « retiré en 4.x ») et marqué « à vérifier dans les release notes » s'il n'est pas certain.
 - Prompt de `oc debug node/…` puis `chroot /host` : RHCOS est basé sur RHEL 9, donc `sh-5.1#`.
-- Faits structurants déjà acquis pour la v2 (à re-vérifier une fois à la rédaction) : OpenShift SDN retiré (4.17), seul CNI OVN-Kubernetes ; nœuds de calcul RHEL retirés (4.19) ; Logging 6 = Vector + LokiStack (Elasticsearch/Fluentd/Kibana retirés) ; Grafana retiré de la console ; OLM v1 (`ClusterExtension`) disponible à côté d'OLM v0.
+- Faits structurants déjà acquis pour la v2 (à re-vérifier une fois à la rédaction) : OpenShift SDN retiré (4.17), seul CNI OVN-Kubernetes ; nœuds de calcul RHEL : dépréciation / retrait à vérifier (4.19) ; Logging 6 = Vector + LokiStack (Elasticsearch/Fluentd/Kibana retirés) ; Grafana retiré de la console ; OLM v1 (`ClusterExtension`) disponible à côté d'OLM v0.
 
 ---
 
@@ -32,13 +32,13 @@ Journée = **7 h effectives** (420 min, hors pauses et déjeuner).
 
 | Module | Exposé | Lab en séance | Total |
 |---|---|---|---|
-| 00 Environnement de lab | 30 | — (préparation **avant J1**) | 30 |
+| 00 Environnement de lab (**hors séance**, avant J1, non compté) | (30) | — | (30) |
 | 01 K8s vs OCP | 45 | 15 | 60 |
 | 02 Architecture | 60 | 20 | 80 |
 | 03 Installation | 75 | 20 | 95 |
 | 04 Configuration | 60 | 20 | 80 |
-| **J1** | **270** | **75** | **345 (marge 75)** |
-| 05 Observabilité | 70 | 20 | 90 |
+| **J1** | **240** | **75** | **315 (marge 105)** |
+| 05 Supervision & monitoring | 70 | 20 | 90 |
 | 06 HBAC / RBAC | 60 | 20 | 80 |
 | 07 Réseau | 70 | 20 | 90 |
 | 08 Stockage | 60 | 20 | 80 |
@@ -51,11 +51,11 @@ Journée = **7 h effectives** (420 min, hors pauses et déjeuner).
 | 14 Best practices (check-list) | 30 | 15 | 45 |
 | 15 Aide-mémoire & quiz final | 30 | — | 30 |
 | **J3** | **270** | **100** | **370 (marge 50)** |
-| **Total** | **860 (14 h 20)** | **295 (4 h 55)** | **1 135 min ≈ 18 h 55 / 21 h → marge ≈ 2 h** |
+| **Total** | **830 (13 h 50)** | **295 (4 h 55)** | **1 105 min ≈ 18 h 25 / 21 h → marge ≈ 2 h 35** |
 
 - J2 est saturé. **Fusible** : le lab 09 bascule en ouverture de J3, qui absorbe 20 min sur ses 50 de marge.
-- Préparation **hors séance** : installation du cluster de lab (module 00), 2 à 3 h, à faire avant J1.
-- En mode « lecture seule » (sans labs), compter ≈ 14 h 20, soit un peu plus de 2 jours.
+- Préparation **hors séance** : le module 00 (≈ 30 min d'exposé) et l'installation du cluster de lab (2 à 3 h) se font **avant J1** ; ils ne sont comptés dans aucune journée.
+- En mode « lecture seule » (sans labs), compter ≈ 13 h 50, soit un peu plus de 2 jours.
 
 ---
 
@@ -86,7 +86,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Objectif** : disposer d'un cluster adapté avant J1 et savoir quel lab exige quel environnement.
 - **Traité** : niveaux E0–E3 (§3) ; OpenShift Local (installation, `crc setup/start`, utilisateurs `kubeadmin`/`developer`) ; SNO via Assisted Installer (parcours rapide) ; essai 60 j et pull secret ; OKD en alternative ; poste de travail (`oc`, `openshift-install`, `oc-mirror`, `butane`, `jq`) ; **matrice prérequis par lab** (copie du tableau §5) ; remise à zéro d'un lab.
 - **Renvoyé** : méthodes d'installation détaillées, `install-config.yaml`, air-gap → 03 ; topologies → 02.
-- **Durée** : ≈ 30 min (sans lab en séance, préparation avant J1). **Taille** : 14–16 slides (seuil bas du validateur : 14), 2 quiz, 1 lab.
+- **Durée** : `'≈ 30 min'` (hors séance, avant J1 ; lab de préparation en autonomie, non compté dans le budget). **Taille** : 14–16 slides (seuil bas du validateur : 14), 2 quiz, 1 lab.
 - **Lab** : « Prépare ton cluster » (E0 ou E1, avant J1) : installer les CLI, se connecter, `oc whoami --show-server`, `oc get clusterversion`, `oc get nodes`, vérifier les ressources disponibles.
 - **À vérifier** : ressources minimales d'OpenShift Local et de SNO pour 4.20 ; option d'activation du monitoring dans OpenShift Local ; durée et modalités de l'essai ; statut et base OS d'OKD.
 
@@ -121,8 +121,8 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ### Jour 2 — Brancher, sécuriser, observer
 
-#### 05 — Supervision & monitoring (observabilité : métriques, alertes, logs) ⬜ (`m05-monitoring.js`)
-- **Objectif** : exploiter la stack de monitoring de plateforme, ouvrir le monitoring aux équipes, router les alertes et centraliser les logs.
+#### 05 — Supervision & monitoring ⬜ (`m05-monitoring.js`)
+- **Objectif** (observabilité : métriques, alertes, logs) : exploiter la stack de monitoring de plateforme, ouvrir le monitoring aux équipes, router les alertes et centraliser les logs.
 - **Traité** : Prometheus/Alertmanager/Thanos de plateforme (`cluster-monitoring-config`), persistance et rétention ; monitoring des workloads utilisateur (`user-workload-monitoring-config`, `ServiceMonitor`, `PrometheusRule`) ; routage d'alertes (Alertmanager, receivers, silences) ; tableaux de bord de la console (Grafana retiré) ; alertes clés (etcd, certificats, nœuds) ; **logging** (P2) : Logging 6, Vector, `ClusterLogForwarder`, LokiStack, transfert vers SIEM (dont logs d'audit) ; survol Network Observability et Cluster Observability Operator.
 - **Renvoyé** : stockage de Prometheus/Loki (StorageClass, S3) → 08 ; politique d'audit de l'API → 06 ; métriques disque etcd → 08 ; RBAC d'accès aux métriques → 06.
 - **Durée** : ≈ 70 min + lab 20 min. **Lab** : E1 (activer le monitoring utilisateur, `ServiceMonitor` + `PrometheusRule`, receiver webhook) ; bonus : LokiStack taille démo sur MinIO, `ClusterLogForwarder` vers un syslog.
@@ -249,5 +249,5 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 7. Points ouverts
 
-- **P11** : comportement de `index.html` vis-à-vis des modules non rédigés. Décision séparée en attente, voir `_work/reports/planner-plan-v2.md`.
-- L'ajout de `m00` impose de toute façon une ligne `<script>` dans `index.html`, alors que `CONVENTIONS.md` en interdit la modification : une dérogation est à acter.
+Aucun point ouvert de structure. Résolus : **P11** (modules non rédigés) par le manifeste `assets/plan.js` (sommaire complet, modules « à venir » grisés, aucun 404) et la règle `index.html` de `CONVENTIONS.md` ; la balise `<script>` de chaque nouveau module est la seule modification autorisée de `index.html`.
+Les points techniques « à vérifier » restent portés par chaque fiche de module (§4).
