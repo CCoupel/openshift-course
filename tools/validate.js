@@ -12,6 +12,7 @@ const CALLOUTS = ['tip', 'warn', 'trap', 'cloud', 'onprem', 'k8s', 'ocp'];
 const dir = path.join(__dirname, '..', 'modules');
 const files = process.argv.length > 2 ? process.argv.slice(2) : fs.readdirSync(dir).filter(f => /^m\d+.*\.js$/.test(f)).map(f => path.join(dir, f));
 let errors = 0, warns = 0;
+const loadedMods = {};
 const err = (f, m) => { errors++; console.error(`ERREUR  ${path.basename(f)} : ${m}`); };
 const warn = (f, m) => { warns++; console.warn(`warn    ${path.basename(f)} : ${m}`); };
 
@@ -22,6 +23,7 @@ for (const file of files) {
   catch (e) { err(file, 'ne s\'exécute pas : ' + e.message); continue; }
   if (!mod) { err(file, 'aucun appel COURSE.add'); continue; }
 
+  loadedMods[mod.id] = mod;
   const expected = /^m(\d+)/.exec(path.basename(file));
   if (expected && mod.id !== 'm' + expected[1]) err(file, `id "${mod.id}" ≠ nom de fichier`);
   if (expected && mod.num !== +expected[1]) err(file, `num ${mod.num} ≠ nom de fichier`);
@@ -69,7 +71,11 @@ if (process.argv.length <= 2) {
   catch (e) { err('plan.js', 'ne s\'exécute pas : ' + e.message); }
   if (plan) {
     const ids = new Set(plan.map(p => p.id));
+    if (ids.size !== plan.length) err('plan.js', 'id en doublon');
+    if (new Set(plan.map(p => p.num)).size !== plan.length) err('plan.js', 'num en doublon');
+    plan.forEach(p => { if (p.id !== 'm' + String(p.num).padStart(2, '0')) err('plan.js', `id "${p.id}" incohérent avec num ${p.num}`); });
     for (const f of files) { const m = /^(m\d+)/.exec(path.basename(f)); if (m && !ids.has(m[1])) err(f, 'module absent du manifeste assets/plan.js'); }
+    plan.forEach(p => { const m = loadedMods[p.id]; if (m) { if (m.title !== p.title) err('plan.js', `${p.id} : title « ${p.title} » ≠ module « ${m.title} »`); if (m.emoji !== p.emoji) err('plan.js', `${p.id} : emoji ≠ module`); } });
     plan.forEach(p => { if (!p.id || p.num === undefined || !p.emoji || !p.title) err('plan.js', `entrée incomplète : ${JSON.stringify(p)}`); });
     const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
     for (const m of html.matchAll(/<script src="([^"]+)"/g)) if (!fs.existsSync(path.join(root, m[1]))) err('index.html', `script inexistant (404) : ${m[1]}`);
