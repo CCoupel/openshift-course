@@ -208,7 +208,7 @@ spec:
         { t: 'bullets', items: [
           'Ressources (<code>forklift.konveyor.io/v1beta1</code>) : <code>Provider</code> (source et destination), <code>StorageMap</code>, <code>NetworkMap</code>, <code>Plan</code>, <code>Migration</code>.',
           'Flux réseau : TCP 443 (vCenter/ESXi), 902 (transfert de disques ESXi).',
-          'Le VDDK est un SDK VMware à fournir comme <b>image</b> : à déclarer dans <code>spec.vddkInitImage</code> du <code>HyperConverged</code> (doc MTV) <b>et</b> dans le champ <code>vddkInitImage</code> du <code>Provider</code> vSphere (réglages du provider ; chemin exact du champ : à vérifier). Ce champ du provider n\'est pas obligatoire mais l\'omettre <b>ralentit fortement</b> le transfert des disques.'
+          'Le VDDK est un SDK VMware à fournir comme <b>image</b> : à déclarer dans le <code>Provider</code> vSphere : <code>spec.settings.vddkInitImage</code> (d'après le manifeste CLI de la doc MTV) ; la doc MTV a aussi demandé de le renseigner dans <code>spec.vddkInitImage</code> du <code>HyperConverged</code> : <b>selon ta version de MTV, à vérifier</b>. Ce champ du provider n\'est pas obligatoire mais l\'omettre <b>ralentit fortement</b> le transfert des disques.'
         ] },
         { t: 'callout', kind: 'warn', wide: true, html: "Le parcours complet (inventaire, mappings de stockage et de réseau, fenêtre de basculement, pilotes invités) est dans la doc MTV : <b>à relire pour ta version</b> avant tout projet réel." }
       ]
@@ -241,7 +241,7 @@ spec:
           'Version courante de la doc : <b>1.37</b> (Knative Serving, Eventing et Kourier en 1.17).',
           'Cas d\'usage : API peu sollicitées, traitements à la demande, réactions à des événements ; pas pour des charges stables en continu.'
         ] },
-        { t: 'callout', kind: 'ocp', html: "<b>Compatibilité</b> (page « OpenShift Operator Life Cycles » de Red Hat) : <b>OpenShift Serverless 1.37</b> est supporté sur <b>OCP 4.16 à 4.20</b> ; disponibilité générale le 24 novembre 2025 ; support complet jusqu'à la sortie de la 1.38 + 1 mois. Sur OCP 4.21 et plus, des notes de version signalent un réglage de limite de fichiers ouverts de Kourier avec la 1.37.0 et les versions antérieures : à vérifier dans les notes de ta version." }
+        { t: 'callout', kind: 'ocp', html: "<b>Compatibilité</b> (page « OpenShift Operator Life Cycles » de Red Hat) : <b>OpenShift Serverless 1.37</b> est supporté sur <b>OCP 4.16 à 4.20</b> ; disponibilité générale le 24 novembre 2025 ; support complet jusqu'à la sortie de la 1.38 + 1 mois." }
       ]
     },
     {
@@ -349,6 +349,8 @@ spec:
   template:
     metadata:
       name: showcase-v2
+      annotations:
+        autoscaling.knative.dev/max-scale: "5"
     spec:
       containers:
       - image: quay.io/openshift-knative/showcase
