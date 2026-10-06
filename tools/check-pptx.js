@@ -5,7 +5,6 @@
  * Sortie : code 0 si OK. Dépendance de dev : pptxgenjs (jszip en transitif). */
 'use strict';
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const JSZip = require('jszip');
@@ -108,7 +107,18 @@ async function check(file, modulesDir) {
 
 /* Auto-test : module 00, module vide, module à venir, fichier non évaluable. */
 async function selftest() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'export-selftest-'));
+  // Dossier temporaire sous _work/tmp/ du projet (gitignoré), jamais hors du projet ; nettoyé même en cas d'échec.
+  const base = path.join(ROOT, '_work', 'tmp');
+  fs.mkdirSync(base, { recursive: true });
+  const dir = fs.mkdtempSync(path.join(base, 'export-selftest-'));
+  try { await selftestIn(dir); }
+  finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+    try { fs.rmdirSync(base); } catch (e) { /* non vide : laissé (autre usage) */ }
+  }
+}
+
+async function selftestIn(dir) {
   const mk = (n, extra) => `COURSE.add(${JSON.stringify({ id: 'm' + n, num: +n, emoji: '🧪', title: 'Module ' + n, tagline: 'x', duration: '≈ 60 min + lab 20 min',
     objectives: ['a', 'b', 'c'], takeaways: ['1', '2', '3', '4'], ...extra })});`;
   const slides = [{ title: 'S1', blocks: [{ t: 'text', html: 'Bonjour <b>monde</b>' }, { t: 'quiz', q: 'Q ?', options: ['a', 'b'], answer: 1, explain: 'e' }] }];
@@ -162,7 +172,6 @@ async function selftest() {
   errors = b2;
   if (!lostDetected) ko('selftest : une perte de <...> n\'a pas été détectée');
   else ok('selftest : perte de <...> détectée');
-  fs.rmSync(dir, { recursive: true, force: true });
 }
 
 (async () => {

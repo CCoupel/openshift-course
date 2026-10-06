@@ -1,5 +1,12 @@
 #!/usr/bin/env node
-/* Valide le schéma des modules. Usage : node tools/validate.js [fichier...] */
+/* Valide le schéma des modules. Usage : node tools/validate.js [fichier...]
+
+   Champs HTML bruts : le moteur (assets/engine.js) n'échappe (esc) que les lignes de `code`, `cmds[i][0]`,
+   `file`/`lang`, les titres de slide et `tag`. TOUS les autres champs sont injectés tels quels en HTML
+   (text, bullets, cellules de table, cmds[i][1], callout, compare, flow, layers, cards, quiz, reveal, lab,
+   caption, takeaways, objectives, tagline…). Une balise absente de la liste blanche (HTML_TAGS), par exemple un
+   placeholder `<version>`, y serait interprétée par le navigateur et disparaîtrait : écrire `&lt;version&gt;`.
+   Exception : le champ `html` d'un bloc `diagram` (SVG/HTML voulu) n'est pas contrôlé. */
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -8,6 +15,33 @@ const vm = require('vm');
 // À garder synchronisé avec assets/engine.js (objet R) et le CSS des callouts.
 const BLOCKS = ['text', 'bullets', 'code', 'cmds', 'table', 'compare', 'callout', 'flow', 'layers', 'cards', 'quiz', 'reveal', 'lab', 'diagram'];
 const CALLOUTS = ['tip', 'warn', 'trap', 'cloud', 'onprem', 'k8s', 'ocp'];
+
+// Balises autorisées dans les champs HTML bruts (ajuster ici si le moteur/CSS en prend d'autres en charge).
+const HTML_TAGS = new Set(['b', 'i', 'em', 'strong', 'code', 'br', 'a', 'span', 'ul', 'ol', 'li', 'p', 'kbd', 'sub', 'sup', 'mark', 'small', 'pre']);
+const TAG_RE = /<\/?([A-Za-z][A-Za-z0-9-]*)/g;
+const strs = x => (Array.isArray(x) ? x : [x]).filter(v => typeof v === 'string');
+
+// Liste les champs rendus en HTML brut d'un bloc : [[nom du champ, texte], ...] (miroir de R dans engine.js).
+function rawHtmlFields(b) {
+  const f = [];
+  const add = (name, v) => strs(v).forEach((t, i) => f.push([name, t]));
+  switch (b.t) {
+    case 'text': case 'reveal': add('html', b.html); if (b.t === 'reveal') add('label', b.label); break;
+    case 'bullets': add('items', b.items || []); break;
+    case 'code': add('caption', b.caption); break;
+    case 'cmds': (b.items || []).forEach((c, k) => { if (Array.isArray(c)) add(`items[${k}][1]`, c[1]); }); break;
+    case 'table': add('head', b.head || []); (b.rows || []).forEach((r, k) => (r || []).forEach((c, m) => add(`rows[${k}][${m}]`, c))); break;
+    case 'compare': for (const side of ['left', 'right']) { const o = b[side] || {}; add(`${side}.title`, o.title); add(`${side}.items`, o.items || []); } add('verdict', b.verdict); break;
+    case 'callout': add('html', b.html); add('title', b.title); break;
+    case 'flow': (b.nodes || []).forEach((n, k) => { if (typeof n === 'string') add(`nodes[${k}]`, n); else if (n) { add(`nodes[${k}].label`, n.label); add(`nodes[${k}].sub`, n.sub); } }); add('caption', b.caption); break;
+    case 'layers': (b.items || []).forEach((l, k) => { add(`items[${k}].name`, l.name); add(`items[${k}].desc`, l.desc); }); break;
+    case 'cards': (b.items || []).forEach((c, k) => { add(`items[${k}].front`, c.front); add(`items[${k}].back`, c.back); }); break;
+    case 'quiz': add('q', b.q); add('options', b.options || []); add('explain', b.explain); break;
+    case 'lab': add('title', b.title); add('goal', b.goal); add('steps', b.steps || []); break;
+    case 'diagram': add('caption', b.caption); break; // `html` : SVG voulu, exempté
+  }
+  return f;
+}
 
 const dir = path.join(__dirname, '..', 'modules');
 const files = process.argv.length > 2 ? process.argv.slice(2) : fs.readdirSync(dir).filter(f => /^m\d+.*\.js$/.test(f)).map(f => path.join(dir, f));
@@ -34,6 +68,16 @@ for (const file of files) {
   if (!Array.isArray(mod.slides)) { err(file, 'slides manquant'); continue; }
   if (mod.num !== 15 && (mod.slides.length < 14 || mod.slides.length > 26)) warn(file, `${mod.slides.length} slides (cible 16-22)`);
 
+  const checkHtml = (where, field, text) => {
+    for (const m of text.matchAll(TAG_RE)) {
+      if (HTML_TAGS.has(m[1].toLowerCase())) continue;
+      const i = m.index, ex = text.slice(Math.max(0, i - 15), i + 30).replace(/\s+/g, ' ');
+      err(file, `${where}, champ ${field} : balise <${m[1]}> non autorisée dans un champ HTML brut (« …${ex}… ») ; écris &lt;${m[1]}&gt;`);
+    }
+  };
+  for (const k of ['tagline']) strs(mod[k]).forEach(t => checkHtml('module', k, t));
+  for (const k of ['objectives', 'takeaways']) strs(mod[k]).forEach(t => checkHtml('module', k, t));
+
   let quizzes = 0, labs = 0;
   mod.slides.forEach((s, i) => {
     const at = `slide ${i + 1} "${s.title}"`;
@@ -43,6 +87,7 @@ for (const file of files) {
     s.blocks.forEach((b, j) => {
       const bt = `${at} bloc ${j + 1} (${b.t})`;
       if (!BLOCKS.includes(b.t)) return err(file, `${bt} : type inconnu`);
+      rawHtmlFields(b).forEach(([field, text]) => checkHtml(bt, field, text));
       const need = { text: ['html'], bullets: ['items'], code: ['code'], cmds: ['items'], table: ['head', 'rows'], compare: ['left', 'right'],
         callout: ['kind', 'html'], flow: ['nodes'], layers: ['items'], cards: ['items'], quiz: ['q', 'options', 'answer'], reveal: ['html'], lab: ['title', 'steps'], diagram: ['html'] }[b.t];
       need.forEach(k => { if (b[k] === undefined) err(file, `${bt} : champ "${k}" manquant`); });
