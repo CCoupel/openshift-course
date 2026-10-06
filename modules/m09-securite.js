@@ -128,9 +128,9 @@ spec:
     command: ["sleep", "3600"]
     securityContext:
       runAsUser: 0           # demande root : refusé par restricted-v2` },
-        { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc apply -f root-pod.yaml\n# Erreur du type : unable to validate against any security context constraint\n\n$ oc get events --sort-by=.lastTimestamp | tail\n\n# Quelles SCC admettraient ce pod pour moi, ou pour un ServiceAccount ?\n$ oc adm policy scc-subject-review -f root-pod.yaml\n$ oc adm policy scc-subject-review -u system:serviceaccount:team-a:mon-sa -f root-pod.yaml" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc apply -f root-pod.yaml\n# Erreur du type : unable to validate against any security context constraint\n\n$ oc get events --sort-by=.lastTimestamp | tail\n\n# Quelles SCC admettraient ce pod pour moi, ou pour un ServiceAccount ?\n$ oc adm policy scc-subject-review -f root-pod.yaml\n$ oc adm policy scc-subject-review -z mon-sa -n team-a -f root-pod.yaml" },
         { t: 'bullets', wide: true, items: [
-          '<code>scc-subject-review</code> renvoie la <b>liste des SCC qui admettraient</b> la ressource, pour un utilisateur ou un compte (<code>-u</code>, <code>-g</code>).',
+          '<code>scc-subject-review</code> renvoie la <b>liste des SCC qui admettraient</b> la ressource, pour un utilisateur (<code>-u</code>), des groupes (<code>-g</code>) ou un ServiceAccount du namespace courant (<code>-z</code>) ; ressource lue avec <code>-f</code>, sortie avec <code>-o</code>.',
           'Pour un Deployment, le pod est créé par un contrôleur : c\'est le <b>ServiceAccount du pod</b> qui compte, pas toi (module 06).'
         ] }
       ]
