@@ -51,7 +51,7 @@ Journée = **7 h effectives** (420 min, hors pauses et déjeuner).
 | 14 Best practices (check-list) | 30 | 15 | 45 |
 | 15 Aide-mémoire & quiz final | 30 | — | 30 |
 | **J3** | **270** | **100** | **370 (marge 50)** |
-| **Total** | **830 (13 h 50)** | **295 (4 h 55)** | **1 105 min ≈ 18 h 25 / 21 h → marge ≈ 2 h 35** |
+| **Total** | **830 (13 h 50)** | **275 (4 h 35)** | **1 105 min ≈ 18 h 25 / 21 h → marge ≈ 2 h 35** |
 
 - J2 est saturé. **Fusible** : le lab 09 bascule en ouverture de J3, qui absorbe 20 min sur ses 50 de marge.
 - Préparation **hors séance** : le module 00 (≈ 30 min d'exposé) et l'installation du cluster de lab (2 à 3 h) se font **avant J1** ; ils ne sont comptés dans aucune journée.
