@@ -194,6 +194,7 @@ COURSE.add({
         { t: 'bullets', items: [
           '<b>Retrait définitif</b> : drain, puis suppression de la Machine (ou du <code>BareMetalHost</code>) si la Machine API gère le nœud ; sinon <code>oc delete node</code> après arrêt.',
           'Un <b>PDB trop strict</b> ou des pods sans contrôleur font échouer le drain : le message dit lequel.',
+          '<b>Sur un SNO</b>, il n\'y a aucun autre nœud : le MCO <b>saute le drain</b> lors des mises à jour et tout redémarre avec le nœud ; un <code>drain</code> manuel couperait routeurs, console et OAuth : <b>seulement dans une fenêtre de maintenance</b>, avec <code>oc adm uncordon</code> comme retour arrière.',
           'Sur bare metal : si ton firmware impose un reboot, <b>drain avant</b> ; le MCO n\'est pas au courant de tes opérations manuelles.'
         ] },
         { t: 'callout', kind: 'tip', html: "<code>--delete-emptydir-data</code> supprime les données <code>emptyDir</code> : elles sont éphémères, mais vérifie qu'aucune appli ne s'en sert comme cache critique." }
@@ -261,8 +262,9 @@ COURSE.add({
           'Lis l\'état de mise à jour : <code>oc get clusterversion</code>, <code>oc adm upgrade</code>, <code>oc adm upgrade recommend</code> ; quel canal ? des mises à jour sont-elles proposées ? des conditions <code>Upgradeable</code> ?',
           'Lance un <code>oc adm must-gather --dest-dir=./mg</code>, parcours le dossier (opérateurs, nœuds, événements) puis une collecte ciblée avec <code>oc adm inspect ns/openshift-ingress</code>.',
           'Dans un projet de test, crée un <code>ResourceQuota</code> et un <code>LimitRange</code> ; dépasse le quota avec un déploiement et lis l\'erreur ; vérifie avec <code>oc describe quota</code>.',
-          'Simule une maintenance : <code>oc adm cordon</code> puis <code>oc adm drain --ignore-daemonsets --delete-emptydir-data</code> sur ton nœud SNO (sur SNO, le drain évince tes pods applicatifs, pas le control plane), observe puis <code>oc adm uncordon</code> et vérifie le retour des pods.',
+          'Simule une maintenance <b>sans rien détruire</b> : <code>oc adm cordon</code> sur ton nœud, puis <code>oc adm drain --dry-run=server --ignore-daemonsets --delete-emptydir-data</code> pour <b>lister</b> ce qui serait évincé (sur SNO, le drain réel évince aussi routeurs, console et OAuth, qui ne peuvent pas être replanifiés ailleurs) ; reviens aussitôt en arrière avec <code>oc adm uncordon</code> et vérifie que le nœud est <code>Ready</code> sans <code>SchedulingDisabled</code>. <b>Ne draine jamais l\'unique nœud d\'un SNO hors fenêtre prévue.</b>',
           '(bonus, E1 jetable ou E2) Mise à jour mineure réelle : sauvegarde etcd (module 11), vérification des pré-contrôles, <code>oc adm upgrade --to=…</code>, suivi avec <code>oc adm upgrade status</code> (sur SNO : le nœud redémarre).',
+          '(bonus, E2) Drain réel sur un <b>worker</b> d\'un cluster multi-nœuds : <code>oc adm cordon</code>, <code>oc adm drain</code>, observe la replanification, puis <code>oc adm uncordon</code>.',
           '(bonus, E2) Mets en pause le pool <code>worker</code> (<code>spec.paused</code>), lance une mise à jour du control plane et observe que les workers ne bougent pas ; reprends le pool ensuite.',
           '(bonus, E2 ou plus) Ajoute un worker avec <code>oc adm node-image create</code> (ou en scalant un MachineSet) et approuve les CSR.'
         ] }
