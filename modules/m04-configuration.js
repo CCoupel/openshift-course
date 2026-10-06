@@ -108,11 +108,11 @@ spec:
   audit:
     profile: Default          # politique d'audit : voir module 06` },
         { t: 'bullets', items: [
-          '<b>Profil TLS</b> : versions de TLS et chiffrements acceptés par l\'API, l\'Ingress et le kubelet (selon les composants) ; <code>Intermediate</code> est le défaut courant.',
+          '<b>Profil TLS</b> : versions de TLS et chiffrements acceptés par l\'API (kube, openshift, OAuth) et le kubelet ; l\'Ingress se règle sur l\'<code>IngressController</code> (module 07) : à vérifier ; <code>Intermediate</code> est le défaut courant.',
           '<b>Chiffrement etcd</b> : désactivé par défaut ; une fois activé, la ré-écriture des objets prend du temps (suivi sur les conditions des opérateurs <code>kube-apiserver</code> et <code>openshift-apiserver</code>).',
           '<b>Certificats nommés</b> : slide suivante.'
         ] },
-        { t: 'callout', kind: 'warn', wide: true, html: "Le chiffrement etcd protège les données <b>au repos dans etcd</b>, pas les sauvegardes déjà prises ni les accès via l'API. Conserve la clé de chiffrement avec les sauvegardes (module 11) : sans elle, la restauration est inutilisable. Types supportés et profils TLS exacts : à vérifier dans les release notes de 4.20." }
+        { t: 'callout', kind: 'warn', wide: true, html: "Le chiffrement etcd protège les données <b>au repos dans etcd</b>, pas les accès via l'API. Il s'applique aux objets ré-écrits après activation : fais une <b>nouvelle sauvegarde etcd</b> après l'activation et protège-la comme un secret (module 11). Ce que contient exactement un snapshot (dont les clés) et ce qu'il faut sauvegarder en plus : <b>à vérifier dans la doc OpenShift 4.20</b>. Types supportés et profils TLS exacts : à vérifier dans les release notes." }
       ]
     },
     {
@@ -122,10 +122,10 @@ spec:
           ['<code>Scheduler.spec.defaultNodeSelector</code>', 'Selector ajouté aux pods qui n\'en ont pas (ex. cibler les workers)', 'S\'applique <b>à tout le cluster</b> ; surchargeable par projet'],
           ['<code>Scheduler.spec.mastersSchedulable</code>', 'Permet des pods applicatifs sur les masters', 'Réservé aux topologies compactes (module 02)'],
           ['<code>Scheduler.spec.profile</code>', 'Profil de scoring (consolidation, répartition…)', 'Valeurs disponibles : à vérifier avec <code>oc explain</code>'],
-          ['<code>FeatureGate</code> <code>TechPreviewNoUpgrade</code>', 'Active les fonctionnalités Tech Preview', '<b>Irréversible</b> et <b>bloque les mises à jour</b> du cluster']
+          ['<code>FeatureGate</code> <code>TechPreviewNoUpgrade</code>', 'Active les fonctionnalités Tech Preview', '<b>Irréversible</b> ; bloque les mises à jour de version mineure (à vérifier)']
         ] },
         { t: 'code', lang: 'bash', file: 'terminal', code: "# Cibler les workers par défaut (exemple)\n$ oc patch scheduler cluster --type merge \\\n    -p '{\"spec\":{\"defaultNodeSelector\":\"node-role.kubernetes.io/worker=\"}}'" },
-        { t: 'callout', kind: 'trap', html: "Un <code>FeatureGate</code> de type Tech Preview sur un cluster de production est une impasse : pas de retour arrière, pas de mises à jour (comportement : à vérifier dans les release notes). Réserve-le aux clusters jetables." },
+        { t: 'callout', kind: 'trap', html: "Un <code>FeatureGate</code> de type Tech Preview sur un cluster de production est une impasse : pas de retour arrière, mises à jour de version mineure bloquées (comportement : à vérifier dans les release notes). Réserve-le aux clusters jetables." },
         { t: 'callout', kind: 'warn', html: "Même logique pour tout composant : une modification <b>hors CR</b> est écrasée à la réconciliation, et passer un opérateur en <code>managementState: Unmanaged</code> ou poser <code>spec.overrides</code> dans <code>ClusterVersion</code> est <b>non supporté</b> et peut bloquer les mises à jour (module 12). Cherche le champ prévu avec <code>oc explain</code>." }
       ]
     },
@@ -152,12 +152,13 @@ spec:
     {
       title: 'Remplacer le certificat de l\'Ingress par défaut',
       blocks: [
-        { t: 'code', lang: 'bash', file: 'terminal', code: "# Secret TLS dans openshift-ingress (chaîne complète dans fullchain.crt)\n$ oc create secret tls custom-ingress-cert \\\n    --cert=fullchain.crt --key=apps.key -n openshift-ingress\n\n# Pointer l'IngressController par défaut dessus\n$ oc patch ingresscontroller.operator.openshift.io default \\\n    -n openshift-ingress-operator --type=merge \\\n    -p '{\"spec\":{\"defaultCertificate\":{\"name\":\"custom-ingress-cert\"}}}'\n\n# Suivre le redéploiement des routeurs, puis tester\n$ oc get pods -n openshift-ingress -w\n$ curl -vI https://console-openshift-console.apps.ocp4.example.com 2>&1 | grep -i issuer" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "# 0. Si la CA qui signe n'est pas déjà de confiance : la déclarer d'abord\n#    (user-ca-bundle + Proxy trustedCA, voir la slide « Faire confiance à une CA »)\n\n# 1. Secret TLS dans openshift-ingress (chaîne complète dans fullchain.crt)\n$ oc create secret tls custom-ingress-cert \\\n    --cert=fullchain.crt --key=apps.key -n openshift-ingress\n\n# 2. Pointer l'IngressController par défaut dessus\n$ oc patch ingresscontroller.operator.openshift.io default \\\n    -n openshift-ingress-operator --type=merge \\\n    -p '{\"spec\":{\"defaultCertificate\":{\"name\":\"custom-ingress-cert\"}}}'\n\n# 3. Suivre le redéploiement des routeurs, puis tester\n$ oc get pods -n openshift-ingress -w\n$ curl -vI https://console-openshift-console.apps.ocp4.example.com 2>&1 | grep -i issuer" },
         { t: 'bullets', frag: true, items: [
           'Le certificat doit couvrir <code>*.apps.&lt;cluster&gt;.&lt;domaine&gt;</code> (SAN wildcard).',
           'Les routeurs sont <b>redéployés</b> (rolling) : prévois une courte fenêtre.',
           'Les clients doivent faire confiance à la CA, y compris les composants internes qui appellent la console ou OAuth.'
         ] },
+        { t: 'callout', kind: 'trap', html: "Si la CA qui signe ce certificat n'est <b>pas déjà de confiance</b> pour le cluster (CA d'entreprise, CA de lab), déclare-la <b>avant</b> de patcher (<code>user-ca-bundle</code> + <code>Proxy.spec.trustedCA</code>) : sinon des composants internes qui appellent la console ou OAuth peuvent ne plus faire confiance au routeur et des opérateurs passer <b>Degraded</b>. Procédure exacte : à vérifier dans la doc « Replacing the default ingress certificate » de 4.20. <b>Retour arrière</b> : retirer <code>spec.defaultCertificate</code> de l\'<code>IngressController</code>." },
         { t: 'callout', kind: 'ocp', html: "L'<code>IngressController</code> (sharding, routes, certificats par route) est traité au module 07 ; ici, seulement le certificat par défaut." }
       ]
     },
@@ -305,7 +306,7 @@ spec:
           ['oc get packagemanifest lvms-operator -n openshift-marketplace -o jsonpath=\'{.status.defaultChannel}\'', 'Canal par défaut d\'un Operator (sinon : <code>oc describe</code>)'],
           ['oc get csv -n openshift-storage', 'Phase <code>Succeeded</code> = installé']
         ] },
-        { t: 'callout', kind: 'warn', html: "Nom du paquet, canal et namespace recommandé de chaque Operator : à lire dans la <b>documentation de l'Operator</b> (exemple : celui de LVMS, module 08). Le canal <code>stable-4.20</code> ci-dessus est un exemple à vérifier." }
+        { t: 'callout', kind: 'warn', html: "Nom du paquet, canal et namespace recommandé de chaque Operator : à lire dans la <b>documentation de l'Operator</b> (exemple : celui de LVMS, module 08 ; son namespace porte des labels spécifiques, à reprendre de la doc). Le canal <code>stable-4.20</code> ci-dessus est un exemple à vérifier." }
       ]
     },
     {
@@ -373,7 +374,7 @@ spec:
     {
       title: 'Console : plugins et personnalisation',
       blocks: [
-        { t: 'code', lang: 'bash', file: 'terminal', code: "# Plugins de la console (fournis par certains Operators)\n$ oc get consoleplugin\n$ oc patch console.operator.openshift.io cluster --type=json \\\n    -p '[{\"op\":\"add\",\"path\":\"/spec/plugins\",\"value\":[\"nom-du-plugin\"]}]'\n\n# Bandeau d'information visible de tous\n$ cat <<'EOF' | oc apply -f -\napiVersion: console.openshift.io/v1\nkind: ConsoleNotification\nmetadata:\n  name: maintenance\nspec:\n  text: Maintenance prévue samedi 22h\n  location: BannerTop\nEOF" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "# Plugins de la console (fournis par certains Operators)\n# Attention : cette commande REMPLACE la liste existante ; pour ajouter à une liste\n# déjà présente, utilise path /spec/plugins/- avec value \"nom-du-plugin\"\n$ oc get consoleplugin\n$ oc patch console.operator.openshift.io cluster --type=json \\\n    -p '[{\"op\":\"add\",\"path\":\"/spec/plugins\",\"value\":[\"nom-du-plugin\"]}]'\n\n# Bandeau d'information visible de tous\n$ cat <<'EOF' | oc apply -f -\napiVersion: console.openshift.io/v1\nkind: ConsoleNotification\nmetadata:\n  name: maintenance\nspec:\n  text: Maintenance prévue samedi 22h\n  location: BannerTop\nEOF" },
         { t: 'bullets', items: [
           'Les <b>plugins</b> (ex. GitOps, virtualisation) apparaissent après installation de l\'Operator <b>et</b> activation dans la CR <code>Console</code>.',
           '<code>ConsoleLink</code>, <code>ConsoleNotification</code>, <code>ConsoleCLIDownload</code> : liens, bandeaux et téléchargements de CLI personnalisés.',
@@ -387,15 +388,15 @@ spec:
       tag: 'à faire',
       blocks: [
         { t: 'table', head: ['Étape', 'Où', 'Module'], rows: [
-          ['Valider l\'installation (<code>oc get co</code>, nœuds, CSR)', 'Après install', '03'],
-          ['Remplacer <code>kubeadmin</code> par un IdP, puis le supprimer', 'OAuth', '06'],
-          ['NTP des nœuds (chrony), proxy et CA d\'entreprise', 'MachineConfig, Proxy', 'Ici'],
-          ['Certificats Ingress et API', 'IngressController, APIServer', 'Ici'],
-          ['Sources de l\'OperatorHub (désactiver communautaire, miroir)', 'OperatorHub', 'Ici, 03'],
-          ['Stockage du registre, du monitoring et du logging', 'ConfigMaps, CR', '08, 05'],
-          ['Sauvegarde etcd planifiée', 'Procédure', '11'],
-          ['Canal de mise à jour et stratégie', 'ClusterVersion', '12'],
-          ['Mettre toute cette configuration sous GitOps', 'Dépôt Git', '10']
+          ['Valider l\'installation (<code>oc get co</code>, nœuds, CSR)', 'Après install', 'module 03'],
+          ['Remplacer <code>kubeadmin</code> par un IdP, puis le supprimer', 'OAuth', 'module 06'],
+          ['NTP des nœuds (chrony), proxy et CA d\'entreprise', 'MachineConfig, Proxy', 'ce module'],
+          ['Certificats Ingress et API', 'IngressController, APIServer', 'ce module'],
+          ['Sources de l\'OperatorHub (désactiver communautaire, miroir)', 'OperatorHub', 'ce module, module 03'],
+          ['Stockage du registre, du monitoring et du logging', 'ConfigMaps, CR', 'modules 08 et 05'],
+          ['Sauvegarde etcd planifiée', 'Procédure', 'module 11'],
+          ['Canal de mise à jour et stratégie', 'ClusterVersion', 'module 12'],
+          ['Mettre toute cette configuration sous GitOps', 'Dépôt Git', 'module 10']
         ] },
         { t: 'callout', kind: 'tip', html: "Idéalement, cette check-list est <b>codée</b> (manifests dans Git, appliqués par GitOps) : le cluster suivant se configure en quelques minutes et on peut prouver à un audit ce qui a été fait." }
       ]
@@ -416,8 +417,11 @@ spec:
         { t: 'lab', title: 'Chrony, certificat Ingress, Operator en approbation manuelle', goal: 'Noyau en séance sur un SNO ou un cluster de lab (cluster-admin). Les étapes (bonus) sont à faire en autonomie.', steps: [
           'Prérequis : environnement E1 (SNO) avec <code>cluster-admin</code>, voir module 00 ; <code>butane</code> et <code>openssl</code> sur ton poste.',
           'Repère la configuration : <code>oc api-resources --api-group=config.openshift.io</code> puis <code>oc get proxy,apiserver,image.config cluster -o yaml</code> ; qu\'est-ce qui est déjà renseigné ?',
-          'Écris un <code>99-…-chrony.bu</code> (rôle du pool de ton nœud : <b>master</b> sur un SNO, à vérifier avec <code>oc get mcp</code>), génère le YAML avec <code>butane</code>, applique-le et suis <code>oc get mcp -w</code> ; contrôle avec <code>chronyc sources</code> via <code>oc debug node/&lt;nœud&gt;</code>.',
-          'Crée une CA de lab et un certificat wildcard <code>*.apps.&lt;cluster&gt;.&lt;domaine&gt;</code> avec <code>openssl</code> ; crée le Secret TLS dans <code>openshift-ingress</code> et patche <code>defaultCertificate</code> ; vérifie l\'émetteur avec <code>curl -vI</code> sur la console.',
+          'Écris un <code>99-…-chrony.bu</code> (rôle du pool de ton nœud : <b>master</b> sur un SNO, à vérifier avec <code>oc get mcp</code>), génère le YAML avec <code>butane</code>, applique-le et suis <code>oc get mcp -w</code> ; contrôle avec <code>chronyc sources</code> via <code>oc debug node/&lt;nœud&gt;</code>. <b>Sur un SNO, le nœud redémarre</b> : l\'API est indisponible quelques minutes.',
+          'Crée une CA de lab et un certificat wildcard <code>*.apps.&lt;cluster&gt;.&lt;domaine&gt;</code> avec <code>openssl</code>.',
+          'Déclare d\'abord ta CA de lab comme CA de confiance du cluster : ConfigMap <code>user-ca-bundle</code> dans <code>openshift-config</code> et <code>Proxy.spec.trustedCA</code> (voir la slide « Faire confiance à une CA » ; procédure à vérifier dans la doc 4.20).',
+          'Crée le Secret TLS dans <code>openshift-ingress</code> et patche <code>defaultCertificate</code> ; attends le redéploiement des routeurs, vérifie que <code>oc get co</code> reste sain et contrôle l\'émetteur avec <code>curl -vI</code> sur la console.',
+          '<b>Retour arrière</b> : retire <code>spec.defaultCertificate</code> de l\'<code>IngressController</code> (<code>oc patch … --type=json -p \'[{"op":"remove","path":"/spec/defaultCertificate"}]\'</code>, à vérifier), attends le redéploiement des routeurs puis supprime le Secret.',
           'Installe un Operator avec <code>installPlanApproval: Manual</code> (Namespace, OperatorGroup, Subscription) ; constate l\'<code>InstallPlan</code> en attente, approuve-le avec <code>oc patch</code> et attends la phase <code>Succeeded</code> du CSV.',
           'Désactive la source <code>community-operators</code> de l\'OperatorHub et vérifie qu\'elle disparaît de <code>oc get catalogsource -n openshift-marketplace</code>.',
           '(bonus) Crée un <code>ConsoleNotification</code> de type bandeau et vérifie qu\'il apparaît dans la console.',
