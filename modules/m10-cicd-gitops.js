@@ -49,6 +49,8 @@ COURSE.add({
       layout: 'two',
       blocks: [
         { t: 'table', head: ['Version', 'Argo CD', 'OCP supportés'], rows: [
+          ['<b>1.21</b>', '3.4.3 (GA)', '4.14, 4.16 à 4.22 (patches suivants : 4.18 à 4.22)'],
+          ['<b>1.20</b>', '3.3.2 (GA)', '4.14, 4.16 à 4.21'],
           ['<b>1.19</b>', '3.1.9 (GA)', '4.14, 4.16 à 4.21'],
           ['<b>1.18</b>', '—', '4.14, 4.16 à 4.20']
         ] },
@@ -56,7 +58,7 @@ COURSE.add({
           'Canal <b><code>latest</code></b> (défaut) ou <code>gitops-&lt;version&gt;</code> pour figer une version mineure.',
           'Namespace d\'installation par défaut : <b><code>openshift-gitops-operator</code></b> (avant la 1.10 : <code>openshift-operators</code>).',
           'Après installation, une <b>instance Argo CD prête à l\'emploi</b> existe dans le namespace <code>openshift-gitops</code>.',
-          'Depuis la 1.18, l\'authentification <b>Keycloak</b> n\'est plus supportée ; l\'<b>Argo CD Agent</b> est GA en 1.19.'
+          'Les versions <b>1.18 à 1.21</b> couvrent toutes OCP 4.20. Depuis la 1.18 : « support is no longer provided for Keycloak-based authentication » (migrer vers Dex) ; l\'<b>Argo CD Agent</b> est passé de Technology Preview (1.17-1.18) à <b>GA en 1.19</b> (notes de version 1.21).'
         ] },
         { t: 'callout', kind: 'warn', wide: true, html: "Choisis la version d'OpenShift GitOps selon la matrice de compatibilité de <b>ta version d'OCP</b> et du <b>cycle de vie</b> de l'Operator (module 12 pour les mises à jour). Statut d'Argo CD CLI et d'ApplicationSet progressive rollout : Technology Preview (doc 1.19)." }
       ]
@@ -103,7 +105,7 @@ spec:
       blocks: [
         { t: 'bullets', frag: true, items: [
           'L\'instance de <code>openshift-gitops</code> est une instance <b>« cluster-scoped »</b> : prévue pour que les admins gèrent certaines ressources de configuration du cluster.',
-          'Par défaut, elle a les droits <code>admin</code> <b>seulement dans son propre namespace</b> et un accès en <b>lecture</b> au reste du cluster : « <b>Argo CD n\'a pas <code>cluster-admin</code></b> ».',
+          'Par défaut, elle gère <b>un jeu limité de ressources de cluster</b> (la doc cite : cluster Operators, Operators OLM facultatifs, gestion des utilisateurs), a les droits <code>admin</code> <b>seulement dans son propre namespace</b> et des droits de <b>lecture</b> (<code>get</code>, <code>list</code>, <code>watch</code>) sur les ressources du cluster, nécessaires à son fonctionnement : « <b>Argo CD n\'a pas <code>cluster-admin</code></b> ».',
           'Un namespace géré par l\'instance doit porter le label <code>argocd.argoproj.io/managed-by=openshift-gitops</code>.',
           'Pour gérer d\'autres ressources de cluster, tu crées un <code>ClusterRole</code> et un <code>ClusterRoleBinding</code> pour le compte de service <code>openshift-gitops-argocd-application-controller</code>.'
         ] },
@@ -161,7 +163,7 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true` },
+    - ApplyOutOfSyncOnly=true` },
         { t: 'code', lang: 'yaml', file: 'depot-prive.yaml (dépôt privé, HTTPS)', code: `apiVersion: v1
 kind: Secret
 metadata:
@@ -177,6 +179,7 @@ stringData:
         { t: 'bullets', items: [
           '<b>Dépôt privé</b> : les identifiants se déclarent dans un <b>Secret</b> portant le label <code>argocd.argoproj.io/secret-type: repository</code>, avec <code>type: git</code>, <code>url</code> et <code>username</code>/<code>password</code> (HTTPS) ou <code>sshPrivateKey</code> (SSH), dans le <b>namespace de l\'instance</b> (doc Argo CD) ; ce Secret ne se met <b>pas</b> en clair dans Git (slide secrets).',
           '<code>destination.server: https://kubernetes.default.svc</code> : le <b>cluster où tourne Argo CD</b>.',
+          '<b>Namespace</b> : <code>gitops-lab</code> existe déjà avec le label <code>argocd.argoproj.io/managed-by=openshift-gitops</code> (étape 3 du lab) ; <code>CreateNamespace=true</code> ne suffirait pas à lui seul si l\'instance n\'a pas le droit de créer un namespace.',
           '<code>automated</code> + <code>prune</code> + <code>selfHeal</code> : synchronisation automatique, suppression des ressources retirées de Git, correction de la dérive.',
           '<code>repoURL</code> est un <b>exemple</b> : mets l\'URL de <b>ton</b> dépôt (public ou interne, joignable depuis le cluster).'
         ] },
