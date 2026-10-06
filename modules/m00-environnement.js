@@ -42,8 +42,8 @@ COURSE.add({
         { t: 'table', head: ['Niveau du noyau', 'Modules', 'Bonus / remarque'], rows: [
           ['<b>Poste de travail</b> (E0 suffit)', '03 Installation', 'Bonus : E1 (cluster) et accès réseau pour <code>oc-mirror</code>'],
           ['<b>E0</b> (OpenShift Local ou tout cluster)', '01 K8s vs OCP, 06 HBAC / RBAC (E0 ou E1)', '—'],
-          ['<b>E1</b> (SNO)', '02 Architecture, 04 Configuration, 08 Stockage (LVMS ou StorageClass CSI)', 'Bonus : 02 MachineConfig <code>/etc/motd</code> (redémarre le SNO), 04 certificat Ingress (cluster jetable), bannière console et OLM v1, 08 provoquer une erreur de PVC'],
-          ['<b>E1</b> (modules à venir, selon le plan)', '05, 07, 09, 11 (+ stockage S3), 12, 14 ; 10 (E0/E1 + dépôt Git)', 'Plan susceptible d\'évoluer'],
+          ['<b>E1</b> (SNO)', '02 Architecture, 04 Configuration, 08 Stockage (LVMS ou StorageClass CSI), 09 Sécurité avancée (SCC dédiée, Compliance Operator ; lab fusible J3)', 'Bonus : 02 MachineConfig <code>/etc/motd</code> (redémarre le SNO), 04 certificat Ingress (cluster jetable), bannière console et OLM v1, 08 provoquer une erreur de PVC, 09 lecture du scan, PSA warn/audit, chiffrement etcd (cluster jetable), File Integrity'],
+          ['<b>E1</b> (modules à venir, selon le plan)', '05, 07, 11 (+ stockage S3), 12, 14 ; 10 (E0/E1 + dépôt Git)', 'Plan susceptible d\'évoluer'],
           ['<b>E2</b> (compact)', 'Étapes bonus <b>prévues au plan</b> : MetalLB et EgressIP (07), mise à jour réelle (12) ; aucun lab rédigé n\'exige E2 à ce jour', 'Selon le plan'],
           ['<b>E3</b> (bare metal)', '13 Virtualisation (volet VM)', 'Le volet Serverless reste en E1']
         ] },

@@ -152,10 +152,10 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 #### 09 — Sécurité avancée ⬜ (`m09-securite.js`)
 - **Objectif** : maîtriser la sécurité des workloads et de la plateforme au-delà du RBAC. **Propriétaire unique des SCC** (P7).
-- **Traité** : SCC en profondeur (stratégies UID/SELinux/fsGroup, priorité de sélection, `restricted-v2`, création d'un SCC dédié, `scc-subject-review`) ; articulation SCC ↔ Pod Security Admission (synchronisation des labels) ; sécurité des images (sources autorisées, signatures sigstore / `ClusterImagePolicy`) ; secrets (chiffrement etcd, External Secrets / Secrets Store CSI avec Vault) ; Compliance Operator (profils CIS/ANSSI selon disponibilité), File Integrity Operator ; RHCOS (SELinux, FIPS à l'installation) ; ACS en survol.
+- **Traité** : SCC en profondeur (stratégies UID/SELinux/fsGroup, priorité de sélection, `restricted-v2`, création d'un SCC dédié, `scc-subject-review`) ; articulation SCC ↔ Pod Security Admission (synchronisation des labels) ; sécurité des images (sources autorisées, signatures sigstore / `ClusterImagePolicy`) ; secrets (chiffrement etcd, External Secrets / Secrets Store CSI avec Vault) ; Compliance Operator (profils CIS, PCI-DSS, FedRAMP, STIG… ; aucun profil ANSSI dans la liste supportée de la doc 4.20), File Integrity Operator ; RHCOS (SELinux, FIPS à l'installation) ; ACS en survol.
 - **Renvoyé** : RBAC et autorisation `use` des SCC → 06 ; NetworkPolicy → 07 ; politique d'audit → 06 ; sources de registres (configuration) → 04.
 - **Durée** : ≈ 60 min + lab 20 min (**fusible J2**, cf. §2). **Lab** : E1 (diagnostiquer un pod refusé, SCC dédié minimal, scan Compliance Operator) ; bonus : chiffrement etcd.
-- **À vérifier** : statut PSA (enforce global ou non) en 4.20 ; GA de `ClusterImagePolicy` ; profils disponibles dans le Compliance Operator ; algorithmes de chiffrement etcd (aescbc / aesgcm).
+- **À vérifier** : statut PSA (enforce global ou non) en 4.20 ; `ClusterImagePolicy` / `ImagePolicy` GA en 4.20 (`config.openshift.io/v1`) ; politique par défaut `openshift` et BYOPKI en Technology Preview en 4.20, GA en 4.21 (release notes 4.21) ; profils disponibles dans le Compliance Operator ; algorithmes de chiffrement etcd (aescbc / aesgcm).
 
 ### Jour 3 — Exploiter dans la durée
 
@@ -204,7 +204,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 04, 06 et 08) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 04, 06, 08 et 09) ; les lignes des modules à venir restent le plan.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -217,7 +217,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 06 | E0 ou E1 | (bonus : audit) |
 | 07 | E1 | E2 (MetalLB, EgressIP) |
 | 08 | E1 (LVMS ou StorageClass CSI) | E1 (provoquer une erreur de PVC) ; ODF (E2) non rédigé |
-| 09 | E1 | E1 |
+| 09 | E1 (pod refusé et diagnostic, SCC dédiée + RBAC, installation du Compliance Operator et `ScanSettingBinding` CIS) ; lab fusible J3 | E1 : lecture du scan et d'une remédiation, PSA warn/audit, chiffrement etcd (cluster jetable), File Integrity Operator |
 | 10 | E0/E1 + dépôt Git | — |
 | 11 | E1 + S3 | E1 jetable (restauration etcd) |
 | 12 | E1 | E1/E2 (mise à jour réelle) |
