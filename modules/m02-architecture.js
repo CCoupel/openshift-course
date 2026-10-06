@@ -2,7 +2,7 @@ COURSE.add({
   id: 'm02', num: 2, emoji: '🏗️',
   title: 'Architecture',
   tagline: 'Sous le capot : nœuds, OS immuable, etcd, opérateurs et Machine API. Qui fait quoi, et qui parle à qui.',
-  duration: '≈ 60 min',
+  duration: '≈ 60 min + lab 20 min',
   objectives: [
     'Décrire un cluster OCP : control plane, workers, nœuds infra',
     'Comprendre RHCOS, rpm-ostree, CRI-O et Ignition',
@@ -29,9 +29,9 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Rôle', 'Label', 'Contient', 'À savoir'], rows: [
           ['<b>master</b> (control plane)', '<code>node-role.kubernetes.io/master</code> (et <code>control-plane</code>)', 'apiserver, etcd, scheduler, controller-manager, opérateurs', 'Taint <code>NoSchedule</code> par défaut. RHCOS uniquement.'],
-          ['<b>worker</b>', '<code>node-role.kubernetes.io/worker</code>', 'Pods applicatifs', 'RHCOS (RHEL possible mais déconseillé, voir release notes)'],
+          ['<b>worker</b>', '<code>node-role.kubernetes.io/worker</code>', 'Pods applicatifs', 'RHCOS (nœuds de calcul RHEL : dépréciation / retrait à vérifier dans les release notes)'],
           ['<b>infra</b>', '<code>node-role.kubernetes.io/infra</code>', 'Router, registre, Prometheus, logging', 'Convention : ce n\'est pas un rôle natif, tu le crées toi-même'],
-          ['<b>arbiter</b> / edge', 'selon topologie', 'Topologies 2 nœuds', 'Récent : à vérifier dans les release notes']
+          ['<b>arbiter</b> / edge', 'selon topologie', 'Topologies 2 nœuds', 'Récent : statut en 4.20 (technology preview ou GA) à vérifier dans les release notes']
         ] },
         { t: 'callout', kind: 'trap', html: 'Un nœud est « worker » parce qu\'il porte le label <code>worker</code> <b>et</b> appartient au MachineConfigPool <code>worker</code>. Le label seul ne change pas la configuration OS : c\'est le pool qui compte (slide MCO).' }
       ]
@@ -131,7 +131,7 @@ $ oc get co etcd
 $ oc rsh -n openshift-etcd -c etcdctl etcd-master-0
 sh-5$ etcdctl endpoint status --cluster -w table
 sh-5$ etcdctl endpoint health --cluster -w table` },
-        { t: 'callout', kind: 'tip', html: 'Un script de sauvegarde est fourni sur les masters : <code>/usr/local/bin/cluster-backup.sh</code>, à lancer via <code>oc debug node/&lt;master&gt;</code> puis <code>chroot /host</code>. Le sujet est traité au module Backup &amp; DR.' },
+        { t: 'callout', kind: 'tip', html: 'Un script de sauvegarde est fourni sur les masters : <code>/usr/local/bin/cluster-backup.sh</code>, à lancer via <code>oc debug node/master-0</code> puis <code>chroot /host</code>. Le sujet est traité au module 11 (Backup &amp; DR).' },
         { t: 'callout', kind: 'trap', html: 'Ne redimensionne pas/ne supprime pas à la main des membres etcd, et ne restaure pas un snapshot sans suivre la procédure officielle : un restore mal fait casse le cluster entier.' }
       ]
     },
@@ -161,7 +161,7 @@ sh-5$ etcdctl endpoint health --cluster -w table` },
         ], caption: 'Les nœuds, eux, passent par <b>api-int</b> (entrée interne) : même chemin, autre nom DNS.' },
         { t: 'bullets', frag: true, items: [
           '<b>Authn</b> : certificat client, ou token OAuth (validé via les API OAuth agrégées).',
-          '<b>Authz</b> : RBAC (module 6). <b>Admission</b> : SCC, quotas, webhooks…',
+          '<b>Authz</b> : RBAC (module 06). <b>Admission</b> : SCC (module 09), quotas, webhooks…',
           'Pour une ressource <code>route.openshift.io</code> : l\'apiserver relaie à <b>openshift-apiserver</b>, qui écrit aussi dans etcd.',
           'Le LB fait du <b>TCP passthrough</b> : le TLS est terminé par le kube-apiserver lui-même.'
         ] },
@@ -175,7 +175,7 @@ sh-5$ etcdctl endpoint health --cluster -w table` },
         { t: 'compare', wide: true,
           left: { title: '🏢 UPI / platform none', items: ['LB externe à fournir (HAProxy, F5, NSX-ALB…)', 'DNS : <code>api</code>, <code>api-int</code>, <code>*.apps</code>', 'Un LB L4 pour 6443/22623, un pour 80/443', 'Tu gères la HA du LB lui-même'] },
           right: { title: '🏢 IPI bare metal / vSphere', items: ['Deux <b>VIP</b> : <code>apiVIPs</code> et <code>ingressVIPs</code>', 'keepalived (VRRP) les fait flotter entre nœuds', 'Un haproxy interne répartit sur les masters', 'DNS à créer quand même, vers les VIP'] },
-          verdict: 'Dans les deux cas, le DNS est à toi. Les VIP IPI exigent un même domaine L2 pour VRRP.' },
+          verdict: 'Dans les deux cas, le DNS est à toi. Les VIP IPI exigent un même domaine L2 pour VRRP. Mise en œuvre à l\'installation : module 03.' },
         { t: 'callout', kind: 'cloud', wide: true, html: 'En cloud (IaaS), l\'installeur crée les <b>LB natifs</b> (ELB, Azure LB…) et les enregistrements DNS. Aucun VIP keepalived, aucune zone DNS à construire à la main.' }
       ]
     },
@@ -295,7 +295,7 @@ spec:
           'Le label <code>role</code> choisit le <b>pool</b> ciblé.',
           'Un nouveau <code>rendered-worker-…</code> est généré, puis les nœuds sont traités <b>un par un</b> (<code>maxUnavailable</code> = 1 par défaut) : <b>drain → apply → reboot</b>.',
           'Pour suspendre : <code>oc patch mcp/worker --type merge -p \'{"spec":{"paused":true}}\'</code> (ne pas oublier de reprendre !).',
-          'Certains changements peuvent éviter le reboot (node disruption policies) : à vérifier dans les release notes de ta version.'
+          'Certains changements peuvent éviter le reboot (node disruption policies) : statut en 4.20 à vérifier dans les release notes. MachineConfig d\'usage (chrony, kargs) : module 04.'
         ] },
         { t: 'callout', kind: 'trap', wide: true, html: 'Un MachineConfig, c\'est <b>un rolling reboot de tout un pool</b>. 3 masters = 3 reboots successifs ; 40 workers = long. Regroupe tes changements, planifie-les, et vérifie les PodDisruptionBudgets avant. Un pool <b>Degraded</b> (fichier modifié à la main, mauvais Ignition) bloque aussi les upgrades.' }
       ]
@@ -307,7 +307,7 @@ spec:
           ['<b>Standard (3+N)</b>', '3 masters + N workers (+ infra)', 'Oui', 'Production générale'],
           ['<b>Compact 3 nœuds</b>', '3 masters <b>schedulables</b>, 0 worker', 'Oui (control plane)', 'Petits sites, labo, edge'],
           ['<b>SNO</b> (Single Node)', '1 nœud : master + worker', 'Non', 'Edge, télécom, labo'],
-          ['<b>2 nœuds</b> (arbiter / fencing)', '2 nœuds + arbitre ou fencing', 'Partielle', 'Edge, récent : à vérifier dans les release notes'],
+          ['<b>2 nœuds</b> (arbiter / fencing)', '2 nœuds + arbitre ou fencing', 'Partielle', 'Edge, récent : statut en 4.20 à vérifier dans les release notes'],
           ['<b>Hosted Control Planes</b>', 'Control plane en pods, workers séparés', 'Oui', 'Parc de clusters, densification']
         ] },
         { t: 'callout', kind: 'tip', html: 'Compact : dans <code>install-config.yaml</code>, <code>compute.replicas: 0</code> ; l\'installeur rend alors les masters schedulables (<code>mastersSchedulable</code>). Prévois du CPU/RAM en conséquence : les opérateurs consomment déjà beaucoup.' },
@@ -322,7 +322,7 @@ spec:
           left: { title: '🧠 Standard', items: ['3 masters dédiés (VM ou serveurs)', 'etcd sur les masters', 'Un cluster = 3 machines de control plane', 'Simple à raisonner'] },
           right: { title: '☁️ Hosted Control Planes', items: ['Control plane = <b>pods</b> dans un cluster « de management »', 'etcd par cluster hébergé, en pods', 'Workers séparés (agent, KubeVirt, vSphere…)', 'Création de clusters rapide, moins de ressources'] },
           verdict: 'Idéal pour beaucoup de petits clusters ; ROSA HCP en est la version managée.' },
-        { t: 'callout', kind: 'onprem', wide: true, html: 'On-prem, HCP s\'appuie sur le cluster de management (avec MCE/ACM) et typiquement le provider <b>Agent</b> (bare metal) ou <b>KubeVirt</b>. Les plateformes supportées et le niveau de maturité évoluent vite : à vérifier dans la doc « Hosted control planes ».' }
+        { t: 'callout', kind: 'onprem', wide: true, html: 'On-prem, HCP s\'appuie sur le cluster de management (avec MCE/ACM) et typiquement le provider <b>Agent</b> (bare metal) ou <b>KubeVirt</b>. Les plateformes supportées et le niveau de maturité évoluent vite : plateformes on-prem supportées en 4.20 à vérifier dans la doc « Hosted control planes ».' }
       ]
     },
     {
@@ -357,7 +357,7 @@ $ oc adm taint nodes infra-0 node-role.kubernetes.io/infra=reserved:NoSchedule` 
           ['<b>30000-32767</b>', 'NodePort', 'Selon tes Services'],
           ['<b>123/UDP</b>', 'NTP', 'Nœuds → serveurs de temps']
         ] },
-        { t: 'callout', kind: 'onprem', html: 'Ouvre ces ports entre <b>tous les nœuds</b> (firewalls, security groups NSX/vSphere). Liste exhaustive et à jour : doc « Network connectivity requirements ». Sur vSphere, un pare-feu distribué qui bloque Geneve donne des pods qui ne se parlent pas entre nœuds.' }
+        { t: 'callout', kind: 'onprem', html: 'Ouvre ces ports entre <b>tous les nœuds</b> (firewalls, security groups NSX/vSphere). Liste exhaustive et à jour : doc « Network connectivity requirements ». Mise en œuvre à l\'installation : module 03. Sur vSphere, un pare-feu distribué qui bloque Geneve donne des pods qui ne se parlent pas entre nœuds.' }
       ]
     },
     {
@@ -374,14 +374,15 @@ $ oc adm taint nodes infra-0 node-role.kubernetes.io/infra=reserved:NoSchedule` 
       tag: 'lab',
       blocks: [
         { t: 'lab', title: 'Disséquer ton cluster', goal: 'Cluster de test en cluster-admin (un SNO ou un cluster de labo suffit).', steps: [
+          'Prérequis : environnement E1 (SNO) ou plus, accès cluster-admin, voir module 00',
           'Liste les nœuds : <code>oc get nodes -o wide</code>. Repère rôles, OS image et runtime (CRI-O).',
           'Affiche la version et la santé : <code>oc get clusterversion</code> puis <code>oc get co</code>. Y a-t-il un opérateur <i>Degraded</i> ?',
           'Cherche les pods du control plane : <code>oc get pods -n openshift-kube-apiserver</code>, <code>-n openshift-etcd</code>, <code>-n openshift-apiserver</code>.',
-          'Lance <code>oc debug node/&lt;master&gt;</code> puis <code>chroot /host</code> et <code>rpm-ostree status</code> : quelle image OS ?',
+          'Lance <code>oc debug node/master-0</code> puis <code>chroot /host</code> et <code>rpm-ostree status</code> : quelle image OS ?',
           'Dans un pod etcd, exécute <code>etcdctl endpoint status --cluster -w table</code> : qui est leader ?',
           'Regarde les pools : <code>oc get mcp</code> et <code>oc get mc</code>. Identifie les <code>rendered-*</code>.',
           '<code>oc get machinesets,machines -n openshift-machine-api</code> : vide ou non ? Explique pourquoi selon ton mode d\'installation.',
-          'Bonus : crée un MachineConfig inoffensif (<code>/etc/motd</code>) sur un pool de test et observe <code>oc get mcp -w</code>. Supprime-le ensuite.'
+          '(bonus) Crée un MachineConfig inoffensif (<code>/etc/motd</code>) sur un pool de test et observe <code>oc get mcp -w</code>. Supprime-le ensuite.'
         ] }
       ]
     }

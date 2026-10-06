@@ -2,7 +2,7 @@ COURSE.add({
   id: 'm08', num: 8, emoji: '💾',
   title: 'Stockage',
   tagline: "Sur OpenShift on-prem, le stockage persistant n'est pas fourni : c'est toi qui choisis le backend, et c'est là que les projets déraillent.",
-  duration: '≈ 60 min',
+  duration: '≈ 60 min + lab 20 min',
   objectives: [
     "Choisir un backend de stockage on-prem adapté (vSphere CSI, LVMS, LSO, NFS, baie SAN via CSI, ODF)",
     "Maîtriser StorageClass, modes d'accès, expansion, snapshots et clones",
@@ -75,7 +75,7 @@ COURSE.add({
         { t: 'code', lang: 'yaml', file: 'lvmcluster.yaml', code: "apiVersion: lvm.topolvm.io/v1alpha1\nkind: LVMCluster\nmetadata:\n  name: my-lvmcluster\n  namespace: openshift-storage\nspec:\n  storage:\n    deviceClasses:\n    - name: vg1\n      default: true\n      thinPoolConfig:\n        name: thin-pool-1\n        sizePercent: 90\n        overprovisionRatio: 10" },
         { t: 'callout', kind: 'tip', html: "LVMS crée une StorageClass nommée <code>lvms-&lt;deviceClass&gt;</code> (ici <code>lvms-vg1</code>). Le volume est <b>local à un nœud</b> : si le nœud tombe, les données sont indisponibles." },
         { t: 'text', html: "<p><b>Local Storage Operator (LSO)</b> : pas de provisionnement dynamique. Il découvre les disques (<code>LocalVolumeDiscovery</code>) et crée des <b>PV statiques</b> (<code>LocalVolume</code> / <code>LocalVolumeSet</code>) avec une StorageClass <code>no-provisioner</code>. Brique de base d'ODF sur bare metal.</p>" },
-        { t: 'callout', kind: 'warn', wide: true, html: "Les disques fournis à LVMS ou LSO doivent être <b>vierges</b> (sans signature de filesystem ou partition). Les versions récentes de LVMS ajoutent des options de sélection de disques : à vérifier dans la doc de ta version." }
+        { t: 'callout', kind: 'warn', wide: true, html: "Les disques fournis à LVMS ou LSO doivent être <b>vierges</b> (sans signature de filesystem ou partition). Les versions récentes de LVMS ajoutent des options de sélection de disques : options disponibles en 4.20 à vérifier dans la doc de ta version." }
       ]
     },
     {
@@ -128,7 +128,7 @@ COURSE.add({
           ['Objet S3 (sur Ceph)', 'RGW', '<code>ocs-storagecluster-ceph-rgw</code> (selon plateforme)', 'ObjectBucketClaim'],
           ['Objet S3 (multi-cloud)', 'MCG / NooBaa', '<code>openshift-storage.noobaa.io</code>', 'ObjectBucketClaim']
         ] },
-        { t: 'callout', kind: 'tip', html: "Le RWX en mode <code>volumeMode: Block</code> sur RBD est utilisé notamment pour la migration à chaud de VM (OpenShift Virtualization, module 13)." }
+        { t: 'callout', kind: 'tip', html: "Le RWX en mode <code>volumeMode: Block</code> sur RBD est utilisé notamment pour la migration à chaud de VM (OpenShift Virtualization : VM et migration à chaud, module 13)." }
       ]
     },
     {
@@ -215,9 +215,9 @@ COURSE.add({
         { t: 'bullets', items: [
           "Cible : p99 de <code>etcd_disk_wal_fsync_duration_seconds</code> <b>inférieur à 10 ms</b>.",
           "Disque <b>SSD ou NVMe dédié</b> aux masters, pas de stockage réseau partagé et saturé.",
-          "À surveiller aussi : <code>etcd_disk_backend_commit_duration_seconds</code> et les alertes etcd du monitoring (module 5)."
+          "À surveiller aussi : <code>etcd_disk_backend_commit_duration_seconds</code> et les alertes etcd du monitoring (module 05)."
         ] },
-        { t: 'code', lang: 'bash', file: 'terminal', caption: 'Test fio de référence de la doc Red Hat, à lancer sur un master avant mise en prod.', code: "$ oc debug node/<master>\nsh-4.4# chroot /host\n# mkdir -p /var/lib/etcd-test && cd /var/lib/etcd-test\n# fio --rw=write --ioengine=sync --fdatasync=1 --directory=. --size=22m --bs=2300 --name=etcd-test\n# Regarder fsync/fdatasync : percentile 99 < 10 ms" },
+        { t: 'code', lang: 'bash', file: 'terminal', caption: 'Test fio de référence de la doc Red Hat, à lancer sur un master avant mise en prod.', code: "$ oc debug node/master-0\nsh-5.1# chroot /host\n# mkdir -p /var/lib/etcd-test && cd /var/lib/etcd-test\n# fio --rw=write --ioengine=sync --fdatasync=1 --directory=. --size=22m --bs=2300 --name=etcd-test\n# Regarder fsync/fdatasync : percentile 99 < 10 ms" },
         { t: 'callout', kind: 'onprem', html: "Sur vSphere, place les VM masters sur un datastore SSD/NVMe à faible latence, avec <b>réservation de ressources</b>. Un datastore partagé avec des VM bruyantes est la cause n°1 des instabilités etcd." },
         { t: 'callout', kind: 'cloud', html: "En cloud, on choisit des volumes à IOPS garanties pour les masters. En managé (ROSA/ARO), etcd n'est plus ton problème." }
       ]
@@ -240,7 +240,7 @@ COURSE.add({
     {
       title: "Stockage du monitoring et du logging",
       blocks: [
-        { t: 'text', html: "<p>Par défaut, <b>Prometheus et Alertmanager n'ont pas de stockage persistant</b> sur un cluster fraîchement installé : au redémarrage du pod, les métriques sont perdues. Il faut le demander dans le ConfigMap de monitoring.</p>" },
+        { t: 'text', html: "<p>Par défaut, <b>Prometheus et Alertmanager n'ont pas de stockage persistant</b> sur un cluster fraîchement installé : au redémarrage du pod, les métriques sont perdues. Il faut le demander dans le ConfigMap de monitoring (configuration complète : module 05).</p>" },
         { t: 'code', lang: 'yaml', file: 'cluster-monitoring-config.yaml', code: "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: cluster-monitoring-config\n  namespace: openshift-monitoring\ndata:\n  config.yaml: |\n    prometheusK8s:\n      retention: 15d\n      volumeClaimTemplate:\n        spec:\n          storageClassName: fast-block\n          resources:\n            requests:\n              storage: 100Gi\n    alertmanagerMain:\n      volumeClaimTemplate:\n        spec:\n          storageClassName: fast-block\n          resources:\n            requests:\n              storage: 2Gi" },
         { t: 'callout', kind: 'ocp', html: "<b>Logging</b> : le stockage des logs est désormais de l'<b>objet S3</b> via <b>LokiStack</b> (Loki Operator). Prévois un bucket (ODF/NooBaa, MinIO, baie S3) en plus d'un PVC pour les composants Loki. Elasticsearch est déprécié pour cet usage : à vérifier dans les release notes de ta version." },
         { t: 'callout', kind: 'tip', html: "Mets le monitoring sur du <b>bloc rapide</b> (RWO). Les TSDB Prometheus ne supportent pas bien NFS." }
@@ -257,7 +257,7 @@ COURSE.add({
           "<b>NFS</b> : <code>fsGroup</code> n'est pas appliqué. Les droits se règlent côté export (<code>supplementalGroups</code>, GID de l'export, <code>anyuid</code> en dernier recours).",
           "<b>SELinux</b> : le relabeling des volumes peut être long sur de gros volumes ; <code>Permission denied</code> alors que les droits unix sont bons = penser au contexte SELinux."
         ] },
-        { t: 'callout', kind: 'trap', html: "Réflexe à éviter : <code>anyuid</code> « pour que ça marche ». Commence par vérifier <code>id</code> dans le pod, le <code>fsGroup</code> et les droits du point de montage." }
+        { t: 'callout', kind: 'trap', html: "Réflexe à éviter : <code>anyuid</code> « pour que ça marche ». Commence par vérifier <code>id</code> dans le pod, le <code>fsGroup</code> et les droits du point de montage. SCC en détail : module 09." }
       ]
     },
     {
@@ -301,13 +301,14 @@ COURSE.add({
       tag: 'lab',
       blocks: [
         { t: 'lab', title: 'Cycle de vie complet d\'un volume', goal: "Cluster avec une StorageClass CSI qui supporte snapshot et expansion (LVMS, ODF ou vSphere CSI). Remplace &lt;SC&gt; par son nom.", steps: [
+          "Prérequis : environnement E1 (SNO avec LVMS, ou cluster avec une StorageClass CSI), voir module 00",
           "Liste l'existant : <code>oc get sc</code>, <code>oc get csidriver</code>, <code>oc get volumesnapshotclass</code>. Laquelle est par défaut ?",
           "Crée un projet : <code>oc new-project lab-stockage</code>",
           "Crée un PVC 1Gi RWO sur <code>&lt;SC&gt;</code> : en <i>Pending</i> ? Lis <code>oc describe pvc</code> et explique pourquoi (WaitForFirstConsumer).",
           "Lance un pod qui monte le PVC et écrit un fichier : <code>oc run writer --image=registry.access.redhat.com/ubi9/ubi --command -- sleep infinity</code>, puis ajoute le volume (YAML), et vérifie <code>id</code> et <code>ls -ld</code> du point de montage.",
           "Crée un <code>VolumeSnapshot</code> du PVC, attends <code>readyToUse: true</code>, puis restaure-le dans un nouveau PVC (<code>dataSource</code>).",
           "Agrandis le PVC à 2Gi avec <code>oc patch pvc</code> et vérifie la taille avec <code>df -h</code> dans le pod.",
-          "Provoque une erreur : supprime le PVC pendant que le pod tourne. Observe <i>Terminating</i> et le finalizer, puis supprime le pod.",
+          "(bonus) Provoque une erreur : supprime le PVC pendant que le pod tourne. Observe <i>Terminating</i> et le finalizer, puis supprime le pod.",
           "Nettoie : <code>oc delete project lab-stockage</code>. Que devient le PV ? (regarde la <code>reclaimPolicy</code>)"
         ] }
       ]

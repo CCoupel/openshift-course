@@ -2,7 +2,7 @@ COURSE.add({
   id: 'm01', num: 1, emoji: '⚖️',
   title: 'K8s vs OCP',
   tagline: 'Même moteur, autre carrosserie : ce qu\'OpenShift ajoute, impose et renomme.',
-  duration: '≈ 45 min',
+  duration: '≈ 45 min + lab 15 min',
   objectives: [
     'Situer OCP par rapport à un Kubernetes « vanilla » que tu connais déjà',
     'Maîtriser le dictionnaire K8s ↔ OCP (Project, Route, SCC, ImageStream…)',
@@ -53,7 +53,7 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Sujet', '☸️ K8s vanilla', '🔴 OpenShift'], rows: [
           ['Installation', 'kubeadm, Kubespray, Cluster API…', '<code>openshift-install</code> (IPI/UPI), Assisted/Agent installer'],
-          ['OS des nœuds', 'Libre (Ubuntu, RHEL…)', 'RHCOS (control plane), RHCOS ou RHEL (workers, RHEL déconseillé)'],
+          ['OS des nœuds', 'Libre (Ubuntu, RHEL…)', 'RHCOS (control plane), RHCOS (workers : nœuds RHEL : dépréciation / retrait à vérifier dans les release notes)'],
           ['Réseau (CNI)', 'Calico, Cilium, Flannel…', 'OVN-Kubernetes (Cilium non supporté nativement)'],
           ['Exposition HTTP', 'Ingress + contrôleur à choisir', 'Router HAProxy via l\'Ingress Operator, objets <code>Route</code>'],
           ['Authentification', 'OIDC / webhook à configurer', 'OAuth server intégré + Identity Providers'],
@@ -92,7 +92,7 @@ COURSE.add({
           { front: 'Tag d\'image mutable', back: '<b>ImageStreamTag</b>' },
           { front: 'Ajouter un worker (kubeadm join)', back: '<b>MachineSet</b> → Machine → Node' },
           { front: 'Éditer /etc sur un nœud', back: '<b>MachineConfig</b> (ou ne pas le faire)' },
-          { front: 'Helm chart d\'un opérateur', back: '<b>OLM</b> / OperatorHub (Subscription)' },
+          { front: 'Helm chart d\'un opérateur', back: '<b>OLM</b> / OperatorHub (Subscription) — module 04' },
           { front: 'kubectl', back: '<b>oc</b>, mais kubectl marche aussi' }
         ] }
       ]
@@ -122,7 +122,7 @@ COURSE.add({
       title: 'SCC : la 1ère surprise en migrant',
       tag: 'piège n°1',
       blocks: [
-        { t: 'text', html: '<p>Par défaut, un pod tourne avec le SCC <code>restricted-v2</code> : <b>UID aléatoire dans une plage attribuée au namespace, aucun root, capabilities supprimées, pas de hostPath, etc.</b> Beaucoup d\'images « Docker Hub » plantent à cause de ça.</p>' },
+        { t: 'text', html: '<p>Par défaut, un pod tourne avec le SCC <code>restricted-v2</code> : <b>UID aléatoire dans une plage attribuée au namespace, aucun root, capabilities supprimées, pas de hostPath, etc.</b> Beaucoup d\'images « Docker Hub » plantent à cause de ça. <i>Détails (stratégies, priorités, création de SCC) : module 09.</i></p>' },
         { t: 'code', lang: 'bash', file: 'terminal', code: '# Quel SCC un pod a-t-il reçu ?\n$ oc get pod web-abc -o jsonpath=\'{.metadata.annotations.openshift\\.io/scc}\'\nrestricted-v2\n\n# Simuler : quel SCC accepterait ce ServiceAccount ?\n$ oc adm policy who-can use scc anyuid\n$ oc get scc' },
         { t: 'callout', kind: 'trap', html: 'Le réflexe « <code>oc adm policy add-scc-to-user anyuid</code> » règle le symptôme mais ouvre une faille. La bonne réponse : <b>réparer l\'image</b> (écoute sur un port &gt; 1024, dossiers en <code>g=u</code>, pas de <code>USER</code> en dur).' },
         { t: 'quiz', q: 'Une image nginx officielle ne démarre pas sur OCP (« permission denied » sur le port 80). Quelle est la meilleure correction ?', options: [
@@ -156,7 +156,7 @@ COURSE.add({
           '<b>RHCOS immuable</b> : <code>/usr</code> est en lecture seule, on ne <code>yum install</code> rien.',
           '<b>Config de l\'OS = MachineConfig</b> ; config kubelet = <code>KubeletConfig</code>.',
           '<b>Le control plane n\'est pas à toi</b> : tu ne modifies pas ses manifests à la main.',
-          '<b>Mises à jour par version mineure séquentielle</b> (4.16 → 4.17 → 4.18).'
+          '<b>Mises à jour par version mineure séquentielle</b> (4.18 → 4.19 → 4.20).'
         ] },
         { t: 'callout', kind: 'trap', html: 'Modifier un fichier à la main sur un nœud : il sera écrasé (ou le <b>MachineConfigPool</b> passera en Degraded) au prochain rendu. Toute modif OS passe par un objet déclaratif.' },
         { t: 'callout', kind: 'onprem', wide: true, html: 'Sur bare metal et vSphere, ces règles s\'appliquent pleinement, avec en plus la gestion du firmware, de l\'IPAM et du stockage à ta charge. C\'est le prix de l\'autonomie.' }
@@ -167,10 +167,10 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Produit', 'C\'est quoi', 'Qui gère quoi'], rows: [
           ['<b>OCP</b> (self-managed)', 'La distribution officielle, installée sur ton infra', 'Toi : tout, y compris control plane'],
-          ['<b>OKD</b>', 'Version communautaire (base Fedora CoreOS)', 'Toi, sans support Red Hat'],
+          ['<b>OKD</b>', 'Version communautaire (base OS : CentOS Stream CoreOS, anciennement Fedora CoreOS ; à vérifier)', 'Toi, sans support Red Hat'],
           ['<b>SNO</b> / compact 3 nœuds', 'Topologies réduites d\'OCP (edge, lab)', 'Toi'],
           ['<b>Hosted Control Planes</b>', 'Control plane hébergé comme des pods d\'un autre cluster', 'Toi, mais control plane mutualisé'],
-          ['<b>MicroShift</b>', 'Version allégée pour devices edge', 'Toi, sans console ni Operators complets'],
+          ['<b>MicroShift</b>', 'Version allégée pour devices edge (livrée sous l\'appellation Red Hat Device Edge : à vérifier)', 'Toi, sans console ni Operators complets'],
           ['<b>ROSA / ARO / OSD</b> ☁️', 'OpenShift managé (AWS / Azure / Google)', 'Red Hat + cloud : control plane, upgrades, SRE']
         ] },
         { t: 'callout', kind: 'cloud', html: 'En managé, tu n\'es pas <code>cluster-admin</code> : tu as <code>dedicated-admin</code>. Pas de MachineConfig libre, pas d\'accès aux namespaces plateforme, upgrades planifiés avec le fournisseur. Beaucoup de modules de ce cours (installation, MachineConfig, etcd) <b>ne te concerneraient plus</b>.' }
@@ -182,11 +182,11 @@ COURSE.add({
       blocks: [
         { t: 'bullets', items: [
           'Une release mineure OCP environ <b>tous les 4 mois</b>.',
-          'Règle pratique : <b>K8s 1.(N+13) = OCP 4.N</b> (4.16 → K8s 1.29, 4.18 → 1.31). À vérifier dans les release notes.',
-          'Les releases <b>paires</b> (4.14, 4.16, 4.18…) bénéficient d\'<b>EUS</b> (Extended Update Support) : support plus long, chemin de mise à jour EUS → EUS.',
+          'Règle pratique : <b>K8s 1.(N+13) = OCP 4.N</b> (4.18 → K8s 1.31, 4.20 → 1.33). Référence du cours : <b>4.20 EUS</b>. À vérifier dans les release notes.',
+          'Les releases <b>paires</b> (4.16, 4.18, 4.20…) bénéficient d\'<b>EUS</b> (Extended Update Support) : support plus long, chemin de mise à jour EUS → EUS (ex. 4.18 → 4.20). Procédure : module 12.',
           'Canaux de mise à jour : <code>stable-4.x</code>, <code>fast-4.x</code>, <code>eus-4.x</code>, <code>candidate-4.x</code>.'
         ] },
-        { t: 'code', lang: 'bash', file: 'terminal', code: '$ oc get clusterversion\n$ oc adm upgrade\n# Versions disponibles dans le canal courant\n$ oc adm upgrade channel stable-4.18' },
+        { t: 'code', lang: 'bash', file: 'terminal', code: '$ oc get clusterversion\n$ oc adm upgrade\n# Versions disponibles dans le canal courant\n$ oc adm upgrade channel stable-4.20   # ou eus-4.20' },
         { t: 'callout', kind: 'warn', wide: true, html: 'Les dates de fin de support évoluent : consulte toujours le <b>Red Hat OpenShift Container Platform Life Cycle Policy</b> avant de planifier. Ne cale jamais une roadmap sur ce que tu as en mémoire.' }
       ]
     },
@@ -199,7 +199,7 @@ COURSE.add({
           'Sur un cluster <b>déconnecté</b>, on <b>miroite</b> les images (<code>oc-mirror</code>) vers un registre interne et on remplace le pull secret par celui du miroir.',
           'Les control plane et infra nodes ne sont en général pas comptés (à valider avec ton contrat).'
         ] },
-        { t: 'callout', kind: 'onprem', html: 'En réseau isolé, prévois dès le départ le registre miroir, le DNS et la gestion des certificats : c\'est 40 % de l\'effort d\'un projet on-prem (module 3).' }
+        { t: 'callout', kind: 'onprem', html: 'En réseau isolé, prévois dès le départ le registre miroir, le DNS et la gestion des certificats : c\'est 40 % de l\'effort d\'un projet on-prem (installation déconnectée : module 03).' }
       ]
     },
     {
@@ -243,6 +243,7 @@ COURSE.add({
       tag: 'lab',
       blocks: [
         { t: 'lab', title: 'Explorer un cluster OCP', goal: 'Cluster de test : OpenShift Local (CRC), SNO ou ton cluster de lab.', steps: [
+          'Prérequis : environnement E0 (OpenShift Local) ou E1 (SNO), voir module 00',
           'Connecte-toi : <code>oc login --web https://api.&lt;cluster&gt;:6443</code>',
           'Liste la santé : <code>oc get co</code> — y a-t-il un opérateur non <i>Available</i> ?',
           'Crée un projet : <code>oc new-project demo</code>',
