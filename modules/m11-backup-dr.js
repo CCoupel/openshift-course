@@ -164,7 +164,7 @@ $ oc adm wait-for-stable-cluster` },
           '<b>OADP</b> (OpenShift API for Data Protection) protège <b>applications, ressources du cluster qui leur sont liées, volumes persistants et images internes</b>.',
           'API : <code>Backup</code>, <code>Restore</code>, <code>Schedule</code>, <code>BackupStorageLocation</code>, <code>VolumeSnapshotLocation</code>.',
           '<b>Limite essentielle</b> : « OADP ne constitue pas une solution de reprise pour <code>etcd</code> ni pour les Operators OpenShift ». Les deux sauvegardes sont <b>complémentaires</b>.',
-          'Compatibilité : <b>OADP 1.5</b> est annoncé compatible avec OCP 4.19 à 4.21 (GA le 17 juin 2025) : à vérifier dans la matrice de ta version.'
+          'Compatibilité (matrice de la doc 4.20) : <b>OADP 1.5</b> pour OCP 4.19, 4.20 et 4.21 (GA le 17 juin 2025, support complet jusqu\'à la sortie de la 1.6) ; <b>OADP 1.4</b> pour 4.14 à 4.18. Une version 1.6 n\'apparaît pas dans cette matrice : sa compatibilité avec 4.20 est <b>à vérifier</b>. Le cours retient <b>OADP 1.5</b>.'
         ] },
         { t: 'callout', kind: 'onprem', wide: true, html: "Il faut un <b>stockage objet S3</b> (ODF/NooBaa, MinIO, baie S3) <b>hors du cluster protégé</b> pour y déposer les sauvegardes (module 08)." },
         { t: 'callout', kind: 'ocp', wide: true, html: "Installation par OLM (module 04) dans le namespace <code>openshift-adp</code> (OperatorGroup limité à ce namespace, canal <code>stable</code>, paquet <code>oadp-operator</code> d'après la doc OCP 4.15) : <b>nom du paquet et canal en 4.20</b> à vérifier dans « Installing the OADP Operator »." }
@@ -173,7 +173,7 @@ $ oc adm wait-for-stable-cluster` },
     {
       title: 'OADP : configurer le stockage de sauvegarde',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'dpa.yaml (exemple S3 compatible)', code: `apiVersion: oadp.openshift.io/v1alpha1
+        { t: 'code', lang: 'yaml', file: 'dpa.yaml (OADP 1.5, exemple S3 compatible)', code: `apiVersion: oadp.openshift.io/v1alpha1
 kind: DataProtectionApplication
 metadata:
   name: dpa-lab
@@ -301,7 +301,7 @@ spec:
           'Réalise une sauvegarde : <code>oc debug --as-root node/NOEUD</code>, <code>chroot /host</code>, puis <code>/usr/local/bin/cluster-backup.sh /home/core/assets/backup</code>.',
           'Vérifie les <b>deux fichiers</b> produits (<code>snapshot_*.db</code> et <code>static_kuberesources_*.tar.gz</code>), leur taille et note la version du cluster (<code>oc get clusterversion</code>).',
           'Copie l\'archive <b>hors du nœud</b> (<code>scp</code> ou la méthode de ton site) puis liste le contenu des ressources avec <code>tar -tzf static_kuberesources_*.tar.gz | head</code> : qu\'y trouves-tu ?',
-          'Installe l\'<b>OADP Operator</b> (OperatorHub, namespace <code>openshift-adp</code>, module 04) et décris le plan de sauvegarde de ton lab : quoi, où (bucket S3), à quelle fréquence, qui restaure.',
+          'Installe l\'<b>OADP Operator</b> (OperatorHub, namespace <code>openshift-adp</code>, module 04) et décris le plan de sauvegarde de ton lab : quoi, où (bucket S3), à quelle fréquence, qui restaure. <b>Retour arrière</b> (l\'installation modifie le cluster) : supprime la <code>DataProtectionApplication</code> éventuelle, désinstalle l\'Operator, puis supprime ses CRD (<code>velero.io</code>) comme le décrit la doc de désinstallation d\'OADP (commande exacte : à vérifier pour ta version).',
           '(bonus, E1 + S3) Crée un bucket MinIO, le Secret <code>cloud-credentials</code> et une <code>DataProtectionApplication</code> ; vérifie le <code>BackupStorageLocation</code> (<code>Available</code>), sauvegarde un namespace de test, <b>supprime-le</b>, puis restaure-le avec un <code>Restore</code>.',
           '(bonus, cluster JETABLE uniquement, E1 jetable ou E2) <b>Restauration etcd</b> d\'après la procédure officielle complète, à partir de ta sauvegarde : action <b>destructive</b>, jamais sur un cluster qui compte ; chronomètre ton RTO. <b>Sur un SNO</b> : variante SNO (slide dédiée), le nœud est <b>interrompu</b> pendant la restauration et le SNO doit être réellement jetable.'
         ] }
