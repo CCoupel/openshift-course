@@ -259,7 +259,7 @@ spec:
         { t: 'layers', frag: true, items: [
           { name: 'MachineConfig', desc: 'Un fragment de config OS (fichiers, units systemd, kernel args…) avec un rôle cible' },
           { name: 'MachineConfigPool', desc: 'Un groupe de nœuds (<code>master</code>, <code>worker</code>, <code>infra</code>…) et ses MachineConfig', hl: true },
-          { name: 'rendered-<pool>-<hash>', desc: 'MachineConfig <b>fusionné</b> et immuable généré par le controller à chaque changement', hl: true },
+          { name: 'rendered-&lt;pool&gt;-&lt;hash&gt;', desc: 'MachineConfig <b>fusionné</b> et immuable généré par le controller à chaque changement', hl: true },
           { name: 'Machine Config Daemon (MCD)', desc: 'DaemonSet sur chaque nœud : applique, drain, reboot si nécessaire' },
           { name: 'Machine Config Server (MCS)', desc: 'Sert l\'Ignition aux nouveaux nœuds sur le port 22623', base: true }
         ] },
