@@ -19,6 +19,7 @@ jobs:
           [ "$(cat VERSION)" = "$VERSION" ] || { echo "VERSION ($(cat VERSION)) != tag ($VERSION)"; exit 1; }
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
       - run: node --check assets/engine.js
+      - run: node --check assets/plan.js
       - run: node tools/validate.js
       - name: Livrable (archive du cours + somme de controle)
         run: |

@@ -15,4 +15,5 @@ jobs:
         with:
           node-version: 'lts/*'
       - run: node --check assets/engine.js
+      - run: node --check assets/plan.js
       - run: node tools/validate.js
