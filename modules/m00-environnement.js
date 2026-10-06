@@ -42,9 +42,9 @@ COURSE.add({
         { t: 'table', head: ['Niveau du noyau', 'Modules', 'Bonus / remarque'], rows: [
           ['<b>Poste de travail</b> (E0 suffit)', '03 Installation', 'Bonus : E1 (cluster) et accès réseau pour <code>oc-mirror</code>'],
           ['<b>E0</b> (OpenShift Local ou tout cluster)', '01 K8s vs OCP, 06 HBAC / RBAC (E0 ou E1)', '—'],
-          ['<b>E1</b> (SNO)', '02 Architecture, 04 Configuration, 08 Stockage (LVMS ou StorageClass CSI)', '04 : bonus certificat Ingress sur cluster jetable ; 02 : MachineConfig inoffensif'],
+          ['<b>E1</b> (SNO)', '02 Architecture, 04 Configuration, 08 Stockage (LVMS ou StorageClass CSI)', 'Bonus : 02 MachineConfig <code>/etc/motd</code> (redémarre le SNO), 04 certificat Ingress (cluster jetable), bannière console et OLM v1, 08 provoquer une erreur de PVC'],
           ['<b>E1</b> (modules à venir, selon le plan)', '05, 07, 09, 11 (+ stockage S3), 12, 14 ; 10 (E0/E1 + dépôt Git)', 'Plan susceptible d\'évoluer'],
-          ['<b>E2</b> (compact)', 'Étapes bonus : MetalLB et EgressIP (07), ODF (08), mise à jour réelle (12)', 'Selon le plan'],
+          ['<b>E2</b> (compact)', 'Étapes bonus <b>prévues au plan</b> : MetalLB et EgressIP (07), mise à jour réelle (12) ; aucun lab rédigé n\'exige E2 à ce jour', 'Selon le plan'],
           ['<b>E3</b> (bare metal)', '13 Virtualisation (volet VM)', 'Le volet Serverless reste en E1']
         ] },
         { t: 'callout', kind: 'warn', html: "Cette matrice reflète les labs <b>actuels</b> des modules rédigés et le <b>plan</b> pour les autres. Chaque lab annonce son niveau dans son <b>premier step</b> ; en cas de divergence, c'est le lab qui fait foi." }
@@ -61,7 +61,7 @@ COURSE.add({
           ['<b>OKD</b>', 'Alternative communautaire', 'Même socle OCP sans support Red Hat', 'Écarts de comportement possibles : à vérifier (base OS : CentOS Stream CoreOS)'],
           ['<b>Developer Sandbox</b> ☁️', 'Découvrir la console', 'Console et <code>oc</code> en espace partagé', '<b>Pas de <code>cluster-admin</code></b> : inadapté à ce cours']
         ] },
-        { t: 'callout', kind: 'cloud', html: "Les offres managées (ROSA, ARO, OSD) et le Sandbox ne donnent pas <code>cluster-admin</code> : la plupart des labs (MachineConfig, OAuth, stockage) n'y fonctionnent pas. Choisis un environnement <b>à toi</b>." }
+        { t: 'callout', kind: 'cloud', html: "Le Developer Sandbox ne donne pas <code>cluster-admin</code>. Les offres managées (ROSA, ARO, OSD) <b>restreignent</b> certaines actions (nœuds, MachineConfig, OAuth, etcd : détail à vérifier selon l\'offre) et sortent du périmètre on-prem de ce cours. Pour les labs, choisis un environnement <b>à toi</b>." }
       ]
     },
     {
@@ -150,7 +150,7 @@ COURSE.add({
           ['podman --version', 'Conteneurs et authentification aux registres']
         ] },
         { t: 'bullets', items: [
-          'Récupère <code>oc</code> et <code>openshift-install</code> depuis la console Red Hat ou le site des clients ; prends une version <b>proche de 4.20</b> (décalage de version : à vérifier).',
+          'Récupère <code>oc</code> et <code>openshift-install</code> depuis la console Red Hat ou le miroir officiel (à vérifier) ; prends une version <b>proche de 4.20</b> (décalage de version : à vérifier).',
           'Système : Linux (ou WSL) recommandé ; macOS possible pour <code>oc</code>.',
           'Ajoute aussi <code>openssl</code> pour les labs sur les certificats (module 04).'
         ] },
@@ -161,7 +161,7 @@ COURSE.add({
       title: 'Santé du lab et accès administrateur',
       blocks: [
         { t: 'cmds', items: [
-          ['oc login --web https://api.<cluster>:6443', 'Connexion par navigateur (le jeton est stocké dans ton kubeconfig)'],
+          ['oc login --web https://api.<cluster>:6443', 'Connexion par navigateur ; sinon <code>oc login -u kubeadmin</code> ou <code>KUBECONFIG</code> (à vérifier selon ta version d\'<code>oc</code>)'],
           ['oc whoami --show-server', 'Vérifie le serveur visé'],
           ['oc get clusterversion', 'Version et Available=True'],
           ['oc get nodes', 'Tous les nœuds Ready'],
@@ -169,7 +169,7 @@ COURSE.add({
           ['oc whoami --show-console', 'URL de la console web']
         ] },
         { t: 'bullets', frag: true, items: [
-          '<b>kubeadmin</b> : compte temporaire créé à l\'installation, <code>cluster-admin</code> ; son mot de passe est dans le dossier d\'installation (<code>auth/kubeadmin-password</code>). À remplacer par un IdP au module 06 ; sur ton lab, garde-le tant que le module 06 n\'est pas fait.',
+          '<b>kubeadmin</b> : compte temporaire créé à l\'installation, <code>cluster-admin</code> ; son mot de passe est dans le dossier d\'installation (<code>auth/kubeadmin-password</code> avec <code>openshift-install</code> ; avec OpenShift Local : <code>crc console --credentials</code> ; avec Assisted Installer : affiché en fin d\'installation, à vérifier). À remplacer par un IdP au module 06 ; sur ton lab, garde-le tant que le module 06 n\'est pas fait.',
           '<b>Break-glass</b> : le <code>kubeconfig</code> de l\'installeur (<code>auth/kubeconfig</code>) donne un accès admin sans passer par OAuth : <b>garde-le</b> hors de ton dépôt.',
           'Un cluster sain, c\'est <b>tous les opérateurs Available</b> avant de commencer un lab.'
         ] },
@@ -200,8 +200,8 @@ COURSE.add({
         { t: 'cards', items: [
           { front: 'Lab « cassé » dès le début', back: '<b>RAM ou CPU insuffisants</b> : opérateurs Degraded, pods Pending.' },
           { front: 'Console injoignable', back: '<b>DNS wildcard</b> <code>*.apps</code> manquant (module 03).' },
-          { front: 'Je n\'ai pas cluster-admin', back: 'Tu es sur un <b>Sandbox</b> ou un managé : change d\'environnement.' },
-          { front: 'Pull secret dans Git', back: 'À <b>révoquer</b> et à régénérer ; ne jamais le committer.' },
+          { front: 'Je n\'ai pas cluster-admin', back: '<b>Sandbox</b> : pas de <code>cluster-admin</code>. Managé : actions restreintes (à vérifier selon l\'offre). Prends un environnement à toi.' },
+          { front: 'Pull secret dans Git', back: 'À <b>révoquer</b> et à régénérer (procédure à vérifier sur console.redhat.com) ; ne jamais le committer.' },
           { front: 'Lab dormant', back: 'Licence expirée ou <b>certificats</b> périmés : plan de maintenance.' },
           { front: 'Version décalée', back: '<code>oc</code> ou installeur d\'une autre version que le cluster : comportements surprenants.' }
         ] },
@@ -212,8 +212,8 @@ COURSE.add({
       title: 'Quiz',
       tag: 'quiz',
       blocks: [
-        { t: 'quiz', q: 'Tu veux faire les labs MachineConfig (modules 02 et 04) avec reboot d\'un nœud. Quel environnement minimal choisis-tu ?', options: ['Developer Sandbox', 'Aucun cluster : le poste de travail suffit', 'Un SNO (E1) ou plus, avec <code>cluster-admin</code>', 'Un cluster managé ROSA'], answer: 2, explain: 'Les labs MachineConfig exigent un cluster dont tu es <code>cluster-admin</code>, avec des nœuds que tu peux redémarrer : au minimum un SNO (E1). Le Sandbox et les managés ne donnent pas ce niveau d\'accès.' },
-        { t: 'quiz', q: 'Pourquoi le Developer Sandbox est-il inadapté à ce cours ?', options: ['Il ne donne pas <code>cluster-admin</code> : plusieurs labs (OAuth, MachineConfig, stockage) y sont impossibles', 'Il est trop lent pour installer <code>oc</code>', 'Il n\'a pas de console web', 'Il ne supporte pas les pods'], answer: 0, explain: 'Le Sandbox est un espace partagé aux droits limités. Les labs du cours demandent des actions de niveau cluster (configuration, OAuth, MachineConfig), donc un environnement à toi avec <code>cluster-admin</code>.' }
+        { t: 'quiz', q: 'Quel est le niveau d\'environnement minimal pour le noyau du lab du module 04 (MachineConfig chrony avec reboot, Operator en approbation manuelle) ?', options: ['Le poste de travail seul, sans cluster (E0)', 'Un SNO (E1) avec <code>cluster-admin</code>', 'Un compact 3 nœuds (E2), obligatoirement', 'Un cluster bare metal pour la virtualisation (E3)'], answer: 1, explain: 'Un SNO (E1) permet le MachineConfig avec reboot et l\'installation d\'Operators. Le compact (E2) n\'est utile que pour des étapes bonus prévues au plan ; E3 ne concerne que la virtualisation (module 13).' },
+        { t: 'quiz', q: 'Avant de commencer un lab, quel est le contrôle de santé de base du cluster ?', options: ['<code>oc get pods -A</code> et vérifier qu\'il y a des pods', 'Seulement ouvrir la console web', '<code>oc whoami</code>', '<code>oc get co</code> et <code>oc get nodes</code> : opérateurs Available et non Degraded, nœuds Ready'], answer: 3, explain: 'Les Cluster Operators résument la santé de la plateforme. Un opérateur Degraded avant le lab fausse ses résultats : comprends-le (<code>oc describe co NOM</code>) avant de continuer.' }
       ]
     },
     {
@@ -236,7 +236,7 @@ COURSE.add({
   ],
   takeaways: [
     'Quatre niveaux : E0 (poste ou OpenShift Local), E1 (SNO), E2 (compact), E3 (bare metal / virtualisation) ; un SNO bien dimensionné couvre presque tout le cours.',
-    'Chaque lab annonce son niveau dans son premier step ; le Developer Sandbox et les managés ne donnent pas <code>cluster-admin</code> : inadaptés.',
+    'Chaque lab annonce son niveau dans son premier step ; le Developer Sandbox n\'a pas <code>cluster-admin</code> et les offres managées restreignent des actions (à vérifier) : prends un environnement à toi.',
     'Préparer avant le jour 1 : outils, pull secret (jamais dans Git), DNS <code>api</code> et <code>*.apps</code>, ressources suffisantes.',
     'Un lab sain commence par <code>oc get co</code> : tous Available, pas Degraded.',
     'Snapshot « état propre », <code>kubeadmin</code> et kubeconfig d\'installation conservés : le filet de sécurité de ton lab.'
