@@ -164,7 +164,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : OpenShift GitOps (Argo CD) pour la **config cluster** (instance de cluster vs instances d'équipe, RBAC Argo CD, app-of-apps, sync waves, gestion des secrets) ; arborescence de dépôt type (base/overlays par cluster) ; survol OpenShift Pipelines (Tekton) et Builds (BuildConfig, Builds for OpenShift / Shipwright) ; place du dev applicatif (hors périmètre).
 - **Renvoyé** : ressources configurées → 04/06/07 ; secrets → 09 ; multi-cluster (ACM) → 14.
 - **Durée** : ≈ 45 min + lab 20 min. **Lab** : E0/E1 + dépôt Git (GitHub ou Gitea) : installer GitOps, synchroniser un project template et un quota.
-- **À vérifier** : version d'Argo CD embarquée ; statut de Builds for OpenShift ; statut de BuildConfig.
+- **À vérifier** : champs `rbac` et authentification de la CR `ArgoCD` ; champs de l'`ApplicationSet` ; statut de dépréciation de BuildConfig en 4.20 ; statut actuel du pull model ACM. Confirmés : OpenShift GitOps 1.18 à 1.21 compatibles avec la 4.20 (Argo CD 3.1.9 en 1.19, 3.3.2 en 1.20, 3.4.3 en 1.21), instance par défaut sans cluster-admin, Keycloak non supporté dès la 1.18, Argo CD Agent GA en 1.19, ClusterTask retiré en Pipelines 1.17, Builds 1.6 (Shipwright GA) pour la 4.20.
 
 #### 11 — Backup & reprise d'activité ⬜ (`m11-backup-dr.js`)
 - **Objectif** : sauvegarder et restaurer un cluster et ses applications, et bâtir une stratégie de DR on-prem.
@@ -204,7 +204,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 09, 11 et 12) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 12) ; les lignes des modules à venir restent le plan.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -218,7 +218,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 07 | E1 (Route edge, NetworkPolicy `deny-all` + `allow-from-openshift-ingress` + `allow-from-hostnetwork`, test inter-projets) | E1 : EgressFirewall, MetalLB L2 (plage IP libre), UDN primaire ; EgressIP (E2 de préférence) ; NMState (cluster jetable) |
 | 08 | E1 (LVMS ou StorageClass CSI) | E1 (provoquer une erreur de PVC) ; ODF (E2) non rédigé |
 | 09 | E1 (pod refusé et diagnostic, SCC dédiée + RBAC, installation du Compliance Operator et `ScanSettingBinding` CIS) ; lab fusible J3 | E1 : lecture du scan et d'une remédiation, PSA warn/audit, chiffrement etcd (cluster jetable), File Integrity Operator |
-| 10 | E0/E1 + dépôt Git | — |
+| 10 | E0 ou E1 + dépôt Git joignable depuis le cluster (installation d'OpenShift GitOps, Application sur `ResourceQuota` et `ConfigMap`, dérive et `selfHeal`) | E1 : app-of-apps et sync wave ; E1 jetable : ClusterRole minimal pour Argo CD ; E2 : `ApplicationSet` sur deux clusters |
 | 11 | E1 (sauvegarde etcd non destructive, export hors du nœud, lecture de l'archive, installation d'OADP) | E1 + S3 (MinIO) : `DataProtectionApplication`, sauvegarde, suppression puis restauration d'un namespace ; cluster JETABLE (E1 jetable ou E2) : restauration etcd complète |
 | 12 | E1 (état de mise à jour en lecture, `must-gather` et `oc adm inspect`, quota et LimitRange, cordon / drain / uncordon) | E1 jetable ou E2 : mise à jour mineure réelle ; E2 : pause d'un pool `worker`, ajout d'un nœud (`oc adm node-image create` ou MachineSet) |
 | 13 | E1 + E3 | E2/E3 (migration à chaud) |
