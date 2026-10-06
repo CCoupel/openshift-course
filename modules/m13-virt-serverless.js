@@ -116,7 +116,7 @@ spec: {}` },
       title: 'A5 — Créer et piloter une VM',
       layout: 'two',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'vm.yaml (illustration à vérifier)', code: `apiVersion: kubevirt.io/v1
+        { t: 'code', lang: 'yaml', file: 'vm.yaml (illustration : DataVolume non fourni)', code: `apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: vm-demo
@@ -141,6 +141,7 @@ spec:
           name: vm-demo-root` },
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc get vm,vmi -n vms\n$ virtctl start vm-demo -n vms\n$ virtctl console vm-demo -n vms\n$ virtctl stop vm-demo -n vms" },
         { t: 'bullets', wide: true, items: [
+          '<b>Illustration</b> : le <code>DataVolume</code> <code>vm-demo-root</code> référencé n\'est <b>pas fourni</b> ici (disque importé ou cloné depuis une boot source) ; le YAML n\'est donc pas applicable tel quel.',
           'Le plus simple pour démarrer : la <b>console</b> (<b>Virtualization → Create VirtualMachine</b>) à partir d\'un modèle ou d\'une boot source.',
           '<code>virtctl</code> sert à démarrer, arrêter, ouvrir la console série ou VNC et exposer des ports.'
         ] }
@@ -207,7 +208,7 @@ spec:
         { t: 'bullets', items: [
           'Ressources (<code>forklift.konveyor.io/v1beta1</code>) : <code>Provider</code> (source et destination), <code>StorageMap</code>, <code>NetworkMap</code>, <code>Plan</code>, <code>Migration</code>.',
           'Flux réseau : TCP 443 (vCenter/ESXi), 902 (transfert de disques ESXi).',
-          'Le VDDK est un SDK VMware à fournir comme <b>image</b> (champ du <code>HyperConverged</code>).'
+          'Le VDDK est un SDK VMware à fournir comme <b>image</b> : à déclarer dans <code>spec.vddkInitImage</code> du <code>HyperConverged</code> (doc MTV) <b>et</b> dans le champ <code>vddkInitImage</code> du <code>Provider</code> vSphere (réglages du provider ; chemin exact du champ : à vérifier). Ce champ du provider n\'est pas obligatoire mais l\'omettre <b>ralentit fortement</b> le transfert des disques.'
         ] },
         { t: 'callout', kind: 'warn', wide: true, html: "Le parcours complet (inventaire, mappings de stockage et de réseau, fenêtre de basculement, pilotes invités) est dans la doc MTV : <b>à relire pour ta version</b> avant tout projet réel." }
       ]
@@ -269,7 +270,17 @@ spec:
   name: serverless-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace` },
-        { t: 'code', lang: 'yaml', file: 'knative.yaml', code: `apiVersion: operator.knative.dev/v1beta1
+        { t: 'code', lang: 'yaml', file: 'knative.yaml', code: `apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-serving
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-eventing
+---
+apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
   name: knative-serving
@@ -453,7 +464,7 @@ spec:
           'Applique le <b>YAML de la slide B5</b> (même Service : le template devient <code>showcase-v2</code> avec une variable d\'environnement, le trafic est réparti <b>80/20</b> entre <code>showcase-v1</code> et <code>showcase-v2</code>) ; contrôle avec <code>oc get revision</code> puis répète les requêtes pour voir la répartition. <b>Retour arrière</b> : remets 100 % sur la première révision puis supprime le projet.',
           '(bonus, E3) Installe <b>OpenShift Virtualization</b> (OperatorGroup, Subscription et <code>HyperConverged</code> de la slide A3), crée une VM depuis une boot source avec la console et ouvre sa console avec <code>virtctl console</code> ; contrôle <code>oc get vm,vmi</code>.',
           '(bonus, E3 multi-nœuds avec stockage RWX) Lance une <b>migration à chaud</b> de la VM vers un autre nœud et observe la <code>VirtualMachineInstanceMigration</code> ; sur un stockage RWO, constate qu\'elle n\'est pas possible.',
-          '(bonus, avec un vCenter de test) Prépare une migration MTV : <code>Provider</code> vSphere, image VDDK, <code>StorageMap</code>, <code>NetworkMap</code> et <code>Plan</code> en migration <b>cold</b> d\'une VM éteinte.'
+          '(bonus, avec un vCenter de test) Prépare une migration MTV : <code>Provider</code> vSphere avec son <code>vddkInitImage</code> (et celui du <code>HyperConverged</code>), <code>StorageMap</code>, <code>NetworkMap</code> et <code>Plan</code> en migration <b>cold</b> d\'une VM éteinte.'
         ] }
       ]
     }
