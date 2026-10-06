@@ -162,7 +162,20 @@ spec:
       selfHeal: true
     syncOptions:
     - CreateNamespace=true` },
+        { t: 'code', lang: 'yaml', file: 'depot-prive.yaml (dépôt privé, HTTPS)', code: `apiVersion: v1
+kind: Secret
+metadata:
+  name: depot-cluster-config
+  namespace: openshift-gitops
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  type: git
+  url: https://git.example.com/plateforme/cluster-config.git
+  username: argocd
+  password: JETON_A_NE_PAS_METTRE_EN_CLAIR_DANS_GIT` },
         { t: 'bullets', items: [
+          '<b>Dépôt privé</b> : les identifiants se déclarent dans un <b>Secret</b> portant le label <code>argocd.argoproj.io/secret-type: repository</code>, avec <code>type: git</code>, <code>url</code> et <code>username</code>/<code>password</code> (HTTPS) ou <code>sshPrivateKey</code> (SSH), dans le <b>namespace de l\'instance</b> (doc Argo CD) ; ce Secret ne se met <b>pas</b> en clair dans Git (slide secrets).',
           '<code>destination.server: https://kubernetes.default.svc</code> : le <b>cluster où tourne Argo CD</b>.',
           '<code>automated</code> + <code>prune</code> + <code>selfHeal</code> : synchronisation automatique, suppression des ressources retirées de Git, correction de la dérive.',
           '<code>repoURL</code> est un <b>exemple</b> : mets l\'URL de <b>ton</b> dépôt (public ou interne, joignable depuis le cluster).'
@@ -352,7 +365,7 @@ data:
       tag: 'lab',
       blocks: [
         { t: 'lab', title: 'Installer OpenShift GitOps, synchroniser un quota, provoquer une dérive', goal: 'Noyau en séance sur un SNO (cluster-admin) avec un dépôt Git accessible. Les étapes (bonus) sont à faire en autonomie.', steps: [
-          'Prérequis : environnement E0/E1 avec <code>cluster-admin</code>, voir module 00 ; un <b>dépôt Git</b> (public ou interne) joignable depuis le cluster, où tu peux pousser.',
+          'Prérequis : environnement E0/E1 avec <code>cluster-admin</code>, voir module 00 ; un <b>dépôt Git</b> (public ou interne) joignable depuis le cluster, où tu peux pousser. Dépôt <b>privé</b> : crée le Secret de la slide « Une Application » (label <code>argocd.argoproj.io/secret-type: repository</code>) dans <code>openshift-gitops</code> avec un jeton de lecture, <b>sans le committer</b>.',
           'Installe <b>OpenShift GitOps</b> (OperatorHub, canal <code>latest</code>, namespace <code>openshift-gitops-operator</code>) puis vérifie les pods de <code>openshift-gitops</code> et la connexion à Argo CD via « LOG IN VIA OPENSHIFT ».',
           'Crée le namespace géré : <code>oc create namespace gitops-lab</code> puis <code>oc label namespace gitops-lab argocd.argoproj.io/managed-by=openshift-gitops</code> ; pousse dans <code>lab/</code> les deux manifestes de la slide précédente.',
           'Crée l\'<code>Application</code> (slide dédiée, avec l\'URL de ton dépôt, sans <code>CreateNamespace</code> puisque le namespace existe) et vérifie qu\'elle passe <b>Synced</b> et <b>Healthy</b> et que le quota et le ConfigMap existent.',
