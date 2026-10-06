@@ -68,6 +68,7 @@ COURSE.add({
           ['<b>APIs retirées</b>', 'Alertes <code>APIRemovedInNextReleaseInUse</code> et <code>APIRemovedInNextEUSReleaseInUse</code> : migre les usages avant d\'acquitter'],
           ['<b>PodDisruptionBudgets</b>', 'Un PDB trop strict (<code>minAvailable: 1</code> sur 1 réplica) bloque le drain d\'un nœud'],
           ['<b>Capacité</b>', 'Assez de nœuds libres pour déplacer les pods pendant le drain'],
+          ['<b>MachineHealthCheck</b>', 'La doc de mise à jour demande de les <b>mettre en pause</b> pendant l\'opération (annotation <code>cluster.x-k8s.io/paused=""</code>) pour éviter qu\'ils ne remplacent un nœud qui redémarre'],
           ['<b>Pools MCO</b>', 'Valeur par défaut <code>maxUnavailable: 1</code> ; pas de pool Degraded (module 02)'],
           ['<b>Operators OLM</b>', 'Compatibles avec la version cible (module 04, <code>olm.maxOpenShiftVersion</code>)'],
           ['<b>Réseau</b>', 'Cluster encore en OpenShift SDN : migration obligatoire avant la 4.17 (module 07)']
@@ -183,8 +184,8 @@ COURSE.add({
           'Le CA des kubelets se renouvelle automatiquement (292 jours) ; un renouvellement manuel anticipé est possible par annotation du secret <code>kube-apiserver-to-kubelet-signer</code>.',
           'Après un <b>long arrêt</b> du cluster, des certificats peuvent avoir expiré : la doc a une procédure de reprise (« scenario 3 : expired certs ») qui passe par l\'approbation de CSR.'
         ] },
-        { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc get csr | grep -i pending\n$ oc get csr -o name | xargs oc adm certificate approve   # à n'utiliser que si tu as vérifié l'origine" },
-        { t: 'callout', kind: 'trap', wide: true, html: "N'approuve pas en masse sans <b>contrôler les demandeurs</b> (nom du nœud attendu) : un CSR frauduleux donne un faux nœud dans ton cluster. Remplacement des certificats API et Ingress : module 04." }
+        { t: 'code', lang: 'bash', file: 'terminal', code: "# 1. Lister les demandes en attente avec leur demandeur et leur signataire\n$ oc get csr -o custom-columns=NOM:.metadata.name,DEMANDEUR:.spec.username,SIGNATAIRE:.spec.signerName,ETAT:.status.conditions[*].type\n\n# 2. Approuver une demande dont tu as vérifié le demandeur\n$ oc adm certificate approve NOM_DU_CSR\n\n# 3. En lot, UNIQUEMENT les demandes encore en attente (sans statut), après contrôle de la liste\n$ oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{\"\\n\"}}{{end}}{{end}}' | xargs -r oc adm certificate approve" },
+        { t: 'callout', kind: 'trap', wide: true, html: "N'approuve que les CSR <b>en <code>Pending</code></b> et dont tu as <b>vérifié le demandeur</b> (nom du nœud attendu, signataire) : un CSR approuvé à l'aveugle peut donner à un intrus un certificat de nœud, donc un faux nœud dans ton cluster. Remplacement des certificats API et Ingress : module 04." }
       ]
     },
     {
@@ -237,7 +238,7 @@ COURSE.add({
         { t: 'bullets', items: [
           '<b>Requests / limits</b> : les requests décident du placement ; surveille l\'<b>overcommit</b> (somme des limits &gt; capacité).',
           '<b>Quotas par projet</b> : <code>ResourceQuota</code>, <code>LimitRange</code>, <code>ClusterResourceQuota</code> via le project template (module 06).',
-          '<b>Réservations des nœuds</b> : <code>system-reserved</code> et kubelet ; <code>autoSizingReserved</code> (<code>KubeletConfig</code>) calcule la réservation selon la capacité du nœud (par défaut activé sur les workers d\'après la doc ; à vérifier pour ta version).',
+          '<b>Réservations des nœuds</b> : <code>system-reserved</code> et kubelet ; <code>autoSizingReserved</code> (<code>KubeletConfig</code>) calcule la réservation selon la capacité du nœud (valeur par défaut selon le rôle du nœud et la version : à vérifier dans la doc de ta version).',
           '<b>Nœuds infra</b> : héberger routeurs, monitoring et logging sur des nœuds dédiés (module 02).'
         ] },
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc adm top nodes\n$ oc describe node worker-1 | grep -A8 'Allocated resources'\n$ oc get resourcequota,limitrange -A" },
