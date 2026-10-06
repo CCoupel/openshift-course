@@ -95,10 +95,10 @@ COURSE.add({
       blocks: [
         { t: 'bullets', frag: true, items: [
           '<b>Upgradeable=False</b> peut aussi venir d\'un Operator qui déclare une version maximale (<code>olm.maxOpenShiftVersion</code>, module 04) ou d\'un composant dégradé.',
-          '<b>Montée vers 4.21 et sigstore</b> : les release notes 4.21 indiquent que si ton cluster 4.20 (ou antérieur) possède déjà une cluster image policy nommée <code>openshift</code>, la mise à jour le marque <b>non mettable à jour</b> (<code>Upgradeable=False</code>) à cause de la politique par défaut.',
-          'La doc sigstore 4.20 liste, pour les clusters avec ImageContentSourcePolicy ou ImageDigestMirrorSet, un prérequis : <b>miroiter les signatures sigstore</b> avant la mise à jour, puis acquitter dans <code>admin-acks</code> (clé citée : <code>ack-4.20-sigstore-in-4.21</code>).'
+          '<b>Montée vers 4.21 et sigstore</b> : les release notes 4.21 indiquent que si ton cluster 4.20 (ou antérieur) possède déjà une cluster image policy nommée <code>openshift</code>, la mise à jour le marque <b>non mettable à jour</b> (<code>Upgradeable=False</code>) à cause de la politique par défaut. <b>Remède probable</b> : si cette politique <code>openshift</code> a été <b>créée à la main</b>, la supprimer ou la renommer avant la montée (à confirmer dans « Preparing to update to 4.21 »).',
+          'La doc sigstore 4.20 liste, pour les clusters avec ImageContentSourcePolicy ou ImageDigestMirrorSet, un prérequis : <b>miroiter les signatures sigstore</b> avant la mise à jour ; l\'<b>acquittement</b> éventuel dans <code>admin-acks</code> et sa clé : à vérifier dans « Preparing to update to 4.21 ».'
         ] },
-        { t: 'callout', kind: 'warn', html: "Le texte exact et la clé d'acquittement de ce cas sont <b>à relire dans « Preparing to update to 4.21 »</b> avant ta montée : la clé n'a pas été retrouvée dans les release notes 4.21 lues. C'est un exemple de plus : <b>lis les notes de la version cible</b> à chaque mineure (module 09 pour les images signées)." }
+        { t: 'callout', kind: 'warn', html: "Le texte exact, le remède et l'éventuelle clé d'acquittement de ce cas sont <b>à relire dans « Preparing to update to 4.21 »</b> avant ta montée (rien de précis n'a été retrouvé dans les release notes 4.21 lues). C'est un exemple de plus : <b>lis les notes de la version cible</b> à chaque mineure (module 09 pour les images signées)." }
       ]
     },
     {
@@ -112,7 +112,7 @@ COURSE.add({
           ['oc adm upgrade status', 'Progression de la mise à jour'],
           ['watch oc get co', 'Opérateurs pendant la mise à jour']
         ] },
-        { t: 'callout', kind: 'ocp', html: "<code>oc adm upgrade recommend</code> est <b>GA en 4.20</b> (Technology Preview en 4.18) ; il signale par exemple des alertes <code>ClusterOperatorDown</code> qui peuvent empêcher la fin d'une mise à jour. Les options exactes de ta version : <code>oc adm upgrade --help</code>." },
+        { t: 'callout', kind: 'ocp', html: "<code>oc adm upgrade recommend</code> et <code>oc adm upgrade status</code> sont tous deux <b>GA en 4.20</b> (<code>recommend</code> : Technology Preview en 4.18) ; il signale par exemple des alertes <code>ClusterOperatorDown</code> qui peuvent empêcher la fin d'une mise à jour. Les options exactes de ta version : <code>oc adm upgrade --help</code>." },
         { t: 'callout', kind: 'trap', html: "Une mise à jour <b>vers une version non recommandée</b> signifie qu'un risque est connu pour ton chemin : lis la raison affichée (<code>oc adm upgrade</code>) avant d'insister." }
       ]
     },
@@ -140,9 +140,9 @@ COURSE.add({
           { label: '4.22 EUS', sub: 'workers à jour' }
         ], caption: 'Procédure « <b>Control Plane Only</b> » : le control plane traverse la version intermédiaire ; les workers, eux, ne sont mis à jour qu\'<b>une fois</b> (4.20 → 4.22).' },
         { t: 'bullets', frag: true, items: [
-          'Le canal <code>eus-4.x</code> sert à cette procédure ; seuls les clusters avec des pools <b>non control plane</b> peuvent la suivre avec ces pools en pause.',
+          'Le canal <code>eus-4.x</code> sert à cette procédure. Elle distingue deux ensembles : le <b>control plane</b> (pool <code>master</code>), qui est mis à jour normalement, et les <b>pools de workers</b> (tous les MachineConfigPools autres que <code>master</code>), qui sont <b>mis en pause</b>. La doc la réserve donc aux clusters qui ont des pools autres que le control plane.',
           'Étapes : mettre en pause tous les pools non-master, passer le control plane à la mineure intermédiaire puis à la cible, puis <b>reprendre</b> les pools pour mettre à jour les workers.',
-          'Pas de mise à jour automatique intermédiaire des workers : moins de reboots, mais <b>les écarts de version</b> sont limités : lis les contraintes de la doc.'
+          '<b>À terminer sous 60 jours</b> : tu peux répartir la procédure sur plusieurs fenêtres, mais la doc demande de tout finir en 60 jours pour que les automatismes (dont la rotation des certificats) aboutissent. Valable seulement entre mineures <b>paires</b> (EUS).'
         ] },
         { t: 'callout', kind: 'warn', html: "Commandes exactes, conditions préalables (skew control plane / workers) et enchaînement des canaux : <b>à relire dans « Performing a Control Plane Only update »</b> de ta version avant de l'utiliser en production (non relues en détail pour 4.20 ici)." }
       ]
