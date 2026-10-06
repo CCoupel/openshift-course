@@ -117,21 +117,43 @@ COURSE.add({
           '<b>Sauvegarde</b> : un répertoire contenant <b>les deux fichiers</b> (<code>snapshot_*.db</code> et <code>static_kuberesources_*.tar.gz</code>) pris sur la <b>même version z-stream</b> que le cluster (exemple de la doc : une sauvegarde 4.20.2 pour un cluster 4.20.2).',
           '<b>Effets</b> : agitation des opérateurs si le contenu d\'etcd diffère des fichiers sur disque, charges supprimées si elles n\'existent pas dans le snapshot, <b>volumes à réconcilier</b> à la main.'
         ] },
-        { t: 'callout', kind: 'warn', html: "Sur <b>SNO</b> ou cluster compact, les contraintes de la procédure sont spécifiques : à relire dans la doc de ta version (non détaillé ici). Exerce-toi toujours sur un <b>cluster jetable</b> d'abord." }
+        { t: 'callout', kind: 'warn', html: "Le <b>SNO</b> a sa propre procédure (slide suivante). Pour un cluster <b>compact</b> : procédure multi-nœuds ; contraintes éventuelles à relire dans la doc de ta version. Exerce-toi toujours sur un <b>cluster jetable</b> d'abord." }
       ]
     },
     {
       title: 'Restaurer à un état antérieur : les étapes',
       blocks: [
         { t: 'flow', nodes: [
+          { label: 'Hôte de reprise', sub: 'choisir, SSH vers tous les nœuds' },
+          { label: 'Copier la sauvegarde', sub: 'répertoire dans /home/core de l\'hôte de reprise' },
           { label: 'Désactiver etcd', sub: 'sur les autres nœuds du control plane' },
           { label: 'cluster-restore.sh', sub: 'sur l\'hôte de reprise', hl: true },
           { label: 'Quorum guard', sub: 'désactiver après retour de l\'API' },
           { label: 'Attendre', sub: 'oc adm wait-for-stable-cluster (≈ 15 min)' },
           { label: 'Quorum guard', sub: 'réactiver', hl: true }
         ] },
-        { t: 'code', lang: 'bash', file: 'commandes citées par la doc 4.20', code: "# Sur les autres nœuds du control plane\n$ sudo -E /usr/local/bin/disable-etcd.sh\n\n# Sur l'hôte de reprise\n$ sudo -E /usr/local/bin/cluster-restore.sh /home/core/<repertoire-de-sauvegarde>\n\n# Quand l'API répond : désactiver le garde-fou de quorum\n$ oc patch etcd/cluster --type=merge -p '{\"spec\": {\"unsupportedConfigOverrides\": {\"useUnsupportedUnsafeNonHANonProductionUnstableEtcd\": true}}}'\n$ oc adm wait-for-stable-cluster\n\n# Puis le réactiver\n$ oc patch etcd/cluster --type=merge -p '{\"spec\": {\"unsupportedConfigOverrides\": null}}'" },
+        { t: 'code', lang: 'bash', file: 'commandes citées par la doc 4.20', code: "# Copier le répertoire de sauvegarde (snapshot + static_kuberesources) dans /home/core\n# de l'hôte de reprise (méthode au choix : la doc ne la précise pas)\n\n# Sur les autres nœuds du control plane\n$ sudo -E /usr/local/bin/disable-etcd.sh\n\n# Sur l'hôte de reprise\n$ sudo -E /usr/local/bin/cluster-restore.sh /home/core/<repertoire-de-sauvegarde>\n\n# Quand l'API répond : désactiver le garde-fou de quorum\n$ oc patch etcd/cluster --type=merge -p '{\"spec\": {\"unsupportedConfigOverrides\": {\"useUnsupportedUnsafeNonHANonProductionUnstableEtcd\": true}}}'\n$ oc adm wait-for-stable-cluster\n\n# Puis le réactiver\n$ oc patch etcd/cluster --type=merge -p '{\"spec\": {\"unsupportedConfigOverrides\": null}}'" },
         { t: 'callout', kind: 'warn', html: "L'<b>ordre exact et le détail</b> (arrêt des static pods, redémarrage du kubelet, remplacement de nœuds) sont dans la procédure officielle : <b>ne restaure jamais depuis ces seules lignes</b>. Les commandes ci-dessus sont celles que cite la doc ; relis-la en entier avant et pendant l'opération." }
+      ]
+    },
+    {
+      title: 'Restaurer sur un SNO',
+      layout: 'two',
+      blocks: [
+        { t: 'code', lang: 'bash', file: 'SNO (doc 4.20)', code: `# 1. Copier le répertoire de sauvegarde dans /home/core du nœud
+$ cp ETCD_BACKUP_DIRECTORY /home/core
+
+# 2. Restaurer
+$ sudo -E /usr/local/bin/cluster-restore.sh /home/core/ETCD_BACKUP_DIRECTORY
+
+# 3. Quitter la session SSH puis suivre le retour du cluster
+$ oc adm wait-for-stable-cluster` },
+        { t: 'bullets', items: [
+          'La doc 4.20 décrit une section distincte « Restoring to a previous cluster state for a single node ».',
+          'Différences avec le multi-nœuds : <b>pas de <code>disable-etcd.sh</code></b> et <b>pas de manipulation du quorum guard</b> ; une seule commande de restauration sur le nœud ; retour sous environ 15 minutes.',
+          'Prérequis identiques : kubeconfig à certificat, accès SSH, répertoire avec les <b>deux fichiers</b> issu de la même version z-stream.'
+        ] },
+        { t: 'callout', kind: 'trap', wide: true, html: "Sur un SNO, le cluster <b>est</b> l'unique nœud : la restauration l'interrompt complètement. Fenêtre de maintenance, sauvegarde <b>stockée hors du nœud</b>, et <b>aucun test de restauration sur ton seul SNO de travail</b>. Page lue via le miroir OKD 4.20 : à relire dans la doc OCP 4.20 avant usage." }
       ]
     },
     {
@@ -281,7 +303,7 @@ spec:
           'Copie l\'archive <b>hors du nœud</b> (<code>scp</code> ou la méthode de ton site) puis liste le contenu des ressources avec <code>tar -tzf static_kuberesources_*.tar.gz | head</code> : qu\'y trouves-tu ?',
           'Installe l\'<b>OADP Operator</b> (OperatorHub, namespace <code>openshift-adp</code>, module 04) et décris le plan de sauvegarde de ton lab : quoi, où (bucket S3), à quelle fréquence, qui restaure.',
           '(bonus, E1 + S3) Crée un bucket MinIO, le Secret <code>cloud-credentials</code> et une <code>DataProtectionApplication</code> ; vérifie le <code>BackupStorageLocation</code> (<code>Available</code>), sauvegarde un namespace de test, <b>supprime-le</b>, puis restaure-le avec un <code>Restore</code>.',
-          '(bonus, cluster JETABLE uniquement, E1 jetable ou E2) <b>Restauration etcd</b> d\'après la procédure officielle complète, à partir de ta sauvegarde : action <b>destructive</b>, jamais sur un cluster qui compte ; chronomètre ton RTO.'
+          '(bonus, cluster JETABLE uniquement, E1 jetable ou E2) <b>Restauration etcd</b> d\'après la procédure officielle complète, à partir de ta sauvegarde : action <b>destructive</b>, jamais sur un cluster qui compte ; chronomètre ton RTO. <b>Sur un SNO</b> : variante SNO (slide dédiée), le nœud est <b>interrompu</b> pendant la restauration et le SNO doit être réellement jetable.'
         ] }
       ]
     }
