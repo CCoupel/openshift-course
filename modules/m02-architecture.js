@@ -131,7 +131,7 @@ $ oc get co etcd
 $ oc rsh -n openshift-etcd -c etcdctl etcd-master-0
 sh-5$ etcdctl endpoint status --cluster -w table
 sh-5$ etcdctl endpoint health --cluster -w table` },
-        { t: 'callout', kind: 'tip', html: 'Un script de sauvegarde est fourni sur les masters : <code>/usr/local/bin/cluster-backup.sh</code>, à lancer via <code>oc debug node/&lt;master&gt;</code> puis <code>chroot /host</code>. Le sujet est traité au module Backup &amp; DR.' },
+        { t: 'callout', kind: 'tip', html: 'Un script de sauvegarde est fourni sur les masters : <code>/usr/local/bin/cluster-backup.sh</code>, à lancer via <code>oc debug node/master-0</code> puis <code>chroot /host</code>. Le sujet est traité au module 11 (Backup &amp; DR).' },
         { t: 'callout', kind: 'trap', html: 'Ne redimensionne pas/ne supprime pas à la main des membres etcd, et ne restaure pas un snapshot sans suivre la procédure officielle : un restore mal fait casse le cluster entier.' }
       ]
     },
@@ -378,7 +378,7 @@ $ oc adm taint nodes infra-0 node-role.kubernetes.io/infra=reserved:NoSchedule` 
           'Liste les nœuds : <code>oc get nodes -o wide</code>. Repère rôles, OS image et runtime (CRI-O).',
           'Affiche la version et la santé : <code>oc get clusterversion</code> puis <code>oc get co</code>. Y a-t-il un opérateur <i>Degraded</i> ?',
           'Cherche les pods du control plane : <code>oc get pods -n openshift-kube-apiserver</code>, <code>-n openshift-etcd</code>, <code>-n openshift-apiserver</code>.',
-          'Lance <code>oc debug node/&lt;master&gt;</code> puis <code>chroot /host</code> et <code>rpm-ostree status</code> : quelle image OS ?',
+          'Lance <code>oc debug node/master-0</code> puis <code>chroot /host</code> et <code>rpm-ostree status</code> : quelle image OS ?',
           'Dans un pod etcd, exécute <code>etcdctl endpoint status --cluster -w table</code> : qui est leader ?',
           'Regarde les pools : <code>oc get mcp</code> et <code>oc get mc</code>. Identifie les <code>rendered-*</code>.',
           '<code>oc get machinesets,machines -n openshift-machine-api</code> : vide ou non ? Explique pourquoi selon ton mode d\'installation.',
