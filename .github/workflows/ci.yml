@@ -17,3 +17,8 @@ jobs:
       - run: node --check assets/engine.js
       - run: node --check assets/plan.js
       - run: node tools/validate.js
+      - name: Export PowerPoint (controle)
+        run: |
+          npm ci --ignore-scripts
+          node tools/check-pptx.js --selftest
+          node tools/check-pptx.js
