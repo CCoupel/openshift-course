@@ -59,9 +59,9 @@ COURSE.add({
           ['SNO', '8', '16 Go', '120 Go']
         ] },
         { t: 'bullets', items: [
-          '<b>Ordres de grandeur minimaux</b> : à vérifier dans la doc 4.20 ; dimensionne plus large (monitoring, logging, virtualisation).',
+          '<b>Minimums</b> de la doc 4.20 pour control plane, worker et SNO ; ligne bootstrap : à vérifier. Dimensionne plus large (monitoring, logging, virtualisation).',
           'Disque control plane : <b>rapide</b> (latence etcd, voir module 08).',
-          '<b>Architecture et firmware</b> : x86_64 (autres archi : hors périmètre) ; mode de démarrage (UEFI recommandé ?) à vérifier dans la doc 4.20.',
+          '<b>Architecture et firmware</b> : x86_64 (autres archi : hors périmètre) ; UEFI <b>requis</b> en IPI bare metal quand le réseau de provisioning est en IPv6 ; autres cas : à vérifier dans la doc 4.20.',
           'Poste d\'installation avec accès aux nœuds et à Internet (ou au miroir).'
         ] },
         { t: 'cmds', wide: true, items: [
@@ -164,7 +164,7 @@ sshKey: 'ssh-ed25519 AAAA...'` },
         { t: 'bullets', items: [
           'Les <b>failure domains</b> décrivent où placer les VM (cluster, datastore, réseau) : base pour la HA entre clusters ou datacenters.',
           'Le compte vCenter doit avoir les <b>privilèges</b> documentés (VM, dossiers, datastore) : à vérifier dans la doc 4.20.',
-          'Forme exacte (<code>vcenters</code> + <code>failureDomains</code>) : à vérifier selon la version.'
+          'Champs optionnels de la topologie : <code>resourcePool</code>, <code>folder</code>, <code>tagIDs</code>.'
         ] },
         { t: 'callout', kind: 'onprem', html: "Réserve les deux VIP dans l'IPAM <b>avant</b> : une VIP déjà utilisée provoque des erreurs intermittentes très difficiles à relier à l'installation." }
       ]
@@ -200,7 +200,7 @@ sshKey: 'ssh-ed25519 AAAA...'` },
     {
       title: 'Agent-based : agent-config.yaml',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'agent-config.yaml (SNO)', code: `apiVersion: v1alpha1
+        { t: 'code', lang: 'yaml', file: 'agent-config.yaml (SNO)', code: `apiVersion: v1beta1              # v1beta1 d'après la doc 4.22 ; 4.20 présumé identique : à vérifier
 kind: AgentConfig
 metadata:
   name: ocp4
@@ -232,7 +232,7 @@ hosts:
         next-hop-address: 192.168.10.1
         next-hop-interface: eno1` },
         { t: 'callout', kind: 'tip', html: "<code>agent-config.yaml</code> complète <code>install-config.yaml</code> (cluster, pull secret, réseau global) avec ce qui est <b>propre aux hôtes</b> : IP statiques, interfaces, rôle. Détail réseau des nœuds (NMState) : module 07." },
-        { t: 'callout', kind: 'warn', html: "Version exacte de l'<code>apiVersion</code> et champs disponibles : à vérifier dans les release notes de 4.20." }
+        { t: 'callout', kind: 'warn', html: "<code>apiVersion: v1beta1</code> tel que documenté en 4.22 (à recouper sur la doc 4.20) ; champs disponibles : à vérifier dans les release notes de 4.20." }
       ]
     },
     {
@@ -246,7 +246,7 @@ hosts:
           { label: 'Cluster', sub: 'les autres nœuds rejoignent' }
         ], caption: "Pas de machine bootstrap séparée : un des nœuds fait office de <b>rendezvous</b> et joue ce rôle pendant l'installation." },
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ mkdir ocp4 && cp install-config.yaml agent-config.yaml ocp4/\n$ cp -r ocp4 ocp4.bak                      # les fichiers sont consommés\n$ openshift-install agent create image --dir ocp4\n# => ocp4/agent.x86_64.iso (monter sur chaque serveur)\n$ openshift-install agent wait-for bootstrap-complete --dir ocp4 --log-level=info\n$ openshift-install agent wait-for install-complete  --dir ocp4" },
-        { t: 'callout', kind: 'warn', html: "Sous-commandes exactes (<code>agent create image</code>, <code>wait-for</code>, <code>create cluster-manifests</code>) et nom du fichier ISO : à vérifier dans la doc de 4.20." }
+        { t: 'callout', kind: 'warn', html: "Sous-commandes (<code>agent create image</code>, <code>wait-for</code>, <code>create cluster-manifests</code>) et ISO <code>agent.x86_64.iso</code> : conformes à la doc. Pour une clé USB, la doc mentionne <code>isohybrid --uefi</code>." }
       ]
     },
     {
@@ -265,7 +265,7 @@ hosts:
           'Les nœuds démarrent sur une image RHCOS (ISO, PXE, template vSphere) avec un Ignition « <i>pointeur</i> » vers le MCS (port 22623).',
           'Le bootstrap est retiré du LB à la fin : <b>à toi de le faire</b>.'
         ] },
-        { t: 'callout', kind: 'trap', html: "Les fichiers Ignition ont une <b>durée de validité limitée</b> (certificats de bootstrap : de l'ordre de 24 h, à vérifier). Si l'installation traîne, regénère-les." },
+        { t: 'callout', kind: 'trap', html: "Les fichiers Ignition ont une <b>durée de validité limitée</b> (certificats de bootstrap : 24 h). Si l'installation traîne, regénère-les." },
         { t: 'callout', kind: 'onprem', html: "UPI est le seul mode où tu peux accumuler des écarts entre nœuds (templates, firmware). Documente et <b>automatise</b> (Terraform, Ansible) dès le début." }
       ]
     },
@@ -287,7 +287,7 @@ hosts:
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ export KUBECONFIG=ocp4/auth/kubeconfig\n$ openshift-install wait-for bootstrap-complete --dir ocp4 --log-level=debug\n$ openshift-install wait-for install-complete  --dir ocp4\n\n# Les workers apparaissent seulement après approbation des CSR\n$ oc get csr | grep Pending\n$ oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{\"\\n\"}}{{end}}{{end}}' \\\n    | xargs oc adm certificate approve" },
         { t: 'bullets', items: [
           '<b>Deux vagues</b> de CSR par nœud : le client (kubelet-bootstrap), puis le serving.',
-          'En <b>IPI/Machine API</b>, l\'approbation est automatique. En <b>UPI</b>, c\'est à toi. En <b>Agent-based</b>, l\'installeur gère les hôtes qu\'il installe (à vérifier dans la doc d\'installation et les release notes) ; pour un nœud ajouté ensuite, prévois d\'approuver les CSR toi-même.',
+          'En <b>IPI/Machine API</b>, l\'approbation est automatique. En <b>UPI</b>, c\'est à toi. En <b>Agent-based</b>, le comportement pour les hôtes installés par l\'Agent : à vérifier dans la doc d\'installation ; pour un nœud <b>ajouté ensuite</b> avec l\'ISO, l\'approbation manuelle des CSR est documentée.',
           'Si ça bloque : <code>openshift-install gather bootstrap</code> (UPI/IPI) ou <code>oc adm must-gather</code> sur un cluster déjà vivant.'
         ] },
         { t: 'callout', kind: 'tip', wide: true, html: "Un worker absent de <code>oc get nodes</code> en UPI, c'est presque toujours <b>un CSR en Pending</b>. Pense à relancer la commande une fois la première vague approuvée : la seconde apparaît ensuite." }
@@ -335,7 +335,7 @@ mirror:
           '<b>operators</b> : sélectionne <b>uniquement</b> les paquets utiles : un catalogue entier est énorme.',
           '<b>additionalImages</b> : tes images de base, d\'outillage, etc.'
         ] },
-        { t: 'callout', kind: 'warn', wide: true, html: "<code>apiVersion</code> de l'<code>ImageSetConfiguration</code> (v2alpha1 ou autre), statut d'<b>oc-mirror v2</b> (GA ou non en 4.20) et champs disponibles : <b>à vérifier dans les release notes</b>." }
+        { t: 'callout', kind: 'warn', wide: true, html: "<b>oc-mirror v2</b> est GA depuis 4.18 (v1 déprécié) et <code>v2alpha1</code> est l'<code>apiVersion</code> à utiliser ; champs disponibles de l'<code>ImageSetConfiguration</code> : à relire dans la doc 4.20." }
       ]
     },
     {
@@ -346,9 +346,11 @@ mirror:
           ['<code>ImageDigestMirrorSet</code> (IDMS)', 'Redirige les pulls <b>par digest</b> vers le miroir'],
           ['<code>ImageTagMirrorSet</code> (ITMS)', 'Redirige les pulls <b>par tag</b> vers le miroir'],
           ['<code>CatalogSource</code>', 'Expose le catalogue miroité à OLM (module 04)'],
+          ['<code>ClusterCatalog</code>', 'Catalogue miroité pour OLM v1 (module 04)'],
+          ['<code>UpdateService</code>', 'Service de mise à jour local (graphe de mises à jour, module 12)'],
           ['<code>ImageContentSourcePolicy</code> (ICSP)', 'Ancien mécanisme, <b>déprécié</b> au profit d\'IDMS/ITMS']
         ] },
-        { t: 'callout', kind: 'warn', html: "Les options (<code>--v2</code>, <code>--from</code>, <code>--workspace</code>), l'arborescence de sortie et les ressources produites (dont les catalogues) : <b>à vérifier</b> dans la doc <code>oc-mirror</code> de 4.20. Avant la mise en œuvre réelle, utilise l'option <code>--dry-run</code> si elle existe dans ta version." }
+        { t: 'callout', kind: 'warn', html: "<code>--v2</code> doit être indiqué explicitement ; <code>--workspace</code> est requis en mirror-to-mirror. Option <code>--from</code> (disk-to-mirror) : à relire dans la doc <code>oc-mirror</code> de 4.20. Avant la mise en œuvre réelle, utilise l'option <code>--dry-run</code> si elle existe dans ta version." }
       ]
     },
     {
@@ -359,7 +361,7 @@ mirror:
         { t: 'bullets', items: [
           'Le <b>pull secret</b> de l\'installation contient les identifiants du miroir (en plus ou à la place de ceux de Red Hat).',
           '<code>additionalTrustBundle</code> dans <code>install-config.yaml</code> : la <b>CA</b> du registre, pour que les nœuds lui fassent confiance.',
-          'Les IDMS/ITMS sont soit générés à l\'installation à partir d\'<code>imageDigestSources</code> dans <code>install-config.yaml</code> (nom depuis 4.14 ; l\'ancien <code>imageContentSources</code> : à vérifier pour 4.20), soit appliqués après.',
+          'Les IDMS/ITMS sont soit générés à l\'installation à partir d\'<code>imageDigestSources</code> dans <code>install-config.yaml</code> (nom depuis 4.14 ; l\'ancien <code>imageContentSources</code> est déprécié), soit appliqués après.',
           'Utilisation des catalogues miroités (<code>CatalogSource</code>, OLM) : module 04.'
         ] },
         { t: 'callout', kind: 'trap', wide: true, html: "Un cluster déconnecté affiche des <b>OperatorHub vides</b> et des pods en <code>ImagePullBackOff</code> tant que les catalogues par défaut tentent d'atteindre Internet ou que les IDMS manquent. Vérifie aussi que tes <b>images applicatives</b> sont mirrorées (<code>additionalImages</code>)." }
@@ -419,7 +421,7 @@ mirror:
           'Crée un dossier <code>sno/</code> et rédige <code>install-config.yaml</code> : <code>controlPlane.replicas: 1</code>, <code>compute.replicas: 0</code>, <code>platform: none: {}</code>, ton pull secret, ta clé SSH.',
           'Rédige <code>agent-config.yaml</code> : un hôte, une IP statique, une route par défaut, un DNS ; fixe <code>rendezvousIP</code> sur cette IP.',
           'Fais une <b>copie de sauvegarde</b> des deux fichiers hors du dossier (ils seront consommés).',
-          'Génère les manifests : <code>openshift-install agent create cluster-manifests --dir sno</code> (sous-commande à vérifier) ; liste le contenu de <code>sno/cluster-manifests/</code>.',
+          'Génère les manifests : <code>openshift-install agent create cluster-manifests --dir sno</code> ; liste le contenu de <code>sno/cluster-manifests/</code>.',
           'Relis les manifests générés : où retrouves-tu ton pull secret, ta clé SSH et ton réseau ? Quel fichier décrit l\'hôte ?',
           'Vérifie ton DNS fictif : écris les trois enregistrements (<code>api</code>, <code>api-int</code>, <code>*.apps</code>) pour ton SNO et explique pourquoi ils pointent tous vers la même IP.',
           '(bonus) Sur le cluster du module 00 : <code>oc get clusterversion -o yaml</code> ; retrouve l\'historique des versions et les conditions.',
@@ -432,8 +434,8 @@ mirror:
     'Quatre méthodes (Agent-based, Assisted, IPI, UPI) : le choix dépend de la plateforme (baremetal, vsphere, none) et de ce que tu veux piloter.',
     'DNS (api, api-int, *.apps), LB ou VIP, NTP : préparés <b>avant</b>. Le wildcard oublié est la panne n°1.',
     '<code>install-config.yaml</code> (et <code>agent-config.yaml</code>) décrit tout ; l\'installeur le consomme : fais-en une copie.',
-    'En UPI, tu approuves les CSR et retires le bootstrap toi-même (Agent-based : à vérifier ; nœuds ajoutés après coup : CSR à approuver).',
-    'Déconnecté = registre miroir + <code>oc-mirror</code> + IDMS/ITMS + CA et pull secret ; versions d\'oc-mirror et d\'<code>ImageSetConfiguration</code> à vérifier.',
+    'En UPI, tu approuves les CSR et retires le bootstrap toi-même (nœuds ajoutés après coup avec l\'ISO : CSR à approuver ; hôtes installés par l\'Agent : à vérifier).',
+    'Déconnecté = registre miroir + <code>oc-mirror</code> + IDMS/ITMS + CA et pull secret ; oc-mirror v2 (GA depuis 4.18) avec <code>ImageSetConfiguration</code> en <code>v2alpha1</code>.',
     'Après l\'installation : valider (<code>oc get co</code>), sauvegarder etcd, remplacer kubeadmin et les certificats.'
   ]
 });
