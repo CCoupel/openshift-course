@@ -178,7 +178,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : mises à jour (canaux, graphe, EUS → EUS 4.20 → 4.22, pause des MachineConfigPools, mise à jour du control plane seul, pré-checks, Operators) ; ajout/retrait de nœuds (Machine API ou manuel, CSR) ; rotation des certificats et approbation des CSR ; diagnostic (`must-gather`, `oc adm inspect`, `oc adm node-logs`, `oc debug`, Insights) ; capacité (requests/limits, overcommit, `ClusterAutoscaler` si Machine API) ; drain et maintenance matérielle.
 - **Renvoyé** : cycle de vie et EUS (concepts) → 01 ; Machine API, MHC → 02 ; remplacement de certificats → 04 ; quotas par projet → 06.
 - **Durée** : ≈ 60 min + lab 20 min. **Lab** : E1 (must-gather ciblé, `oc adm upgrade` en lecture, simulation de maintenance par drain) ; bonus : mise à jour mineure réelle (E1/E2).
-- **À vérifier** : commandes détaillées de la procédure Control Plane Only en 4.20 et contraintes de skew ; clé `admin-acks` de la montée 4.20 → 4.21 (sigstore) ; option `--to-image` et procédure déconnectée ; défaut d'`autoSizingReserved`. Confirmés : `oc adm upgrade recommend` GA en 4.20, canaux, pause des pools, `admin-acks` 4.20, `oc adm node-image create`, durées de rotation des certificats.
+- **À vérifier** : commandes détaillées de la procédure Control Plane Only en 4.20 et contraintes de skew ; clé `admin-acks` de la montée 4.20 → 4.21 (sigstore) ; option `--to-image` et procédure déconnectée ; valeurs par défaut de `system-reserved` selon les versions OCP et MCO. Confirmés : `autoSizingReserved` désactivé par défaut en 4.20, automatique dès la 4.21 (notes de version 4.21) ; `oc adm upgrade recommend` GA en 4.20, canaux, pause des pools, `admin-acks` 4.20, `oc adm node-image create`, durées de rotation des certificats.
 
 #### 13 — Virtualisation & Serverless ⬜ (`m13-virt-serverless.js`) — **parts égales**
 - **Objectif** : exploiter des VM sur OpenShift et situer le serverless pour un admin plateforme.
@@ -192,8 +192,9 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Objectif** (P8) : disposer d'une **check-list transverse** de mise en production, réutilisable en mission.
 - **Traité** : check-list par domaine (architecture et dimensionnement, installation, identité, réseau, stockage, observabilité, sécurité, sauvegarde, mises à jour, GitOps), chaque point renvoyant au module propriétaire ; anti-patterns récurrents ; ouverture multi-cluster (ACM) ; gouvernance (qui fait quoi). **Ne répète pas** les bonnes pratiques détaillées des modules.
 - **Durée** : ≈ 30 min + lab 15 min. **Taille** : 16 slides environ.
-- **Lab** : E1 : auditer son propre cluster avec la check-list (quels points sont verts ?).
-- **À vérifier** : rien de propre, hérite des modules.
+- **Lab** : E1 : auditer son propre cluster avec la check-list (quels points sont verts ?), en lecture seule.
+- **Rédigé** : 21 slides, dont 6 slides de check-list « à consulter, hors exposé » (exposé de 30 min sur les 15 autres ; budget §2 inchangé) : (6 slides de check-list par phase, dimensionnement, nœuds d'infra, multi-tenance, HA, écart cloud, ACM, anti-patterns, go/no-go, erreurs en mission, quiz, lab).
+- **À vérifier** : souscription du hub ACM, labels de zone hors vSphere, valeurs par défaut de `system-reserved` selon versions. Confirmés : matrices de support ACM 2.14 et 2.15 listent OCP 4.20 EUS (hub et gérés) ; dans la doc 4.20 : dimensionnement control plane et infra, 60 % de capacité, composants éligibles aux nœuds d'infra, pool `infra` et double label `infra,worker`, `system-reserved` 500m/1Gi, `autoSizingReserved` désactivé par défaut en 4.20 (automatique dès la 4.21), 250 pods par nœud par défaut, maximums testés.
 
 #### 15 — Aide-mémoire & quiz final ⬜ (`m15-aide-memoire.js`)
 - **Objectif** : réviser et emporter les commandes essentielles.
@@ -204,7 +205,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 13) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 14) ; les lignes des modules à venir restent le plan.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -222,7 +223,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 11 | E1 (sauvegarde etcd non destructive, export hors du nœud, lecture de l'archive, installation d'OADP) | E1 + S3 (MinIO) : `DataProtectionApplication`, sauvegarde, suppression puis restauration d'un namespace ; cluster JETABLE (E1 jetable ou E2) : restauration etcd complète |
 | 12 | E1 (état de mise à jour en lecture, `must-gather` et `oc adm inspect`, quota et LimitRange, cordon / drain / uncordon) | E1 jetable ou E2 : mise à jour mineure réelle ; E2 : pause d'un pool `worker`, ajout d'un nœud (`oc adm node-image create` ou MachineSet) |
 | 13 | E1 (Serverless : Operator, `KnativeServing`/`KnativeEventing`, service Knative, scale-to-zero, répartition de trafic) | E3 : OpenShift Virtualization, VM depuis une boot source, `virtctl` ; E3 multi-nœuds + stockage RWX : migration à chaud ; vCenter de test : migration MTV cold |
-| 14 | E1 | — |
+| 14 | E1 (audit en lecture seule d'un cluster avec la check-list : `oc get`, `describe`, `top`, sans modification) | Go / no-go sur un cluster fictif (sans cluster) ; revue des `Subscription` (E1, lecture seule ; approbation manuelle) |
 | 15 | — | — |
 
 ---

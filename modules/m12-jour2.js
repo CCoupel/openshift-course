@@ -238,7 +238,7 @@ COURSE.add({
         { t: 'bullets', items: [
           '<b>Requests / limits</b> : les requests décident du placement ; surveille l\'<b>overcommit</b> (somme des limits &gt; capacité).',
           '<b>Quotas par projet</b> : <code>ResourceQuota</code>, <code>LimitRange</code>, <code>ClusterResourceQuota</code> via le project template (module 06).',
-          '<b>Réservations des nœuds</b> : <code>system-reserved</code> et kubelet ; <code>autoSizingReserved</code> (<code>KubeletConfig</code>) calcule la réservation selon la capacité du nœud (valeur par défaut selon le rôle du nœud et la version : à vérifier dans la doc de ta version).',
+          '<b>Réservations des nœuds</b> : <code>system-reserved</code> et kubelet ; <code>autoSizingReserved</code> (<code>KubeletConfig</code>) calcule la réservation selon la capacité du nœud ; cette option est <b>désactivée par défaut en 4.20</b> ; les notes de version 4.21 indiquent que le calcul devient automatique (clusters mis à jour : suppression du MachineConfig <code>50-worker-auto-sizing-disabled</code> pour l\'activer, avec redémarrage des nœuds). La doc 4.20 cite <code>500m</code> de CPU et <code>1Gi</code> de mémoire comme valeurs par défaut de <code>system-reserved</code>, mais précise ailleurs que les valeurs par défaut dépendent des versions d\'OpenShift et du MCO : à vérifier dans le dépôt <code>machine-config-operator</code>.',
           '<b>Nœuds infra</b> : héberger routeurs, monitoring et logging sur des nœuds dédiés (module 02).'
         ] },
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc adm top nodes\n$ oc describe node worker-1 | grep -A8 'Allocated resources'\n$ oc get resourcequota,limitrange -A" },

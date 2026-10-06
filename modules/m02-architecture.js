@@ -329,18 +329,18 @@ spec:
       title: 'Nœuds infra',
       blocks: [
         { t: 'text', html: '<p>Un nœud <b>infra</b> est un worker dédié aux services de la plateforme : <b>routeurs, registre interne, monitoring, logging</b>. Intérêt : isoler ces charges et, selon le contrat, ne pas les compter dans la souscription (à valider avec ta souscription Red Hat).</p>' },
-        { t: 'code', lang: 'bash', file: 'terminal', code: `# Rôle infra, et retirer le rôle worker pour ne pas compter ce nœud en worker
+        { t: 'code', lang: 'bash', file: 'terminal', code: `# Rôle infra, en conservant le rôle worker (double label infra,worker)
 $ oc label node infra-0 node-role.kubernetes.io/infra=
-$ oc label node infra-0 node-role.kubernetes.io/worker-
 
 # Taint pour que les apps n'y atterrissent pas
 $ oc adm taint nodes infra-0 node-role.kubernetes.io/infra=reserved:NoSchedule` },
         { t: 'bullets', frag: true, items: [
-          'Crée un <b>MachineConfigPool <code>infra</code></b> pour piloter ces nœuds (<code>machineConfigSelector</code> sur worker <b>et</b> infra).',
+          '<b>Garde le label <code>worker</code></b> : la doc 4.20 recommande de conserver le double label <code>infra,worker</code> et de gérer le placement par taints et tolérations ; le label <code>infra</code> suffit à ne pas compter le nœud dans la souscription. Si tu retires <code>worker</code>, un <b>MachineConfigPool personnalisé</b> est obligatoire, sinon le MCO ne gère pas le nœud.',
+          'Pour une configuration dédiée, crée un <b>MachineConfigPool <code>infra</code></b> (<code>machineConfigSelector</code> sur worker <b>et</b> infra) : attention, il <b>écrase</b> la configuration du pool <code>worker</code> quand ils touchent le même fichier ou la même unité.',
           'Déplace ensuite les composants : <code>IngressController</code> (<code>nodePlacement</code>), registre (<code>spec.nodeSelector</code> dans l\'opérateur), monitoring (ConfigMap <code>cluster-monitoring-config</code>).',
           'Les pods doivent <b>tolérer le taint</b> : sinon ils restent Pending.'
         ] },
-        { t: 'callout', kind: 'trap', html: 'Mettre un label ne déplace rien. Et le taint sans tolérations dans la config des opérateurs laisse des pods plateforme Pending. Seuls les composants de plateforme autorisés (liste dans la doc de souscription) sont exonérés : n\'y mets pas d\'applis métier.' }
+        { t: 'callout', kind: 'trap', html: 'Mettre un label ne déplace rien. Et le taint sans tolérations dans la config des opérateurs laisse des pods plateforme Pending. Seuls les composants de plateforme autorisés (liste dans la doc de souscription) sont exonérés : n\'y mets pas d\'applis métier. Dimensionnement, licences et pièges : module 14.' }
       ]
     },
     {
