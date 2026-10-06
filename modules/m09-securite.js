@@ -60,7 +60,7 @@ COURSE.add({
           ['<code>node-exporter</code>', 'Réservé au node-exporter de Prometheus']
         ] },
         { t: 'callout', kind: 'warn', html: "<b>Ne modifie jamais</b> les SCC par défaut : la doc prévient que les personnaliser peut poser problème au déploiement de pods de la plateforme ou à la mise à jour. Pour un besoin particulier, <b>crée une SCC dédiée</b>." },
-        { t: 'callout', kind: 'tip', html: "Liste complète et à jour : <code>oc get scc</code>. La SCC <code>restricted</code> d\'origine refuse tout accès à l\'hôte et exige UID et SELinux alloués au namespace ; elle n\'est plus le choix par défaut." }
+        { t: 'callout', kind: 'tip', html: "Liste complète et à jour : <code>oc get scc</code>. Les SCC sans suffixe (<code>restricted</code>, <code>nonroot</code>, <code>hostnetwork</code>…) sont les versions d\'origine ; leurs variantes <code>-v2</code> les durcissent (capabilities supprimées, seccomp). <code>restricted</code> refuse tout accès à l\'hôte et exige UID et SELinux alloués au namespace ; ce n\'est plus le choix par défaut." }
       ]
     },
     {
@@ -357,7 +357,7 @@ spec:
     }
   ],
   takeaways: [
-    'La SCC dit ce qu\'un pod peut demander <b>et</b> assigne UID, SELinux, capabilities ; <code>restricted-v2</code> est le défaut, <code>restricted-v3</code> (user namespace) arrive en 4.20.',
+    'La SCC dit ce qu\'un pod peut demander <b>et</b> assigne UID, SELinux, capabilities ; <code>restricted-v2</code> est le défaut donné par la table de la doc 4.20 (qui décrit aussi <code>restricted-v3</code>, avec user namespace, nouveauté 4.20, comme « utilisée par défaut » : ambiguïté à lire dans la doc).',
     'Sélection : priorité d\'abord (<code>anyuid</code> : 10, <code>restricted-v2</code> : aucune), puis plus restrictive, puis nom ; accorde une SCC par RBAC (verbe <code>use</code>) au <b>ServiceAccount</b>, et crée une SCC dédiée plutôt que <code>anyuid</code>.',
     'PSA : enforce <code>privileged</code> global, audit et warn <code>restricted</code> ; les labels se synchronisent depuis les SCC (<code>podSecurityLabelSync</code>), sauf namespaces système.',
     'Images : sources autorisées (module 04), miroirs (module 03), digests ; la signature sigstore (<code>ClusterImagePolicy</code> / <code>ImagePolicy</code>, <code>config.openshift.io/v1</code>) est GA en 4.20 ; BYOPKI et la politique <code>openshift</code> restent Tech Preview.',
