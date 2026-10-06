@@ -55,7 +55,7 @@ Tous acceptent `frag` et `wide`. Les champs « HTML » acceptent `<b> <i> <code>
 | `lab` | `title`, `goal?`, `steps:[html]` | TP à cocher (5 à 9 étapes concrètes). |
 | `diagram` | `html` (SVG ou HTML), `caption?` | Schéma custom, SVG responsive (`viewBox`, pas de largeur fixe), couleurs via `currentColor` ou variables CSS (`var(--accent)`, `var(--border)`, `var(--surface)`, `var(--text)`, `var(--muted)`). |
 
-Pas de HTML dans les blocs `code` et `cmds[0]` : le moteur échappe. Dans les chaînes JS, préférer les apostrophes échappées (`\'`) ou des guillemets doubles ; attention aux backticks dans les template literals.
+Pas de HTML dans les blocs `code` et `cmds[0]` : le moteur échappe. **Tous les autres champs sont du HTML brut** : un chevron littéral (`<version>`, `<pool>`) s'écrit `&lt;version&gt;` ; `node tools/validate.js` rejette toute balise hors liste blanche (sauf `html` des `diagram`). Dans les chaînes JS, préférer les apostrophes échappées (`\'`) ou des guillemets doubles ; attention aux backticks dans les template literals.
 
 ## Exigences de contenu
 
