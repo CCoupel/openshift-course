@@ -414,16 +414,16 @@ spec:
       title: 'Lab : configurer un cluster fraîchement installé',
       tag: 'lab',
       blocks: [
-        { t: 'lab', title: 'Chrony, certificat Ingress, Operator en approbation manuelle', goal: 'Noyau en séance sur un SNO ou un cluster de lab (cluster-admin). Les étapes (bonus) sont à faire en autonomie.', steps: [
+        { t: 'lab', title: 'Chrony, Operator en approbation manuelle (bonus : certificat Ingress)', goal: 'Noyau en séance (5 étapes) sur un SNO ou un cluster de lab (cluster-admin). Les étapes (bonus), dont le remplacement du certificat Ingress, sont à faire en autonomie.', steps: [
           'Prérequis : environnement E1 (SNO) avec <code>cluster-admin</code>, voir module 00 ; <code>butane</code> et <code>openssl</code> sur ton poste.',
           'Repère la configuration : <code>oc api-resources --api-group=config.openshift.io</code> puis <code>oc get proxy,apiserver,image.config cluster -o yaml</code> ; qu\'est-ce qui est déjà renseigné ?',
           'Écris un <code>99-…-chrony.bu</code> (rôle du pool de ton nœud : <b>master</b> sur un SNO, à vérifier avec <code>oc get mcp</code>), génère le YAML avec <code>butane</code>, applique-le et suis <code>oc get mcp -w</code> ; contrôle avec <code>chronyc sources</code> via <code>oc debug node/&lt;nœud&gt;</code>. <b>Sur un SNO, le nœud redémarre</b> : l\'API est indisponible quelques minutes.',
-          'Crée une CA de lab et un certificat wildcard <code>*.apps.&lt;cluster&gt;.&lt;domaine&gt;</code> avec <code>openssl</code>.',
-          'Déclare d\'abord ta CA de lab comme CA de confiance du cluster : ConfigMap <code>user-ca-bundle</code> dans <code>openshift-config</code> et <code>Proxy.spec.trustedCA</code> (voir la slide « Faire confiance à une CA » ; procédure à vérifier dans la doc 4.20).',
-          'Crée le Secret TLS dans <code>openshift-ingress</code> et patche <code>defaultCertificate</code> ; attends le redéploiement des routeurs, vérifie que <code>oc get co</code> reste sain et contrôle l\'émetteur avec <code>curl -vI</code> sur la console.',
-          '<b>Retour arrière</b> : retire <code>spec.defaultCertificate</code> de l\'<code>IngressController</code> (<code>oc patch … --type=json -p \'[{"op":"remove","path":"/spec/defaultCertificate"}]\'</code>, à vérifier), attends le redéploiement des routeurs puis supprime le Secret.',
           'Installe un Operator avec <code>installPlanApproval: Manual</code> (Namespace, OperatorGroup, Subscription) ; constate l\'<code>InstallPlan</code> en attente, approuve-le avec <code>oc patch</code> et attends la phase <code>Succeeded</code> du CSV.',
-          'Désactive la source <code>community-operators</code> de l\'OperatorHub et vérifie qu\'elle disparaît de <code>oc get catalogsource -n openshift-marketplace</code>.',
+          'Désactive la source <code>community-operators</code> de l\'OperatorHub et vérifie qu\'elle disparaît de <code>oc get catalogsource -n openshift-marketplace</code> ; contrôle enfin <code>oc get co</code> et <code>oc get mcp</code> : tout doit rester sain (Available, non Degraded).',
+          '(bonus, <b>risqué</b> : à faire sur un cluster jetable, dans cet ordre, avec le retour arrière prêt) Crée une CA de lab et un certificat wildcard <code>*.apps.&lt;cluster&gt;.&lt;domaine&gt;</code> avec <code>openssl</code>.',
+          '(bonus) Déclare d\'abord ta CA de lab comme CA de confiance du cluster : ConfigMap <code>user-ca-bundle</code> dans <code>openshift-config</code> et <code>Proxy.spec.trustedCA</code> (voir la slide « Faire confiance à une CA » ; procédure à vérifier dans la doc 4.20).',
+          '(bonus) Crée le Secret TLS dans <code>openshift-ingress</code> et patche <code>defaultCertificate</code> ; attends le redéploiement des routeurs, vérifie que <code>oc get co</code> reste sain et contrôle l\'émetteur avec <code>curl -vI</code> sur la console.',
+          '(bonus) <b>Retour arrière</b> : retire <code>spec.defaultCertificate</code> de l\'<code>IngressController</code> (<code>oc patch … --type=json -p \'[{"op":"remove","path":"/spec/defaultCertificate"}]\'</code>, à vérifier), attends le redéploiement des routeurs puis supprime le Secret.',
           '(bonus) Crée un <code>ConsoleNotification</code> de type bandeau et vérifie qu\'il apparaît dans la console.',
           '(bonus) Essaie OLM v1 : crée un <code>ClusterExtension</code> pour un Operator compatible (périmètre et champs : à vérifier dans la doc 4.20) ; compare avec la Subscription de l\'étape précédente.'
         ] }
