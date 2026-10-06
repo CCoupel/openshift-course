@@ -203,17 +203,19 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
+> Alignée sur les labs **rédigés** (modules 00 à 04, 06 et 08) ; les lignes des modules à venir restent le plan.
+
 | Module | Noyau en séance | Bonus |
 |---|---|---|
-| 00 | E0 ou E1 (préparation) | — |
-| 01 | E0 | — |
-| 02 | E1 | E2 (MHC, quorum etcd) |
-| 03 | Poste de travail | E1 + registre miroir |
-| 04 | E1 | E1 (OLM v1) |
+| 00 | E0 (poste de travail, OpenShift Local ou cluster existant), en autonomie | E1 (SNO + snapshot) |
+| 01 | E0 (OpenShift Local ou SNO) | — |
+| 02 | E1 | E1 : MachineConfig `/etc/motd` (redémarre le SNO). MHC et quorum etcd (E2) non rédigés |
+| 03 | Poste de travail (E0 suffit) | E1 (lecture de `clusterversion`) ; `oc-mirror` en simulation (accès réseau, pull secret) |
+| 04 | E1 (chrony avec reboot, Operator en approbation manuelle) | E1 : certificat Ingress (cluster jetable, retour arrière), bannière console, OLM v1 |
 | 05 | E1 | E1 + S3 (LokiStack) |
-| 06 | E0 | — |
+| 06 | E0 ou E1 | (bonus : audit) |
 | 07 | E1 | E2 (MetalLB, EgressIP) |
-| 08 | E1 (LVMS) | E2 (ODF) |
+| 08 | E1 (LVMS ou StorageClass CSI) | E1 (provoquer une erreur de PVC) ; ODF (E2) non rédigé |
 | 09 | E1 | E1 |
 | 10 | E0/E1 + dépôt Git | — |
 | 11 | E1 + S3 | E1 jetable (restauration etcd) |
