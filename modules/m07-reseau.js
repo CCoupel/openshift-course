@@ -33,7 +33,7 @@ COURSE.add({
       blocks: [
         { t: 'bullets', frag: true, items: [
           '<b>OVN-Kubernetes</b> est le plugin réseau par défaut et <b>unique</b> d\'OCP.',
-          '<b>OpenShift SDN</b> : déprécié en 4.16, <b>retiré en 4.17</b> ; un cluster encore en SDN doit migrer vers OVN-Kubernetes <b>avant</b> de passer en 4.17 (migration hors ligne ou « live » limitée).',
+          '<b>OpenShift SDN</b> : déprécié depuis 4.14, installations neuves en OVN-Kubernetes dès 4.15, 4.16 dernière version supportée, <b>retiré en 4.17</b> ; un cluster encore en SDN doit migrer vers OVN-Kubernetes <b>avant</b> de passer en 4.17 (migration hors ligne ou « live » limitée).',
           'Overlay <b>Geneve</b> entre les nœuds (6081/UDP, module 02) ; politiques réseau, services, egress et UDN sont implémentés par OVN.',
           'Le CNI est géré par le <b>Cluster Network Operator</b> : on le règle via la CR <code>Network</code> (<code>operator.openshift.io</code>), pas à la main sur les nœuds.'
         ] },
