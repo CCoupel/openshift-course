@@ -161,7 +161,7 @@ COURSE.add({
       title: 'Santé du lab et accès administrateur',
       blocks: [
         { t: 'cmds', items: [
-          ['oc login --web https://api.<cluster>:6443', 'Connexion par navigateur ; sinon <code>oc login -u kubeadmin</code> ou <code>KUBECONFIG</code> (à vérifier selon ta version d\'<code>oc</code>)'],
+          ['oc login -u kubeadmin https://api.<cluster>:6443', 'Connexion avec <code>kubeadmin</code>, ou <code>KUBECONFIG</code> pointant sur le kubeconfig d\'installation ; <code>--web</code> suppose un fournisseur d\'identité (à vérifier selon ta version d\'<code>oc</code>)'],
           ['oc whoami --show-server', 'Vérifie le serveur visé'],
           ['oc get clusterversion', 'Version et Available=True'],
           ['oc get nodes', 'Tous les nœuds Ready'],
