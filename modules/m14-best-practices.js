@@ -342,8 +342,8 @@ COURSE.add({
           'Dimensionnement : <code>oc adm top nodes</code> et <code>oc describe node &lt;nœud&gt; | grep -A8 \'Allocated resources\'</code> ; compare avec la slide control plane et la règle des 60 % ; <code>oc get pdb -A</code> et <code>oc get resourcequota -A</code>.',
           'Accès et supervision : <code>oc get secret kubeadmin -n kube-system</code> (existe-t-il encore ?), <code>oc get oauth cluster -o jsonpath=\'{.spec.identityProviders[*].name}{"\\n"}\'</code>, <code>oc get pvc -n openshift-monitoring</code>, <code>oc get apiserver cluster -o jsonpath=\'{.spec.audit.profile}{"\\n"}\'</code>.',
           'Synthèse : note chaque ligne des check-lists 2 et 3 (vert, orange, rouge), puis liste les trois rouges les plus bloquants avec le module à relire. Quel est ton go / no-go ?',
-          '(bonus) Cluster fictif : 3 masters de 4 vCPU et 16 Go sur un datastore partagé, 120 workers, <code>kubeadmin</code> actif, monitoring sans PVC, aucune sauvegarde etcd, Operators en mise à jour automatique. Donne le go / no-go en cinq minutes et les trois premières actions, avec le module à ouvrir.',
-          '(bonus) <code>oc get subscriptions.operators.coreos.com -A -o custom-columns=NS:.metadata.namespace,NOM:.metadata.name,APPROBATION:.spec.installPlanApproval</code> : quels Operators sont en approbation automatique, et lesquels devraient passer en manuelle (module 04) ?'
+          '(bonus, sans cluster : cluster fictif, sur papier) Cluster fictif : 3 masters de 4 vCPU et 16 Go sur un datastore partagé, 120 workers, <code>kubeadmin</code> actif, monitoring sans PVC, aucune sauvegarde etcd, Operators en mise à jour automatique. Donne le go / no-go en cinq minutes et les trois premières actions, avec le module à ouvrir.',
+          '(bonus, E1, lecture seule) <code>oc get subscriptions.operators.coreos.com -A -o custom-columns=NS:.metadata.namespace,NOM:.metadata.name,APPROBATION:.spec.installPlanApproval</code> : quels Operators sont en approbation automatique, et lesquels devraient passer en manuelle (module 04) ?'
         ] }
       ]
     }
