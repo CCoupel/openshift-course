@@ -17,6 +17,7 @@ Redige et corrige les modules du cours. Les modules sont la **source unique** : 
 | Sujet | Reference |
 |---|---|
 | Public, contexte, perimetre, risques | `CLAUDE.md` (section Contexte du projet) et `workshop` dans `.claude/project-config.json` |
+| Perimetre des modules (frontieres, durees, labs, renvois, version de reference) | `docs/PLAN.md` |
 | Schema des modules et des blocs, exigences de contenu | `CONVENTIONS.md` |
 | Style et niveau de qualite attendus | `modules/m01-k8s-vs-ocp.js` |
 | Regles de validation | `tools/validate.js` (commande : `commands.test` de `project-config.json`) |
