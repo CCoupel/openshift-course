@@ -320,12 +320,12 @@ COURSE.add({
           '  kind: NetworkPolicy',
           '  metadata: { name: deny-all, namespace: ${PROJECT_NAME} }',
           '  spec: { podSelector: {}, policyTypes: [Ingress] }',
-          '# + LimitRange, allow-from-ingress, allow-same-namespace…',
+          '# + LimitRange, allow-same-namespace, allow-from-openshift-ingress, allow-from-hostnetwork…',
           'parameters:',
           '- name: PROJECT_NAME',
           '- name: PROJECT_ADMIN_USER'
         ].join('\n') },
-        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) plafonne la somme des ressources de <b>plusieurs projets</b> sélectionnés par label ou annotation (par équipe, par application). Un <code>deny-all</code> nu casse aussi la Route : prévois dans le template le <code>allow-from-ingress</code> (NetworkPolicy et AdminNetworkPolicy : module 07).' }
+        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) plafonne la somme des ressources de <b>plusieurs projets</b> sélectionnés par label ou annotation (par équipe, par application). Un <code>deny-all</code> nu casse aussi la Route : prévois dans le template les policies d\'ouverture de la doc : <code>allow-from-openshift-ingress</code> et, avec des routeurs en HostNetwork, <code>allow-from-hostnetwork</code> (laquelle suffit selon le mode de publication : à vérifier ; détail, YAML et AdminNetworkPolicy : module 07).' }
       ]
     },
     {

@@ -215,7 +215,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 04 | E1 (chrony avec reboot, Operator en approbation manuelle) | E1 : certificat Ingress (cluster jetable, retour arrière), bannière console, OLM v1 |
 | 05 | E1 (monitoring utilisateur, `ServiceMonitor` + `PrometheusRule`, receiver webhook Alertmanager, silence) | E1 : PVC du monitoring ; E1 + S3 (MinIO) : LokiStack `1x.demo` + `ClusterLogForwarder` ; sortie syslog avec pipeline audit |
 | 06 | E0 ou E1 | (bonus : audit) |
-| 07 | E1 (Route edge, NetworkPolicy `deny-all` + `allow-from-ingress`, test inter-projets) | E1 : EgressFirewall, MetalLB L2 (plage IP libre), UDN primaire ; EgressIP (E2 de préférence) ; NMState (cluster jetable) |
+| 07 | E1 (Route edge, NetworkPolicy `deny-all` + `allow-from-openshift-ingress` + `allow-from-hostnetwork`, test inter-projets) | E1 : EgressFirewall, MetalLB L2 (plage IP libre), UDN primaire ; EgressIP (E2 de préférence) ; NMState (cluster jetable) |
 | 08 | E1 (LVMS ou StorageClass CSI) | E1 (provoquer une erreur de PVC) ; ODF (E2) non rédigé |
 | 09 | E1 (pod refusé et diagnostic, SCC dédiée + RBAC, installation du Compliance Operator et `ScanSettingBinding` CIS) ; lab fusible J3 | E1 : lecture du scan et d'une remédiation, PSA warn/audit, chiffrement etcd (cluster jetable), File Integrity Operator |
 | 10 | E0/E1 + dépôt Git | — |
