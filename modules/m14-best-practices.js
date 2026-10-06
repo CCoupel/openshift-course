@@ -79,7 +79,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           '<b>Pods par nœud</b> : 250 par défaut (paramètre <code>maxPods</code> du kubelet). 2 500 est un maximum testé, qui exige un <code>hostPrefix</code> à 20 et un <code>maxPods</code> à 2500 : pas un objectif.',
           'Nombre de nœuds = pods attendus ÷ pods par nœud, puis <b>vérifie CPU, mémoire et disque</b> de l\'application.',
-          'Réservations système (<code>system-reserved</code>) : la doc cite <b>500m de CPU et 1 Gi de mémoire</b> par défaut, mais précise que les valeurs par défaut dépendent des versions d\'OpenShift et du MCO (à vérifier, voir module 12) ; l\'ajustement automatique (<code>autoSizingReserved: true</code> dans une <code>KubeletConfig</code>) est <b>désactivé par défaut</b>.'
+          'Réservations système (<code>system-reserved</code>) : la doc cite <b>500m de CPU et 1 Gi de mémoire</b> par défaut, mais précise que les valeurs par défaut dépendent des versions d\'OpenShift et du MCO (à vérifier, voir module 12) ; l\'ajustement automatique (<code>autoSizingReserved: true</code> dans une <code>KubeletConfig</code>) est <b>désactivé par défaut en 4.20</b> (automatique dès la 4.21 d\'après les notes de version, module 12).'
         ] },
         { t: 'callout', kind: 'trap', html: 'Les maximums sont testés <b>un par un</b> : viser plusieurs maximums à la fois n\'est pas garanti. Un cluster qui dépasse ces chiffres reste exploitable mais sort de ce que Red Hat a validé. Quotas et capacité au quotidien : modules 06 et 12.' }
       ]
