@@ -7,12 +7,18 @@
   "version": "0.1.0",
   "initialized_at": "2026-10-06T15:40:00+02:00",
   "initialized_from": "workshop",
-  "template_version": { "tag": "v3.10.0", "commit": "c620b204c976c789d9039dc14c6958632f804672" },
+  "template_version": {
+    "tag": "v3.10.0",
+    "commit": "c620b204c976c789d9039dc14c6958632f804672"
+  },
   "src_dir": ".",
   "version_file": "VERSION",
   "stack": {
     "backend": null,
-    "frontend": { "language": "javascript", "framework": "vanilla" },
+    "frontend": {
+      "language": "javascript",
+      "framework": "vanilla"
+    },
     "mobile": null,
     "firmware": null,
     "plugin": null,
@@ -24,14 +30,27 @@
       {
         "name": "QUALIF",
         "order": 1,
-        "publish": { "mode": "promote", "target": "build/qualif_v{X.Y.Z}/" },
-        "deploy": { "mechanism": "paas", "target": "GitHub Pages (prévisualisation)" }
+        "publish": {
+          "mode": "promote",
+          "target": "build/qualif_v{X.Y.Z}/"
+        },
+        "deploy": {
+          "mechanism": "paas",
+          "target": "Release GitHub (archive HTML + PPTX)"
+        }
       },
       {
         "name": "PROD",
         "order": 2,
-        "publish": { "mode": "rebuild-ci", "trigger": "git-tag", "pipeline": ".github/workflows/release.yml" },
-        "deploy": { "mechanism": "paas", "target": "GitHub Pages" }
+        "publish": {
+          "mode": "rebuild-ci",
+          "trigger": "git-tag",
+          "pipeline": ".github/workflows/release.yml"
+        },
+        "deploy": {
+          "mechanism": "paas",
+          "target": "Release GitHub (archive HTML + PPTX) ; vitrine sur gh-pages"
+        }
       }
     ]
   },
@@ -40,9 +59,16 @@
     "frontend": [],
     "e2e": [],
     "components": {
-      "engine": ["assets/**", "index.html"],
-      "modules": ["modules/**"],
-      "tools": ["tools/**"]
+      "engine": [
+        "assets/**",
+        "index.html"
+      ],
+      "modules": [
+        "modules/**"
+      ],
+      "tools": [
+        "tools/**"
+      ]
     },
     "regression_at_qa": "gated",
     "full_regression_at": "qualif",
@@ -67,20 +93,47 @@
     "mockup_dir": "docs/mockup"
   },
   "marketing": {
-    "site": false
+    "site": "auto"
   },
   "agents": {
     "idle_ttl_minutes": 15,
     "idle_warning_interval_minutes": 5
   },
   "workshop": {
-    "audience": ["admins K8s qui passent à OpenShift", "ingénieurs plateforme / DevOps", "débutants en conteneurs (prérequis K8s non couverts)"],
-    "use_cases": ["apprendre module par module", "s'entraîner avec les labs", "réutiliser en mission / animer une formation", "réviser avec quiz et aide-mémoire"],
-    "out_of_scope": ["OpenShift managé en détail (encarts « écart cloud » seulement)", "développement applicatif", "hébergement / suivi des apprenants côté serveur"],
-    "differentiators": ["orienté admin K8s et on-prem", "interactif et ludique", "libre et réutilisable"],
-    "distribution": "GitHub public + GitHub Pages",
-    "constraints": ["HTML/JS sans dépendance (file://)", "export PowerPoint (.pptx) à partir du même contenu"],
-    "risks": ["contenu inexact ou périmé", "deux formats à maintenir (HTML + PPTX)"],
-    "conventions": { "branches": "main + feature/*, bugfix/*", "commits": "Conventional Commits", "review": "auto-revue assistée par l'agent code-reviewer" }
+    "audience": [
+      "admins K8s qui passent à OpenShift",
+      "ingénieurs plateforme / DevOps",
+      "débutants en conteneurs (prérequis K8s non couverts)"
+    ],
+    "use_cases": [
+      "apprendre module par module",
+      "s'entraîner avec les labs",
+      "réutiliser en mission / animer une formation",
+      "réviser avec quiz et aide-mémoire"
+    ],
+    "out_of_scope": [
+      "OpenShift managé en détail (encarts « écart cloud » seulement)",
+      "développement applicatif",
+      "hébergement / suivi des apprenants côté serveur"
+    ],
+    "differentiators": [
+      "orienté admin K8s et on-prem",
+      "interactif et ludique",
+      "libre et réutilisable"
+    ],
+    "distribution": "Vitrine GitHub Pages (gh-pages) ; cours HTML et PPTX en telechargement via les Releases",
+    "constraints": [
+      "HTML/JS sans dépendance (file://)",
+      "export PowerPoint (.pptx) à partir du même contenu"
+    ],
+    "risks": [
+      "contenu inexact ou périmé",
+      "deux formats à maintenir (HTML + PPTX)"
+    ],
+    "conventions": {
+      "branches": "main + feature/*, bugfix/*",
+      "commits": "Conventional Commits",
+      "review": "auto-revue assistée par l'agent code-reviewer"
+    }
   }
 }
