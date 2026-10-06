@@ -64,17 +64,20 @@ COURSE.add({
     {
       title: 'Installer OpenShift GitOps',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'gitops-operator.yaml (exemple)', code: `apiVersion: v1
+        { t: 'code', lang: 'yaml', file: 'gitops-operator.yaml (procédure CLI de la doc)', code: `apiVersion: v1
 kind: Namespace
 metadata:
   name: openshift-gitops-operator
+  labels:
+    openshift.io/cluster-monitoring: "true"   # optionnel (supervision de l'Operator)
 ---
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   name: openshift-gitops-operator
   namespace: openshift-gitops-operator
-spec: {}
+spec:
+  upgradeStrategy: Default
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -83,14 +86,15 @@ metadata:
   namespace: openshift-gitops-operator
 spec:
   channel: latest
+  installPlanApproval: Automatic
   name: openshift-gitops-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace` },
         { t: 'bullets', items: [
-          'La doc décrit l\'installation par la <b>console</b> (OperatorHub, tuile « Red Hat OpenShift GitOps », droits <code>cluster-admin</code> requis) ; le YAML ci-dessus en est la forme <b>déclarative</b> (module 04 pour OLM).',
+          'La doc décrit l\'installation par la <b>console</b> (OperatorHub, droits <code>cluster-admin</code> requis) <b>et</b> par la <b>CLI</b> : le YAML ci-dessus reprend la procédure CLI de la doc 1.19 (OperatorGroup avec <code>upgradeStrategy: Default</code>, Subscription en canal <code>latest</code>) ; le label <code>openshift.io/cluster-monitoring</code> est <b>optionnel</b> (module 04 pour OLM).',
           'Vérification : <code>oc get pods -n openshift-gitops</code> ; l\'icône Argo CD apparaît dans la barre de la console.'
         ] },
-        { t: 'callout', kind: 'warn', html: "Nom du paquet, canal et OperatorGroup du YAML : <b>à vérifier</b> dans « Installing GitOps » de ta version (la doc lue décrit la procédure console)." }
+        { t: 'callout', kind: 'tip', html: "Pour de la production, passe <code>installPlanApproval</code> en <code>Manual</code> si tu veux contrôler les mises à jour de l'Operator (module 04, module 12)." }
       ]
     },
     {
