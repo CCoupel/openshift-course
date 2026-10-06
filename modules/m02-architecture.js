@@ -382,7 +382,7 @@ $ oc adm taint nodes infra-0 node-role.kubernetes.io/infra=reserved:NoSchedule` 
           'Dans un pod etcd, exécute <code>etcdctl endpoint status --cluster -w table</code> : qui est leader ?',
           'Regarde les pools : <code>oc get mcp</code> et <code>oc get mc</code>. Identifie les <code>rendered-*</code>.',
           '<code>oc get machinesets,machines -n openshift-machine-api</code> : vide ou non ? Explique pourquoi selon ton mode d\'installation.',
-          '(bonus) Crée un MachineConfig inoffensif (<code>/etc/motd</code>) sur un pool de test et observe <code>oc get mcp -w</code>. Supprime-le ensuite.'
+          '(bonus) Crée un MachineConfig simple (<code>/etc/motd</code>) ciblant le pool de ton nœud et observe <code>oc get mcp -w</code>. Sur un SNO, c\'est le pool master et <b>l\'unique nœud redémarre</b> (API indisponible quelques minutes). Supprime-le ensuite (nouveau rendu, reboot possible : à vérifier).'
         ] }
       ]
     }
