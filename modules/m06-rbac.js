@@ -207,9 +207,9 @@ COURSE.add({
           '        groups: [groups]'
         ].join('\n') },
         { t: 'bullets', items: [
-          '<b>Mode (a) : serveur OAuth + IdP <code>OpenID</code></b> (ci-dessus) : <code>claims.groups</code> existe depuis 4.10 et <b>crée des objets <code>Group</code></b> synchronisés au login.',
+          '<b>Mode (a) : serveur OAuth + IdP <code>OpenID</code></b> (ci-dessus) : <code>claims.groups</code> (champ de l\'IdP du serveur OAuth) existe depuis 4.10 et <b>crée des objets <code>Group</code></b> synchronisés au login.',
           'Le groupe n\'est mis à jour qu\'<b>à la connexion</b> : un retrait côté IdP n\'est visible qu\'au login suivant.',
-          '<b>Mode (b) : OIDC direct</b> (CR <code>Authentication</code>, type <code>OIDC</code>) : GA en 4.20 (Technology Preview en 4.19). Un seul fournisseur ; le serveur OAuth intégré et les API <code>User</code>, <code>Group</code> et <code>OAuth</code> sont <b>retirés</b> : les groupes du jeton servent directement à l\'autorisation (<code>claim</code> + <code>prefix</code>), <b>aucun objet Group n\'est créé</b>. Prérequis : une connexion admin de longue durée (kubeconfig à certificat, jeton de ServiceAccount).'
+          '<b>Mode (b) : OIDC direct</b> (CR <code>Authentication</code>, type <code>OIDC</code>) : GA en 4.20 (Technology Preview en 4.19). Un seul fournisseur ; le serveur OAuth intégré et les API <code>User</code>, <code>Group</code> et <code>OAuth</code> sont <b>retirés</b> : les groupes du jeton se déclarent dans <code>claimMappings.groups</code> (<code>claim</code> + <code>prefix</code>) et servent directement à l\'autorisation, <b>aucun objet Group n\'est créé</b>. Prérequis : une connexion admin de longue durée (kubeconfig à certificat, jeton de ServiceAccount).'
         ] },
         { t: 'callout', kind: 'onprem', html: 'Un SSO interne (Keycloak/RHBK, IdM + Keycloak, ADFS) doit être joignable depuis le <b>navigateur</b> et depuis le <b>serveur OAuth</b>, avec sa CA : deux chemins réseau à tester.' }
       ]
