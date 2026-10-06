@@ -234,7 +234,7 @@ groups: []` },
           'Une politique décrit des <b>scopes</b> (images, dépôts ou registres) et une <b>racine de confiance</b> (clé publique, PKI ou Fulcio).',
           'Si une image d\'<code>ImagePolicy</code> est couverte par un scope de <code>ClusterImagePolicy</code>, <b>seule la politique cluster s\'applique</b>.'
         ] },
-        { t: 'callout', kind: 'warn', html: "<b>Statut en 4.20</b> : <code>ClusterImagePolicy</code> et <code>ImagePolicy</code> sont <b>GA</b> (<code>apiVersion: config.openshift.io/v1</code>, release notes 4.20). Restent en <b>Technology Preview</b> : la politique par défaut <code>openshift</code> (GA en 4.21 d\'après la doc) et le chargement de certificats <b>BYOPKI</b> (<code>v1alpha1</code>, feature set <code>TechPreviewNoUpgrade</code>, donc pas pour de la production : module 04). Ne modifie pas la politique <code>openshift</code>." }
+        { t: 'callout', kind: 'warn', html: "<b>Statut en 4.20</b> : <code>ClusterImagePolicy</code> et <code>ImagePolicy</code> sont <b>GA</b> (<code>apiVersion: config.openshift.io/v1</code>, release notes 4.20). Restent en <b>Technology Preview</b> : la politique par défaut <code>openshift</code> (GA en 4.21 d\'après les release notes 4.21 : « now generally available and active by default ») et le chargement de certificats <b>BYOPKI</b> (<code>v1alpha1</code>, feature set <code>TechPreviewNoUpgrade</code>, donc pas pour de la production : module 04). Ne modifie pas la politique <code>openshift</code>." }
       ]
     },
     {
