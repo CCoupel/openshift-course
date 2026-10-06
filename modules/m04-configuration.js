@@ -425,7 +425,7 @@ spec:
           '(bonus) Crée le Secret TLS dans <code>openshift-ingress</code> et patche <code>defaultCertificate</code> ; attends le redéploiement des routeurs, vérifie que <code>oc get co</code> reste sain et contrôle l\'émetteur avec <code>curl -vI</code> sur la console.',
           '(bonus) <b>Retour arrière</b> : retire <code>spec.defaultCertificate</code> de l\'<code>IngressController</code> (<code>oc patch … --type=json -p \'[{"op":"remove","path":"/spec/defaultCertificate"}]\'</code>, à vérifier), attends le redéploiement des routeurs puis supprime le Secret. La CA ajoutée dans <code>user-ca-bundle</code> / <code>Proxy.trustedCA</code> peut rester (inoffensif) ; la retirer est facultatif (à vérifier).',
           '(bonus) Crée un <code>ConsoleNotification</code> de type bandeau et vérifie qu\'il apparaît dans la console.',
-          '(bonus) Essaie OLM v1 : crée un <code>ClusterExtension</code> pour un Operator compatible (périmètre et champs : à vérifier dans la doc 4.20) ; compare avec la Subscription de l\'étape précédente.'
+          '(bonus) Essaie OLM v1 : crée un <code>ClusterExtension</code> pour un Operator compatible (périmètre et champs : à vérifier dans la doc 4.20) ; compare avec la Subscription de l\'étape 4.'
         ] }
       ]
     }
