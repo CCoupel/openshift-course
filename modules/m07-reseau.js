@@ -276,10 +276,10 @@ spec:
           right: { title: '🟧 Mode BGP', items: ['Annonce l\'IP aux routeurs (pairs BGP)', 'Répartition du trafic sur plusieurs nœuds', 'Exige des routeurs BGP et une coordination réseau', 'Plus adapté à la production à l\'échelle'] },
           verdict: 'Lab et petits sites : L2. Production avec équipe réseau et plusieurs racks : BGP.' },
         { t: 'bullets', items: [
-          '<b>MetalLB Operator</b> (OLM, module 04) ; namespace typique <code>metallb-system</code> ; l\'IPAddressPool doit être dans le namespace de l\'Operator.',
+          '<b>MetalLB Operator</b> (OLM, module 04) ; installé de préférence en CLI dans <code>metallb-system</code> (Subscription <code>metallb-operator</code>, canal <code>stable</code>, source <code>redhat-operators</code>, doc 4.20) ; l\'IPAddressPool doit être dans le namespace de l\'Operator.',
           'Objets : <code>IPAddressPool</code>, <code>L2Advertisement</code>, <code>BGPPeer</code>, <code>BGPAdvertisement</code>, API <code>metallb.io/v1beta1</code>.'
         ] },
-        { t: 'callout', kind: 'warn', html: "Détails d'installation (canal, nom exact de la CR <code>MetalLB</code>, version FRR en BGP) : à lire dans « Load balancing with MetalLB » de ta version (à vérifier)." }
+        { t: 'callout', kind: 'warn', html: "Namespace, canal et Subscription : doc « Installing the MetalLB Operator » 4.20. Nom exact de la CR <code>MetalLB</code> à créer après l'Operator et version FRR en BGP : à lire dans « Load balancing with MetalLB » de ta version (à vérifier)." }
       ]
     },
     {
