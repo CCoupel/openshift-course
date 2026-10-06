@@ -119,7 +119,8 @@ COURSE.add({
           ['oc adm certificate approve NOM_DU_CSR', 'Approuver une demande <b>dont tu as vérifié le demandeur</b>']
         ] },
         { t: 'callout', kind: 'trap', html: 'N\'approuve que les CSR <b>en <code>Pending</code></b> et dont tu as <b>vérifié le demandeur</b> (nom du nœud attendu, signataire) : un CSR approuvé à l\'aveugle peut donner à un intrus un certificat de nœud, donc un faux nœud dans ton cluster. Remplacement des certificats API et Ingress : module 04.' },
-        { t: 'callout', kind: 'warn', html: 'Sur un SNO, il n\'y a aucun autre nœud : un drain manuel couperait routeurs, console et OAuth (module 12). Un PDB trop strict ou des pods sans contrôleur font échouer le drain (module 12).' }
+        { t: 'callout', kind: 'warn', html: '<b>Sur un SNO</b>, il n\'y a aucun autre nœud : le MCO <b>saute le drain</b> lors des mises à jour et tout redémarre avec le nœud ; un <code>drain</code> manuel couperait routeurs, console et OAuth : <b>seulement dans une fenêtre de maintenance</b>, avec <code>oc adm uncordon</code> comme retour arrière. (module 12)' },
+        { t: 'callout', kind: 'warn', html: 'Un <b>PDB trop strict</b> ou des pods sans contrôleur font échouer le drain : le message dit lequel. Sur bare metal : si ton firmware impose un reboot, <b>drain avant</b> ; le MCO n\'est pas au courant de tes opérations manuelles. (module 12)' }
       ]
     },
     {
@@ -137,7 +138,9 @@ COURSE.add({
           ['dig +short api.ocp4.example.com', 'Le nom de l\'API résout-il ?'],
           ['dig +short test.apps.ocp4.example.com', 'le wildcard doit répondre']
         ] },
-        { t: 'callout', kind: 'trap', html: 'Un <code>deny-all</code> coupe aussi les routeurs : prévois <code>allow-from-openshift-ingress</code> et, avec des routeurs en HostNetwork, <code>allow-from-hostnetwork</code> (module 07, qui rappelle de tester après application). Un Service LoadBalancer sur bare metal sans MetalLB reste en pending (module 07).' }
+        { t: 'callout', kind: 'trap', html: '<b>Piège OCP</b> : un deny-all coupe aussi les <b>routeurs</b> : prévois <code>allow-from-openshift-ingress</code> (label <code>policy-group.network.openshift.io/ingress</code>) et, avec des routeurs en <b>HostNetwork</b> (défaut on-prem), <code>allow-from-hostnetwork</code> (label <code>policy-group.network.openshift.io/host-network</code>).' },
+        { t: 'callout', kind: 'warn', html: 'Les deux YAML <code>allow-from-openshift-ingress</code> et <code>allow-from-hostnetwork</code> sont ceux de la doc 4.20. <b>Laquelle suffit selon le mode de publication</b> de l\'<code>IngressController</code> (HostNetwork ou LoadBalancerService/NodePort) n\'est pas énoncé explicitement dans les pages lues : <b>à vérifier</b> ; en pratique, applique les deux puis teste. Attention : un deny-all mal ouvert te coupe l\'accès à tes propres applications.' },
+        { t: 'callout', kind: 'trap', html: 'Créer un Service <code>LoadBalancer</code> sur bare metal sans MetalLB : il reste indéfiniment en <code>&lt;pending&gt;</code>. Ce n\'est pas un bug, c\'est l\'absence d\'implémentation (module 02, 03 : le LB de l\'API est un autre sujet).' }
       ]
     },
     {
@@ -176,6 +179,7 @@ COURSE.add({
           ['oc get co monitoring', 'Cluster Operator monitoring (à surveiller après un changement de configuration)'],
           ['oc create sa logging-collector -n openshift-logging', 'ServiceAccount du collecteur']
         ] },
+        { t: 'callout', kind: 'trap', html: 'Activer un PVC sur un Prometheus qui tourne déjà <b>redémarre</b> ses pods : fais-le à un moment calme et surveille <code>oc get co monitoring</code>. Dimensionnement : sers-toi de la consommation réelle (<code>prometheus_tsdb_*</code>) plutôt que d\'une valeur au hasard.' },
         { t: 'callout', kind: 'trap', html: 'Une erreur de syntaxe dans <code>alertmanager.yaml</code> arrête la distribution des alertes : garde une copie avant d\'éditer (procédure du module 05). Watchdog est une alerte toujours active par conception : le « dead man\'s switch » de la chaîne d\'alerte (module 05).' }
       ]
     },
@@ -196,6 +200,8 @@ COURSE.add({
         { t: 'code', lang: 'bash', file: 'terminal', code: `# Pause d'un pool de workers (module 12), puis reprise
 $ oc patch mcp/worker --type merge --patch '{"spec":{"paused":true}}'
 $ oc patch mcp/worker --type merge --patch '{"spec":{"paused":false}}'` },
+        { t: 'callout', kind: 'trap', wide: true, html: 'Un pool laissé <b>en pause</b> bloque les mises à jour mineures suivantes et <b>inhibe des tâches de maintenance comme la rotation des certificats</b> (avertissement de la doc) : ne l\'oublie jamais. Sur SNO, mise à jour = redémarrage de l\'unique nœud : fenêtre de maintenance (module 02).' },
+        { t: 'callout', kind: 'warn', html: '<b>À terminer sous 60 jours</b> : tu peux répartir la procédure sur plusieurs fenêtres, mais la doc demande de tout finir en 60 jours pour que les automatismes (dont la rotation des certificats) aboutissent. Valable seulement entre mineures <b>paires</b> (EUS). (module 12)' },
         { t: 'callout', kind: 'trap', html: 'N\'acquitte <b>jamais à l\'aveugle</b> : la doc rappelle que l\'admin est responsable de repérer et migrer les APIs retirées (le cluster ne voit pas les outils externes ni les charges inactives). Pour la 4.22, la doc indique <b>aucune suppression d\'API Kubernetes</b>.' }
       ]
     },
@@ -214,6 +220,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['<b>Un membre etcd</b> défaillant', 'Remplacement du membre malsain'],
           ['<b>Certificats</b> du control plane expirés', 'Approbation des CSR <code>node-bootstrapper</code> (et <code>kubelet-serving</code> en UPI)']
         ] },
+        { t: 'callout', kind: 'warn', html: 'Ne sauvegarde <b>pas chaque nœud du control plane</b> : un seul snapshot suffit (doc). Attends aussi <b>24 heures après l\'installation</b> avant la première sauvegarde (rotation initiale des certificats).' },
         { t: 'callout', kind: 'warn', html: '<b>Ne restaure jamais depuis cette fiche.</b> La restauration d\'etcd est un dernier recours « destructif et déstabilisant » : procédures complètes, prérequis et risques aux slides 6 à 10 du module 11. Exerce-toi d\'abord sur un cluster jetable. OADP ne constitue pas une solution de reprise pour etcd (module 11).' }
       ]
     },
