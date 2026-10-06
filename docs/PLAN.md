@@ -192,8 +192,9 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Objectif** (P8) : disposer d'une **check-list transverse** de mise en production, réutilisable en mission.
 - **Traité** : check-list par domaine (architecture et dimensionnement, installation, identité, réseau, stockage, observabilité, sécurité, sauvegarde, mises à jour, GitOps), chaque point renvoyant au module propriétaire ; anti-patterns récurrents ; ouverture multi-cluster (ACM) ; gouvernance (qui fait quoi). **Ne répète pas** les bonnes pratiques détaillées des modules.
 - **Durée** : ≈ 30 min + lab 15 min. **Taille** : 16 slides environ.
-- **Lab** : E1 : auditer son propre cluster avec la check-list (quels points sont verts ?).
-- **À vérifier** : rien de propre, hérite des modules.
+- **Lab** : E1 : auditer son propre cluster avec la check-list (quels points sont verts ?), en lecture seule.
+- **Rédigé** : 21 slides (6 slides de check-list par phase, dimensionnement, nœuds d'infra, multi-tenance, HA, écart cloud, ACM, anti-patterns, go/no-go, erreurs en mission, quiz, lab).
+- **À vérifier** : version d'ACM à retenir pour 4.20 (la matrice 2.14 liste OCP 4.20 EUS), souscription d'ACM, labels de zone hors vSphere. Confirmés dans la doc 4.20 : dimensionnement control plane et infra, 60 % de capacité, composants éligibles aux nœuds d'infra, pool `infra` et double label `infra,worker`, `system-reserved` 500m/1Gi, `autoSizingReserved` désactivé par défaut, 250 pods par nœud par défaut, maximums testés.
 
 #### 15 — Aide-mémoire & quiz final ⬜ (`m15-aide-memoire.js`)
 - **Objectif** : réviser et emporter les commandes essentielles.
