@@ -332,7 +332,7 @@ spec:
     mode: openshift-logging` },
         { t: 'bullets', items: [
           '<b>Stockage objet S3</b> pour les chunks (secret <code>logging-loki-s3</code>) + un <b>PVC</b> (<code>storageClassName</code>) pour les composants Loki.',
-          'Tailles : <code>1x.pico</code> (depuis Logging 6.1 : petits clusters, quelques charges, jusqu\'à ≈ 50 Go/jour, 8 vCPU / 16 Go de requests), <code>1x.extra-small</code>, <code>1x.small</code>, <code>1x.medium</code> ; <code>1x.demo</code> pour un test seulement.',
+          'Tailles : <code>1x.pico</code> (depuis Logging 6.1 ; ≈ 50 Go/jour, requests totales ≈ 7 vCPU / 17 Gi, 8 / 18 avec le ruler), <code>1x.extra-small</code> (≈ 100 Go/jour, ≈ 14 vCPU / 31 Gi), <code>1x.small</code>, <code>1x.medium</code> ; <code>1x.demo</code> pour un test seulement. Chiffres du tableau « Loki deployment sizing » de la doc Logging 6.6 : à relire dans le tableau de ta version.',
           'Mode <code>openshift-logging</code> : les logs sont séparés par tenant (application, infrastructure, audit).'
         ] },
         { t: 'callout', kind: 'onprem', wide: true, html: "On-prem, le <b>bucket S3</b> est à fournir : ODF/NooBaa, MinIO ou une baie S3 (module 08). Le dimensionnement (taille de LokiStack, volume de logs/jour, rétention) se calcule <b>avant</b> l'installation ; les valeurs de taille ci-dessus sont celles de la doc de Logging 6.4." }
