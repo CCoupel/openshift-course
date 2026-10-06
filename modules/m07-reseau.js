@@ -160,7 +160,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-from-ingress
+  name: allow-from-openshift-ingress
   namespace: team-a
 spec:
   podSelector: {}
@@ -175,6 +175,21 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  name: allow-from-hostnetwork
+  namespace: team-a
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          policy-group.network.openshift.io/host-network: ""
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
   name: allow-same-namespace
   namespace: team-a
 spec:
@@ -185,10 +200,10 @@ spec:
   - from:
     - podSelector: {}` },
         { t: 'bullets', items: [
-          'Même API que sur K8s : <b>deny-all</b> puis <b>ouvertures ciblées</b>. Mets le trio ci-dessus dans le <b>project template</b> (module 06).',
-          '<b>Piège OCP</b> : un deny-all coupe aussi les <b>routeurs</b> : prévois <code>allow-from-ingress</code>, sinon les Routes répondent en erreur.'
+          'Même API que sur K8s : <b>deny-all</b> puis <b>ouvertures ciblées</b>. Les quatre policies ci-dessus (noms de la doc 4.20) vont dans le <b>project template</b> (module 06).',
+          '<b>Piège OCP</b> : un deny-all coupe aussi les <b>routeurs</b> : prévois <code>allow-from-openshift-ingress</code> (label <code>policy-group.network.openshift.io/ingress</code>) et, avec des routeurs en <b>HostNetwork</b> (défaut on-prem), <code>allow-from-hostnetwork</code> (label <code>policy-group.network.openshift.io/host-network</code>).'
         ] },
-        { t: 'callout', kind: 'warn', html: "Le label du groupe « ingress » (<code>policy-group.network.openshift.io/ingress</code>) est celui de la doc OCP ; vérifie-le sur ta version avec <code>oc get ns openshift-ingress --show-labels</code>." }
+        { t: 'callout', kind: 'warn', html: "Les deux YAML <code>allow-from-openshift-ingress</code> et <code>allow-from-hostnetwork</code> sont ceux de la doc 4.20. <b>Laquelle suffit selon le mode de publication</b> de l'<code>IngressController</code> (HostNetwork ou LoadBalancerService/NodePort) n'est pas énoncé explicitement dans les pages lues : <b>à vérifier</b> ; en pratique, applique les deux puis teste. Attention : un deny-all mal ouvert te coupe l'accès à tes propres applications." }
       ]
     },
     {
@@ -398,7 +413,7 @@ spec:
       tag: 'quiz',
       blocks: [
         { t: 'quiz', q: 'Sur un cluster bare metal, un Service <code>type: LoadBalancer</code> reste en <code>&lt;pending&gt;</code>. Pourquoi ?', options: ['Le Service est mal écrit : il manque l\'annotation <code>route</code>', 'Le quota de projet est atteint et empêche l\'attribution d\'une IP', 'Rien ne fournit d\'IP externe : il faut MetalLB ou un load balancer d\'entreprise', 'Les routeurs HAProxy doivent être redéployés pour prendre en charge les Services LoadBalancer'], answer: 2, explain: 'Sans fournisseur cloud, aucune implémentation de LoadBalancer n\'existe par défaut. MetalLB (L2 ou BGP) attribue des IP depuis un pool ; les routeurs HAProxy servent les Routes HTTP(S), pas les Services LoadBalancer.' },
-        { t: 'quiz', q: 'Après avoir appliqué une NetworkPolicy <code>deny-all</code> dans un projet, la Route de l\'application ne répond plus. Que manque-t-il ?', options: ['Une NetworkPolicy qui autorise le trafic venant des routeurs (<code>allow-from-ingress</code>)', 'Un nouvel <code>IngressController</code> dédié à ce projet', 'Un EgressFirewall qui autorise les connexions sortantes des routeurs', 'La suppression et la recréation de la Route avec un autre nom d\'hôte'], answer: 0, explain: 'Le deny-all bloque aussi le trafic entrant des routeurs. Une policy qui autorise le groupe « ingress » (namespaces des routeurs) rétablit la Route ; l\'EgressFirewall concerne la sortie du cluster.' },
+        { t: 'quiz', q: 'Après avoir appliqué une NetworkPolicy <code>deny-all</code> dans un projet, la Route ne répond plus ; les routeurs de ton cluster sont en <code>HostNetwork</code>. Que faut-il autoriser ?', options: ['Un nouvel <code>IngressController</code> dédié à ce projet, sinon la Route ne peut pas être servie', 'Le trafic des routeurs : <code>allow-from-openshift-ingress</code> et, pour des routeurs en HostNetwork, <code>allow-from-hostnetwork</code>', 'Les connexions sortantes des routeurs, avec un EgressFirewall explicite pour le namespace', 'Rien : les Routes ne sont jamais concernées par les NetworkPolicy du projet'], answer: 1, explain: 'Le deny-all bloque aussi le trafic entrant des routeurs. La doc fournit deux policies : une pour le groupe « ingress » et une pour le trafic « host-network » (cas des routeurs en HostNetwork). L\'EgressFirewall concerne la sortie du cluster.' },
         { t: 'quiz', q: 'Peut-on étendre la <code>serviceNetwork</code> d\'un cluster déjà installé ?', options: ['Oui, en modifiant la CR <code>Network</code> comme pour <code>clusterNetwork</code>', 'Oui, mais seulement avec l\'API ServiceCIDR de Kubernetes', 'Oui, en ajoutant un nœud infra avec un second réseau de Services', 'Non : elle se fixe à l\'installation et ne peut pas être étendue'], answer: 3, explain: 'La doc 4.20 indique que le CIDR des Services ne peut pas être étendu après l\'installation (ni directement, ni par l\'API ServiceCIDR) ; seul le masque de <code>clusterNetwork</code> peut être réduit pour ajouter de l\'espace.' }
       ]
     },
@@ -410,7 +425,7 @@ spec:
           'Prérequis : environnement E1 (SNO) avec <code>cluster-admin</code>, voir module 00.',
           'Crée un projet, déploie une appli web (par exemple <code>oc new-app --image=quay.io/redhattraining/hello-world-nginx</code>), puis expose-la avec <code>oc create route edge</code> et teste avec <code>curl -k</code>.',
           'Applique la NetworkPolicy <code>deny-all</code> de la slide dédiée : la Route répond-elle encore ? Lis <code>oc get networkpolicy</code> et explique.',
-          'Ajoute <code>allow-from-ingress</code> (vérifie le label avec <code>oc get ns openshift-ingress --show-labels</code>) : la Route redevient accessible.',
+          'Ajoute <code>allow-from-openshift-ingress</code> et <code>allow-from-hostnetwork</code> (labels vérifiables avec <code>oc get ns openshift-ingress --show-labels</code>) : la Route redevient-elle accessible avec chacune seule ? Note ce qui suffit sur ton cluster. <b>Risque</b> : un deny-all peut te couper l\'accès ; <b>retour arrière</b> : <code>oc delete networkpolicy deny-all -n &lt;projet&gt;</code>.',
           'Depuis un second projet, tente d\'atteindre le Service du premier avec <code>oc exec … -- curl</code> : constate le blocage, puis ouvre un accès limité à ce projet avec une policy ciblée.',
           '(bonus) Pose un <code>EgressFirewall</code> <code>default</code> qui refuse <code>0.0.0.0/0</code> sauf un CIDR choisi et teste une sortie autorisée et une refusée.',
           '(bonus) Installe le MetalLB Operator, crée un <code>IPAddressPool</code> et une <code>L2Advertisement</code> sur une plage libre de ton réseau, puis un Service <code>LoadBalancer</code> (E1 avec plage libre du sous-réseau).',
@@ -424,7 +439,7 @@ spec:
     'OVN-Kubernetes est le seul CNI (SDN retiré en 4.17) ; <code>serviceNetwork</code>, <code>hostPrefix</code> et <code>machineNetwork</code> sont figés après l\'installation, seul le masque de <code>clusterNetwork</code> peut être réduit.',
     'HTTP(S) : Route (edge, passthrough, reencrypt) et IngressController (domaine, sharding, <code>HostNetwork</code> par défaut sans cloud) ; Gateway API GA depuis 4.19.',
     'TCP/UDP : un Service <code>LoadBalancer</code> n\'a pas de LB natif on-prem : MetalLB (L2 ou BGP) ou équipement externe.',
-    'NetworkPolicy deny-all + <code>allow-from-ingress</code> ; AdminNetworkPolicy (priorité 0-100) et BANP pour les règles de l\'admin ; EgressFirewall et EgressIP pour la sortie.',
+    'NetworkPolicy deny-all + <code>allow-from-openshift-ingress</code> / <code>allow-from-hostnetwork</code> ; AdminNetworkPolicy (priorité 0-99) et BANP pour les règles de l\'admin ; EgressFirewall et EgressIP pour la sortie.',
     'NMState configure les nœuds (bonds, VLAN) sauf <code>br-ex</code> ; Multus et SR-IOV pour les réseaux secondaires ; UDN (GA 4.18) pour la segmentation avancée et les VM.',
     'Diagnostic du simple au profond : DNS, Service et endpoints, Route, policies, puis <code>ovnkube-trace</code> ; must-gather réseau seulement sur demande du support.'
   ]
