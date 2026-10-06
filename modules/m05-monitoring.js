@@ -129,7 +129,42 @@ data:
     {
       title: 'ServiceMonitor, PodMonitor, PrometheusRule',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'monitoring-app.yaml', code: `apiVersion: monitoring.coreos.com/v1
+        { t: 'code', lang: 'yaml', file: 'monitoring-app.yaml', code: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: team-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: quay.io/brancz/prometheus-example-app:v0.2.0   # exemple de la doc (tag à vérifier en 4.20)
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: team-a
+  labels:
+    app: web
+spec:
+  selector:
+    app: web
+  ports:
+  - name: web
+    port: 8080
+---
+apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: app-monitor
@@ -212,7 +247,7 @@ route:
   receiver: default
   routes:
   - matchers:
-    - alertname=Watchdog
+    - "alertname=Watchdog"
     repeat_interval: 2m
     receiver: watchdog
   - matchers:
@@ -230,7 +265,7 @@ receivers:
           'Receivers documentés : <b>PagerDuty</b>, <b>e-mail</b> (SMTP), <b>webhook</b>, <b>Slack</b>.',
           'Le routage par défaut groupe en 30 s / 5 min et répète toutes les 12 h.'
         ] },
-        { t: 'callout', kind: 'trap', html: "Une erreur de syntaxe dans <code>alertmanager.yaml</code> arrête la distribution des alertes. Valide avant de remplacer le secret (<code>amtool check-config</code>) et garde une copie de la configuration précédente." }
+        { t: 'callout', kind: 'trap', html: "Une erreur de syntaxe dans <code>alertmanager.yaml</code> arrête la distribution des alertes. Procédure de la doc : <b>extrais</b> la configuration (<code>oc -n openshift-monitoring get secret alertmanager-main --template='{{ index .data \"alertmanager.yaml\" }}' | base64 --decode</code>), <b>garde une copie</b>, édite, remplace le secret avec <code>oc create secret generic … --dry-run=client -o=yaml | oc replace</code>, puis contrôle l'arbre de routes avec <code>oc exec alertmanager-main-0 -n openshift-monitoring -- amtool config routes show --alertmanager.url http://localhost:9093</code> (<code>amtool</code> est dans le pod)." }
       ]
     },
     {
@@ -270,7 +305,7 @@ receivers:
           verdict: 'Logging 6.x est un produit à <b>cycle de vie distinct</b> d\'OCP : vérifie la matrice de compatibilité (Logging 6.4 : annoncé compatible avec 4.20 par les errata).' },
         { t: 'bullets', items: [
           'Opérateurs : <b>Red Hat OpenShift Logging</b>, <b>Loki</b> et, pour l\'interface, <b>Cluster Observability Operator</b>. Installation par OLM (module 04).',
-          'Namespaces et canaux d\'abonnement : à lire dans la doc d\'installation de ta version de Logging (canaux de type <code>stable-6.x</code> : à vérifier).'
+          'Installation (doc 6.4) : opérateur Loki dans <code>openshift-operators-redhat</code> (label <code>openshift.io/cluster-monitoring: "true"</code>), opérateur Logging dans <code>openshift-logging</code>, source <code>redhat-operators</code>, canal <code>stable-6.4</code>.'
         ] }
       ]
     },
@@ -297,7 +332,7 @@ spec:
     mode: openshift-logging` },
         { t: 'bullets', items: [
           '<b>Stockage objet S3</b> pour les chunks (secret <code>logging-loki-s3</code>) + un <b>PVC</b> (<code>storageClassName</code>) pour les composants Loki.',
-          'Tailles de production : <code>1x.extra-small</code>, <code>1x.small</code>, <code>1x.medium</code> ; <code>1x.demo</code> pour un test.',
+          'Tailles : <code>1x.pico</code> (depuis Logging 6.1 : petits clusters, quelques charges, jusqu\'à ≈ 50 Go/jour, 8 vCPU / 16 Go de requests), <code>1x.extra-small</code>, <code>1x.small</code>, <code>1x.medium</code> ; <code>1x.demo</code> pour un test seulement.',
           'Mode <code>openshift-logging</code> : les logs sont séparés par tenant (application, infrastructure, audit).'
         ] },
         { t: 'callout', kind: 'onprem', wide: true, html: "On-prem, le <b>bucket S3</b> est à fournir : ODF/NooBaa, MinIO ou une baie S3 (module 08). Le dimensionnement (taille de LokiStack, volume de logs/jour, rétention) se calcule <b>avant</b> l'installation ; les valeurs de taille ci-dessus sont celles de la doc de Logging 6.4." }
@@ -313,9 +348,9 @@ metadata:
   namespace: openshift-logging
 spec:
   serviceAccount:
-    name: collector
+    name: logging-collector
   outputs:
-  - name: lokistack
+  - name: lokistack-out
     type: lokiStack
     lokiStack:
       target:
@@ -324,19 +359,23 @@ spec:
       authentication:
         token:
           from: serviceAccount
+    tls:
+      ca:
+        key: service-ca.crt
+        configMapName: openshift-service-ca.crt
   pipelines:
-  - name: vers-loki
+  - name: infra-app-logs
     inputRefs:
     - application
     - infrastructure
     outputRefs:
-    - lokistack` },
+    - lokistack-out` },
         { t: 'cmds', items: [
-          ['oc create sa collector -n openshift-logging', 'ServiceAccount du collecteur'],
-          ['oc adm policy add-cluster-role-to-user collect-application-logs system:serviceaccount:openshift-logging:collector', 'Droit de collecter les logs applicatifs (idem <code>collect-infrastructure-logs</code>)'],
-          ['oc adm policy add-cluster-role-to-user logging-collector-logs-writer system:serviceaccount:openshift-logging:collector', 'Droit d\'écrire dans LokiStack']
+          ['oc create sa logging-collector -n openshift-logging', 'ServiceAccount du collecteur'],
+          ['oc adm policy add-cluster-role-to-user collect-application-logs system:serviceaccount:openshift-logging:logging-collector', 'Droit de collecter les logs applicatifs (idem <code>collect-infrastructure-logs</code>)'],
+          ['oc adm policy add-cluster-role-to-user logging-collector-logs-writer system:serviceaccount:openshift-logging:logging-collector', 'Droit d\'écrire dans LokiStack']
         ] },
-        { t: 'callout', kind: 'warn', html: "Les trois blocs de la section <code>lokiStack</code> (cible, authentification, TLS) : forme exacte à relire dans la doc <b>Configuring logging</b> de ta version. <b>Les logs d'audit ne sont pas collectés par défaut</b> : ils exigent le droit <code>collect-audit-logs</code> et une entrée <code>audit</code> dans le pipeline." }
+        { t: 'callout', kind: 'warn', html: "Exemple aligné sur la doc <b>Installing logging</b> 6.4 (<code>tls.ca</code> sur le ConfigMap <code>openshift-service-ca.crt</code>, clé <code>service-ca.crt</code>) ; à relire pour ta version. <b>Les logs d'audit ne sont pas collectés par défaut</b> : ils exigent le droit <code>collect-audit-logs</code> et une entrée <code>audit</code> dans le pipeline." }
       ]
     },
     {
@@ -381,7 +420,7 @@ spec:
       tag: 'quiz',
       blocks: [
         { t: 'quiz', q: 'Des équipes veulent voir les métriques de leurs applications dans la console, sans installer leur propre Prometheus. Quelle est la première action ?', options: ['Déployer un Prometheus par projet', 'Mettre <code>enableUserWorkload: true</code> dans <code>cluster-monitoring-config</code>', 'Éditer le secret <code>alertmanager-main</code>', 'Donner <code>cluster-admin</code> aux développeurs'], answer: 1, explain: '<code>enableUserWorkload: true</code> déploie dans <code>openshift-user-workload-monitoring</code> un Prometheus et un Thanos Ruler dédiés ; les équipes créent ensuite des <code>ServiceMonitor</code> et <code>PrometheusRule</code> avec les rôles <code>monitoring-*</code>.' },
-        { t: 'quiz', q: 'Sur un cluster de production multi-nœuds, Prometheus et Alertmanager tournent sans PVC. Quel est le problème ?', options: ['Aucun : les métriques sont répliquées dans etcd', 'Seulement une question de performance', 'Les métriques sont perdues au redémarrage des pods, et la doc exige un stockage persistant en multi-nœuds pour la haute disponibilité', 'Le monitoring utilisateur devient impossible'], answer: 2, explain: 'Sans stockage persistant, les données sont perdues à chaque redémarrage de pod. La doc demande un stockage persistant pour Prometheus et Alertmanager en multi-nœuds ; évite le bloc brut et les systèmes de fichiers non POSIX (certains NFS).' },
+        { t: 'quiz', q: 'Sur un cluster de production multi-nœuds, Prometheus et Alertmanager tournent sans PVC. Quel est le problème ?', options: ['Aucun problème : les séries temporelles de Prometheus sont répliquées automatiquement dans etcd, donc elles survivent à un redémarrage des pods', 'Seulement un souci de performance : les requêtes sont plus lentes sur le disque éphémère, mais les données restent conservées après un redémarrage', 'Les données sont perdues au redémarrage des pods : la doc impose un stockage persistant en multi-nœuds', 'Le monitoring des projets utilisateur devient totalement impossible tant qu\'aucun PVC n\'est configuré pour la plateforme'], answer: 2, explain: 'Sans stockage persistant, les données sont perdues à chaque redémarrage de pod. La doc demande un stockage persistant pour Prometheus et Alertmanager en multi-nœuds ; évite le bloc brut et les systèmes de fichiers non POSIX (certains NFS).' },
         { t: 'quiz', q: 'Avec Logging 6, quelle ressource décrit quels logs sont collectés et où ils sont envoyés ?', options: ['<code>ClusterLogForwarder</code> (<code>observability.openshift.io/v1</code>)', '<code>ClusterLogging</code> (<code>logging.openshift.io</code>)', '<code>Elasticsearch</code>', '<code>LokiStack</code> seul'], answer: 0, explain: 'Le <code>ClusterLogForwarder</code> définit entrées, sorties et pipelines. <code>LokiStack</code> décrit seulement le stockage ; <code>ClusterLogging</code> et Elasticsearch ne sont plus gérés par Logging 6.' }
       ]
     },
@@ -392,9 +431,9 @@ spec:
         { t: 'lab', title: 'ServiceMonitor, règle d\'alerte et receiver Alertmanager', goal: 'Noyau en séance sur un SNO (cluster-admin) ; les étapes (bonus) sont à faire en autonomie.', steps: [
           'Prérequis : environnement E1 (SNO) avec <code>cluster-admin</code>, voir module 00.',
           'Active le monitoring utilisateur : crée ou édite <code>cluster-monitoring-config</code> avec <code>enableUserWorkload: true</code> et vérifie les trois pods de <code>openshift-user-workload-monitoring</code>.',
-          'Déploie dans un projet une application qui expose <code>/metrics</code>, crée son <code>Service</code>, un <code>ServiceMonitor</code> (slide dédiée) et vérifie la cible dans <b>Observe → Targets</b>, puis une requête dans <b>Observe → Metrics</b>.',
+          'Applique le YAML de la slide « ServiceMonitor, PodMonitor, PrometheusRule » dans un projet : il déploie l\'application d\'exemple <code>quay.io/brancz/prometheus-example-app</code> (port 8080, <code>/metrics</code> ; tag de la doc, à vérifier en 4.20), son <code>Service</code> et le <code>ServiceMonitor</code>, puis vérifie la cible dans <b>Observe → Targets</b>, puis une requête dans <b>Observe → Metrics</b>.',
           'Crée une <code>PrometheusRule</code> qui se déclenche rapidement (par exemple avec une expression comme <code>vector(1)</code> et <code>for: 1m</code>) et observe l\'alerte dans <b>Observe → Alerting</b>.',
-          'Ajoute au secret <code>alertmanager-main</code> un receiver webhook et une route sur ton alerte (<code>amtool check-config</code> avant d\'appliquer), puis vérifie la configuration dans la console Alertmanager ; crée un silence de 10 minutes.',
+          'Ajoute au secret <code>alertmanager-main</code> un receiver webhook et une route sur ton alerte (étape 1 : extrais l\'actuel dans <code>alertmanager.yaml</code> et <b>copie-le en <code>alertmanager.yaml.bak</code></b> ; étape 2 : édite ; étape 3 : remplace le secret comme dans la doc), vérifie avec <code>oc exec alertmanager-main-0 -n openshift-monitoring -- amtool config routes show --alertmanager.url http://localhost:9093</code> (outil du pod, rien à installer) ; crée un silence de 10 minutes. <b>Retour arrière</b> : remplace le secret par <code>alertmanager.yaml.bak</code>.',
           '(bonus) Ajoute un <code>volumeClaimTemplate</code> à Prometheus (<code>retention</code> 7d, <code>retentionSize</code>) avec une StorageClass LVMS et observe le redémarrage et <code>oc get co monitoring</code>.',
           '(bonus) Installe les opérateurs Loki et Logging, crée un <code>LokiStack</code> de taille <code>1x.demo</code> sur un bucket S3 (par exemple MinIO), le <code>ClusterLogForwarder</code> de la slide et vérifie la présence des logs dans la console.',
           '(bonus) Ajoute une sortie <code>syslog</code> vers un récepteur de lab et un pipeline <code>audit</code> ; vérifie la réception.'
