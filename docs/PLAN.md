@@ -223,7 +223,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 11 | E1 (sauvegarde etcd non destructive, export hors du nœud, lecture de l'archive, installation d'OADP) | E1 + S3 (MinIO) : `DataProtectionApplication`, sauvegarde, suppression puis restauration d'un namespace ; cluster JETABLE (E1 jetable ou E2) : restauration etcd complète |
 | 12 | E1 (état de mise à jour en lecture, `must-gather` et `oc adm inspect`, quota et LimitRange, cordon / drain / uncordon) | E1 jetable ou E2 : mise à jour mineure réelle ; E2 : pause d'un pool `worker`, ajout d'un nœud (`oc adm node-image create` ou MachineSet) |
 | 13 | E1 (Serverless : Operator, `KnativeServing`/`KnativeEventing`, service Knative, scale-to-zero, répartition de trafic) | E3 : OpenShift Virtualization, VM depuis une boot source, `virtctl` ; E3 multi-nœuds + stockage RWX : migration à chaud ; vCenter de test : migration MTV cold |
-| 14 | E1 (audit en lecture seule d'un cluster avec la check-list : `oc get`, `describe`, `top`, sans modification) | Go / no-go sur un cluster fictif ; revue des `Subscription` (approbation manuelle) |
+| 14 | E1 (audit en lecture seule d'un cluster avec la check-list : `oc get`, `describe`, `top`, sans modification) | Go / no-go sur un cluster fictif (sans cluster) ; revue des `Subscription` (E1, lecture seule ; approbation manuelle) |
 | 15 | — | — |
 
 ---
