@@ -171,7 +171,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 - **Traité** : sauvegarde etcd (`cluster-backup.sh`, CronJob/automatisation), restauration à un état antérieur et restauration du quorum ; OADP (Velero, `DataProtectionApplication`, `Backup`/`Restore`, snapshots CSI vs copie de données) ; ce qu'on ne sauvegarde pas (reconstruire par GitOps) ; stratégies DR (reconstruction + GitOps + OADP, cluster passif, stretch) ; tests de restauration.
 - **Renvoyé** : snapshots CSI → 08 ; GitOps → 10 ; ODF stretch / Regional DR → 08 (mention).
 - **Durée** : ≈ 45 min + lab 20 min. **Lab** : E1 + S3 (MinIO) : sauvegarde etcd, OADP backup puis restauration d'un namespace supprimé ; bonus (cluster jetable) : restauration etcd.
-- **À vérifier** : correspondance versions OADP / OCP 4.20 ; procédure et scripts de restauration etcd et de quorum en 4.20.
+- **À vérifier** : nom du paquet et canal d'OADP en 4.20 ; champs exacts de la `DataProtectionApplication` ; restauration OADP inter-cluster. Ordre de la restauration etcd (multi-nœuds et SNO) tranché sur la doc 4.20 ; OADP 1.6 vise OCP 4.22 (le cours retient la 1.5). Confirmés : `cluster-backup.sh`, contenu de l'archive, règles (un seul nœud, 24 h, même z-stream), `quorum-restore.sh`, `cluster-restore.sh`, `disable-etcd.sh`, OADP 1.5 compatible OCP 4.19-4.21, limites d'OADP vis-à-vis d'etcd.
 
 #### 12 — Opérations jour 2 ⬜ (`m12-jour2.js`)
 - **Objectif** : maintenir le cluster en condition opérationnelle.
@@ -204,7 +204,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 
 ## 5. Matrice des prérequis de lab
 
-> Alignée sur les labs **rédigés** (modules 00 à 09 et 12) ; les lignes des modules à venir restent le plan.
+> Alignée sur les labs **rédigés** (modules 00 à 09, 11 et 12) ; les lignes des modules à venir restent le plan.
 
 | Module | Noyau en séance | Bonus |
 |---|---|---|
@@ -219,7 +219,7 @@ Format des fiches : **Objectif** · **Traité** · **Renvoyé** (sujet → modul
 | 08 | E1 (LVMS ou StorageClass CSI) | E1 (provoquer une erreur de PVC) ; ODF (E2) non rédigé |
 | 09 | E1 (pod refusé et diagnostic, SCC dédiée + RBAC, installation du Compliance Operator et `ScanSettingBinding` CIS) ; lab fusible J3 | E1 : lecture du scan et d'une remédiation, PSA warn/audit, chiffrement etcd (cluster jetable), File Integrity Operator |
 | 10 | E0/E1 + dépôt Git | — |
-| 11 | E1 + S3 | E1 jetable (restauration etcd) |
+| 11 | E1 (sauvegarde etcd non destructive, export hors du nœud, lecture de l'archive, installation d'OADP) | E1 + S3 (MinIO) : `DataProtectionApplication`, sauvegarde, suppression puis restauration d'un namespace ; cluster JETABLE (E1 jetable ou E2) : restauration etcd complète |
 | 12 | E1 (état de mise à jour en lecture, `must-gather` et `oc adm inspect`, quota et LimitRange, cordon / drain / uncordon) | E1 jetable ou E2 : mise à jour mineure réelle ; E2 : pause d'un pool `worker`, ajout d'un nœud (`oc adm node-image create` ou MachineSet) |
 | 13 | E1 + E3 | E2/E3 (migration à chaud) |
 | 14 | E1 | — |
