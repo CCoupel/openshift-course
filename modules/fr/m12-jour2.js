@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm12', num: 12, emoji: '🔧',
+  id: 'm12', lang: 'fr', num: 12, emoji: '🔧',
   title: 'Opérations jour 2',
   tagline: 'Mettre à jour sans mauvaise surprise, étendre le cluster, diagnostiquer et tenir la capacité : ce qui occupe un admin OCP au quotidien.',
   duration: '≈ 60 min + lab 20 min',

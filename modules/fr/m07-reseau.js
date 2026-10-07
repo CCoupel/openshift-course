@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm07', num: 7, emoji: '🌐',
+  id: 'm07', lang: 'fr', num: 7, emoji: '🌐',
   title: 'Réseau',
   tagline: 'Du pod à la sortie du cluster : OVN-Kubernetes, Services et Routes, NetworkPolicy, egress, MetalLB, NMState, réseaux secondaires et UDN.',
   duration: '≈ 70 min + lab 20 min',

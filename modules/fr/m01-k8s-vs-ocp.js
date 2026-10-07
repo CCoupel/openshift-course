@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm01', num: 1, emoji: '⚖️',
+  id: 'm01', lang: 'fr', num: 1, emoji: '⚖️',
   title: 'K8s vs OCP',
   tagline: 'Même moteur, autre carrosserie : ce qu\'OpenShift ajoute, impose et renomme.',
   duration: '≈ 45 min + lab 15 min',

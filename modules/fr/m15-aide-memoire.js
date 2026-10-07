@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm15', num: 15, emoji: '📝',
+  id: 'm15', lang: 'fr', num: 15, emoji: '📝',
   title: 'Aide-mémoire & quiz final',
   tagline: 'Les commandes essentielles par thème, un dictionnaire K8s ↔ OpenShift, des tableaux de décision et un quiz final : tout est repris des modules 00 à 14, avec le renvoi pour le détail.',
   duration: '≈ 30 min',

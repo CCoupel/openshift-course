@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm04', num: 4, emoji: '⚙️',
+  id: 'm04', lang: 'fr', num: 4, emoji: '⚙️',
   title: 'Configuration',
   tagline: 'Le cluster est installé : proxy, registres, certificats, chrony, Operators. La configuration « jour 1 », déclarative, sans toucher aux nœuds à la main.',
   duration: '≈ 60 min + lab 20 min',

@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm03', num: 3, emoji: '🚀',
+  id: 'm03', lang: 'fr', num: 3, emoji: '🚀',
   title: 'Installation',
   tagline: 'Du DNS au premier <code>oc get co</code> : choisir sa méthode, préparer l\'infra, installer, y compris en réseau déconnecté.',
   duration: '≈ 75 min + lab 20 min',

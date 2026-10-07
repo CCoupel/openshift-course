@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm05', num: 5, emoji: '📈',
+  id: 'm05', lang: 'fr', num: 5, emoji: '📈',
   title: 'Supervision & monitoring',
   tagline: 'Métriques, alertes, logs : la stack de monitoring intégrée, son ouverture aux équipes, le routage des alertes et Logging 6 avec Loki.',
   duration: '≈ 70 min + lab 20 min',

@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm11', num: 11, emoji: '🗄️',
+  id: 'm11', lang: 'fr', num: 11, emoji: '🗄️',
   title: 'Backup & reprise d\'activité',
   tagline: 'etcd, applications, volumes : ce qu\'on sauvegarde, comment on restaure, et pourquoi une sauvegarde jamais testée n\'existe pas.',
   duration: '≈ 45 min + lab 20 min',

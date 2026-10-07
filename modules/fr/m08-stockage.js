@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm08', num: 8, emoji: '💾',
+  id: 'm08', lang: 'fr', num: 8, emoji: '💾',
   title: 'Stockage',
   tagline: "Sur OpenShift on-prem, le stockage persistant n'est pas fourni : c'est toi qui choisis le backend, et c'est là que les projets déraillent.",
   duration: '≈ 60 min + lab 20 min',

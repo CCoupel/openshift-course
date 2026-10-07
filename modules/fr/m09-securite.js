@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm09', num: 9, emoji: '🛡️',
+  id: 'm09', lang: 'fr', num: 9, emoji: '🛡️',
   title: 'Sécurité avancée',
   tagline: 'Au-delà du RBAC : ce qu\'un pod a le droit de faire (SCC, PSA), ce qu\'on lui donne à exécuter (images, secrets) et comment prouver que le cluster est conforme.',
   duration: '≈ 60 min + lab 20 min',

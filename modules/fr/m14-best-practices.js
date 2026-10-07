@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm14', num: 14, emoji: '✅',
+  id: 'm14', lang: 'fr', num: 14, emoji: '✅',
   title: 'Best practices',
   tagline: 'Une check-list de mise en production, transverse et réutilisable en mission : chaque point renvoie au module qui le traite, rien n\'est répété ici.',
   duration: '≈ 30 min + lab 15 min',

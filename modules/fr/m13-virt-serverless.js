@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm13', num: 13, emoji: '🖥️',
+  id: 'm13', lang: 'fr', num: 13, emoji: '🖥️',
   title: 'Virtualisation & Serverless',
   tagline: 'Deux façons de ne plus penser « serveur » : des VM comme des pods avec OpenShift Virtualization, et des services qui dorment à zéro avec OpenShift Serverless.',
   duration: '≈ 60 min + lab 25 min',

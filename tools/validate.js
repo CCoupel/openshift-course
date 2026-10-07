@@ -43,7 +43,7 @@ function rawHtmlFields(b) {
   return f;
 }
 
-const dir = path.join(__dirname, '..', 'modules');
+const dir = path.join(__dirname, '..', 'modules', 'fr');
 const files = process.argv.length > 2 ? process.argv.slice(2) : fs.readdirSync(dir).filter(f => /^m\d+.*\.js$/.test(f)).map(f => path.join(dir, f));
 let errors = 0, warns = 0;
 const loadedMods = {};
@@ -124,7 +124,7 @@ if (process.argv.length <= 2) {
     plan.forEach(p => { if (!p.id || p.num === undefined || !p.emoji || !p.title) err('plan.js', `entrée incomplète : ${JSON.stringify(p)}`); });
     const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
     for (const m of html.matchAll(/<script src="([^"]+)"/g)) if (!fs.existsSync(path.join(root, m[1]))) err('index.html', `script inexistant (404) : ${m[1]}`);
-    for (const f of files) if (!html.includes('modules/' + path.basename(f))) warn(f, 'module non chargé par index.html');
+    for (const f of files) if (!html.includes('modules/fr/' + path.basename(f))) warn(f, 'module non chargé par index.html');
   }
 }
 console.log(`\n${files.length} module(s), ${errors} erreur(s), ${warns} avertissement(s).`);

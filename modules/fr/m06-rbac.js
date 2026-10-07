@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm06', num: 6, emoji: '🔐',
+  id: 'm06', lang: 'fr', num: 6, emoji: '🔐',
   title: 'HBAC / RBAC',
   tagline: 'Qui es-tu, que peux-tu faire, sur quoi, et depuis où ? Authentification, RBAC, groupes, projets, accès aux nœuds et audit.',
   duration: '≈ 60 min + lab 20 min',

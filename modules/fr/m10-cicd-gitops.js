@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm10', num: 10, emoji: '🔄',
+  id: 'm10', lang: 'fr', num: 10, emoji: '🔄',
   title: 'CI/CD & GitOps',
   tagline: 'La configuration de ton cluster dans Git, appliquée et surveillée par Argo CD : GitOps de plateforme d\'abord, Pipelines et Builds en survol.',
   duration: '≈ 45 min + lab 20 min',
