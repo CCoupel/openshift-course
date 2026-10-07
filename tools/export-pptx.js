@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /* Exporte le cours en PowerPoint à partir de modules/*.js (source unique).
- * Usage : node tools/export-pptx.js [--out dist/fichier.pptx]
+ * Usage : node tools/export-pptx.js [--lang fr|en] [--out dist/fichier.pptx] [--strict-i18n]
+ *   sans --lang : un .pptx par langue (dist/openshift-course-X.Y.Z-fr.pptx et -en.pptx) ; --out n'est accepté qu'avec --lang.
+ *   Modules lus dans modules/<lang>/ ; module absent en `en` → repli sur le module fr (signalé, erreur sous --strict-i18n).
+ *   Libellés de l'export lus dans assets/i18n.js (clés pptx.* et callout.*), repli sur LABELS_DEFAULT ci-dessous.
  * Dépendance de dev : pptxgenjs (jamais utilisée par le cours HTML).
  * Les modules sont lus, jamais modifiés. Tout fichier non évaluable ou sans slides est ignoré. */
 'use strict';
@@ -9,6 +12,48 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
+const LANGS = ['fr', 'en'];
+
+/* ---------- Libellés (source : assets/i18n.js, même que le site ; défauts ici si clé/fichier absent) ---------- */
+const LABELS_DEFAULT = {
+  fr: {
+    'callout.tip': 'Astuce', 'callout.warn': 'Attention', 'callout.trap': 'Piège', 'callout.cloud': 'Écart cloud', 'callout.onprem': 'On-prem', 'callout.k8s': 'Côté K8s', 'callout.ocp': 'Côté OCP',
+    'course.title': 'OpenShift, du K8s à OCP', 'export.deckSubtitle': 'Support de cours · on-premise · pour qui maîtrise déjà Kubernetes',
+    'export.deckInfo': '{n} module(s)', 'export.deckNotes': 'Version PowerPoint du cours : le HTML interactif (quiz, cartes, labs à cocher) reste la source de vérité.',
+    'export.subject': 'Support de cours OpenShift on-premise',
+    'cover.module': 'Module', 'export.footer': 'OpenShift — Module {nn} · {title}', 'cover.objectives': 'À la fin de ce module', 'cover.slides': '{n} slides', 'cover.quiz': '{n} quiz',
+    'recap.title': 'À retenir', 'export.recapQuiz': '🎯 {n} quiz dans ce module', 'export.cont': 'suite',
+    'export.term': 'Terme', 'export.definition': 'Définition', 'export.quiz': 'QUIZ', 'export.quizAnswer': 'QUIZ — réponse : {letter}. {answer}', 'export.answer': 'RÉPONSE',
+    'export.reveal': 'Réfléchis, puis réponds à voix haute', 'export.diagramPlaceholder': '📐 Schéma disponible dans la version HTML du cours', 'export.diagramNotes': 'SCHÉMA (texte extrait)'
+  },
+  en: {
+    'callout.tip': 'Tip', 'callout.warn': 'Warning', 'callout.trap': 'Pitfall', 'callout.cloud': 'Cloud gap', 'callout.onprem': 'On-prem', 'callout.k8s': 'K8s side', 'callout.ocp': 'OCP side',
+    'course.title': 'OpenShift, from K8s to OCP', 'export.deckSubtitle': 'Course material · on-premises · for those who already know Kubernetes',
+    'export.deckInfo': '{n} module(s)', 'export.deckNotes': 'PowerPoint version of the course: the interactive HTML (quizzes, cards, checkable labs) remains the source of truth.',
+    'export.subject': 'OpenShift on-premises course material',
+    'cover.module': 'Module', 'export.footer': 'OpenShift — Module {nn} · {title}', 'cover.objectives': 'By the end of this module', 'cover.slides': '{n} slides', 'cover.quiz': '{n} quiz',
+    'recap.title': 'Key takeaways', 'export.recapQuiz': '🎯 {n} quiz in this module', 'export.cont': 'cont.',
+    'export.term': 'Term', 'export.definition': 'Definition', 'export.quiz': 'QUIZ', 'export.quizAnswer': 'QUIZ — answer: {letter}. {answer}', 'export.answer': 'ANSWER',
+    'export.reveal': 'Think, then answer out loud', 'export.diagramPlaceholder': '📐 Diagram available in the HTML version of the course', 'export.diagramNotes': 'DIAGRAM (extracted text)'
+  }
+};
+/* Charge assets/i18n.js (comme plan.js : vm, COURSE factice). Retourne {labels, missing, source}. */
+function loadLabels(lang, i18nFile = path.join(ROOT, 'assets', 'i18n.js')) {
+  const base = LABELS_DEFAULT[lang] || LABELS_DEFAULT.fr;
+  let site = null, source = 'défauts export';
+  if (fs.existsSync(i18nFile)) {
+    try {
+      const COURSE = {};
+      vm.runInNewContext(fs.readFileSync(i18nFile, 'utf8'), { COURSE }, { filename: 'i18n.js', timeout: 2000 });
+      if (COURSE.i18n && COURSE.i18n[lang]) { site = COURSE.i18n[lang]; source = 'assets/i18n.js'; }
+    } catch (e) { source = 'défauts export (i18n.js non évaluable : ' + e.message + ')'; }
+  }
+  const labels = { ...base, ...(site || {}) };
+  const missing = site ? Object.keys(base).filter(k => !(k in site)) : Object.keys(base);
+  return { labels, missing, source };
+}
+let L = LABELS_DEFAULT.fr; // libellés de la langue en cours de construction (buildDeck, synchrone)
+const T = (k, vars = {}) => String(L[k] !== undefined ? L[k] : k).replace(/\{(\w+)\}/g, (m, v) => (v in vars ? vars[v] : m));
 
 function readVersion() {
   const f = path.join(ROOT, 'VERSION');
@@ -49,8 +94,8 @@ const SANS = 'Calibri';
 const C = { bg: 'FAF9F7', text: '1C1B1A', muted: '6B6560', border: 'E4E0DB', surface: 'FFFFFF', surface2: 'F3F1EE', accent: 'EE0000', accentSoft: 'FDE8E8', accentText: 'B80000',
   codeBg: '1E1E24', codeText: 'E8E6E3', codeDim: '8B8B99', codePrompt: 'FF7B72', head: '2B2A2E', k8s: '326CE5', ocp: 'C9190B' };
 const CALLOUT = {
-  tip: ['💡', 'Astuce', '1A7F4B', 'E6F5EC'], warn: ['⚠️', 'Attention', '9A6700', 'FFF4D6'], trap: ['🪤', 'Piège', '8250DF', 'F1E9FD'],
-  cloud: ['☁️', 'Écart cloud', '0B6BCB', 'E5F1FC'], onprem: ['🏢', 'On-prem', '0F766E', 'DFF5F2'], k8s: ['☸️', 'Côté K8s', '326CE5', 'E8EFFD'], ocp: ['🔴', 'Côté OCP', 'C9190B', 'FDE8E8']
+  tip: ['💡', '1A7F4B', 'E6F5EC'], warn: ['⚠️', '9A6700', 'FFF4D6'], trap: ['🪤', '8250DF', 'F1E9FD'],
+  cloud: ['☁️', '0B6BCB', 'E5F1FC'], onprem: ['🏢', '0F766E', 'DFF5F2'], k8s: ['☸️', '326CE5', 'E8EFFD'], ocp: ['🔴', 'C9190B', 'FDE8E8']
 };
 
 function runs(html, base = {}) {
@@ -228,7 +273,8 @@ const HANDLERS = {
   callout: {
     measure: (b, w, s) => 0.2 + 0.3 + textH(plain(b.html), fs_(14, s), w - 0.5) + 0.05,
     draw(ctx, b, x, y, w, s, h) {
-      const [ic, label, col, bg] = CALLOUT[b.kind] || CALLOUT.tip;
+      const kind = CALLOUT[b.kind] ? b.kind : 'tip';
+      const [ic, col, bg] = CALLOUT[kind], label = T('callout.' + kind);
       ctx.slide.addShape(ctx.pptx.ShapeType.rect, { x, y, w, h, fill: { color: bg }, line: { color: bg } });
       ctx.slide.addShape(ctx.pptx.ShapeType.rect, { x, y, w: 0.07, h, fill: { color: col }, line: { color: col } });
       ctx.slide.addText(`${ic} ${plain(b.title || label)}`, { x: x + 0.22, y: y + 0.08, w: w - 0.4, h: 0.28, fontSize: fs_(13, s), bold: true, color: col, fontFace: SANS, margin: 0 });
@@ -268,24 +314,24 @@ const HANDLERS = {
     }
   },
   cards: { // cartes retournables → tableau terme / définition (interactivité perdue)
-    measure: (b, w, s) => tableH(['Terme', 'Définition'], b.items.map(c => [c.front, c.back]), w, s),
+    measure: (b, w, s) => tableH([T('export.term'), T('export.definition')], b.items.map(c => [c.front, c.back]), w, s),
     split(b, w, avail, s) {
-      const r = tableSplit({ rows: b.items.map(c => [c.front, c.back]) }, ['Terme', 'Définition'], 'rows', w, avail, s);
+      const r = tableSplit({ rows: b.items.map(c => [c.front, c.back]) }, [T('export.term'), T('export.definition')], 'rows', w, avail, s);
       const back = rows => ({ ...b, items: rows.map(([front, back]) => ({ front, back })) });
       return r && [back(r[0].rows), back(r[1].rows)];
     },
-    draw(ctx, b, x, y, w, s) { drawTable(ctx, ['Terme', 'Définition'], b.items.map(c => [c.front, c.back]), x, y, w, s); }
+    draw(ctx, b, x, y, w, s) { drawTable(ctx, [T('export.term'), T('export.definition')], b.items.map(c => [c.front, c.back]), x, y, w, s); }
   },
   quiz: {
     measure: (b, w, s) => 0.2 + 0.3 + textH(plain(b.q), fs_(16, s), w - 0.4) + 0.1 + b.options.reduce((n, o) => n + textH(plain(o), fs_(14, s), w - 0.7) + 0.1, 0),
     draw(ctx, b, x, y, w, s, h) {
       ctx.slide.addShape(ctx.pptx.ShapeType.roundRect, { x, y, w, h, fill: { color: C.surface }, line: { color: C.accent, width: 1.25 }, rectRadius: 0.08 });
-      ctx.slide.addText('🎯 QUIZ', { x: x + 0.2, y: y + 0.08, w: 2, h: 0.25, fontSize: 10, bold: true, color: C.accentText, fontFace: SANS, margin: 0 });
+      ctx.slide.addText('🎯 ' + T('export.quiz'), { x: x + 0.2, y: y + 0.08, w: 2, h: 0.25, fontSize: 10, bold: true, color: C.accentText, fontFace: SANS, margin: 0 });
       const qh = textH(plain(b.q), fs_(16, s), w - 0.4) + 0.1;
       ctx.slide.addText(runs(b.q, { fontSize: fs_(16, s), bold: true, color: C.text, fontFace: SANS }), { x: x + 0.2, y: y + 0.35, w: w - 0.4, h: qh, margin: 0, valign: 'top' });
       const opts = b.options.map((o, i) => [{ text: String.fromCharCode(65 + i) + '.  ', options: { bold: true, color: C.accentText, fontSize: fs_(14, s), fontFace: SANS } }, ...runs(o, { fontSize: fs_(14, s), fontFace: SANS, color: C.text })]);
       ctx.slide.addText(paragraphs(opts, {}, { paraSpaceAfter: 6 }), { x: x + 0.2, y: y + 0.35 + qh + 0.05, w: w - 0.4, h: h - qh - 0.5, margin: 0, valign: 'top' });
-      if (Number.isInteger(b.answer) && b.options[b.answer] !== undefined) ctx.notes.push(`QUIZ — réponse : ${String.fromCharCode(65 + b.answer)}. ${plain(b.options[b.answer])}${b.explain ? '\n' + plain(b.explain) : ''}`);
+      if (Number.isInteger(b.answer) && b.options[b.answer] !== undefined) ctx.notes.push(`${T('export.quizAnswer', { letter: String.fromCharCode(65 + b.answer), answer: plain(b.options[b.answer]) })}${b.explain ? '\n' + plain(b.explain) : ''}`);
       else ctx.warn('quiz sans réponse valide');
     }
   },
@@ -293,8 +339,8 @@ const HANDLERS = {
     measure: (b, w, s) => 0.7 * s,
     draw(ctx, b, x, y, w, s, h) {
       ctx.slide.addShape(ctx.pptx.ShapeType.roundRect, { x, y, w, h, fill: { color: C.surface }, line: { color: C.accent, width: 1, dashType: 'dash' }, rectRadius: 0.08 });
-      ctx.slide.addText(`💭 ${plain(b.label || 'Réfléchis, puis réponds à voix haute')}`, { x: x + 0.2, y, w: w - 0.4, h, fontSize: fs_(15, s), bold: true, color: C.accentText, fontFace: SANS, valign: 'middle', margin: 0 });
-      ctx.notes.push('RÉPONSE — ' + plain(b.html));
+      ctx.slide.addText(`💭 ${plain(b.label || T('export.reveal'))}`, { x: x + 0.2, y, w: w - 0.4, h, fontSize: fs_(15, s), bold: true, color: C.accentText, fontFace: SANS, valign: 'middle', margin: 0 });
+      ctx.notes.push(T('export.answer') + ' — ' + plain(b.html));
     }
   },
   lab: {
@@ -319,11 +365,11 @@ const HANDLERS = {
     draw(ctx, b, x, y, w, s, h) {
       const bh = h - (b.caption ? 0.3 : 0);
       ctx.slide.addShape(ctx.pptx.ShapeType.roundRect, { x, y, w, h: bh, fill: { color: C.surface2 }, line: { color: C.border, width: 1, dashType: 'dash' }, rectRadius: 0.08 });
-      ctx.slide.addText('📐 Schéma disponible dans la version HTML du cours', { x, y, w, h: bh, align: 'center', valign: 'middle', fontSize: fs_(14, s), color: C.muted, fontFace: SANS, margin: 0 });
+      ctx.slide.addText(T('export.diagramPlaceholder'), { x, y, w, h: bh, align: 'center', valign: 'middle', fontSize: fs_(14, s), color: C.muted, fontFace: SANS, margin: 0 });
       if (b.caption) ctx.slide.addText(runs(b.caption, { fontSize: fs_(11, s), italic: true, color: C.muted, fontFace: SANS }), { x, y: y + bh + 0.04, w, h: 0.25, margin: 0 });
       ctx.warn(`diagramme non exporté (placeholder)${b.caption ? ' : ' + plain(b.caption) : ''}`);
       const txt = plain(String(b.html).replace(/<(style|script)[\s\S]*?<\/\1>/gi, ' ').replace(/<\/?(text|tspan)[^>]*>/gi, ' '));
-      if (txt) ctx.notes.push('SCHÉMA (texte extrait) — ' + txt.slice(0, 600));
+      if (txt) ctx.notes.push(T('export.diagramNotes') + ' — ' + txt.slice(0, 600));
     }
   }
 };
@@ -390,11 +436,13 @@ function paginate(blocks, layout, warn = () => {}) {
 /* ---------- Construction du deck ---------- */
 function buildDeck(modules, opts = {}) {
   const PptxGenJS = require('pptxgenjs');
+  const lang = opts.lang || 'fr';
+  L = opts.labels || loadLabels(lang).labels;
   const pptx = new PptxGenJS();
   pptx.layout = 'LAYOUT_WIDE';
-  pptx.title = 'OpenShift, du K8s à OCP';
-  pptx.subject = 'Support de cours OpenShift on-premise';
-  const manifest = { version: opts.version || '', intro: 1, modules: [], warnings: [], total: 0 };
+  pptx.title = T('course.title');
+  pptx.subject = T('export.subject');
+  const manifest = { lang, version: opts.version || '', intro: 1, modules: [], warnings: [], total: 0 };
   const sw = [];
 
   const newSlide = (ctx0, footer) => {
@@ -409,7 +457,7 @@ function buildDeck(modules, opts = {}) {
   };
   const withNotes = (slide, notes) => { if (notes.length) slide.addNotes(notes.join('\n\n')); };
   const title = (slide, text, tag, cont) => {
-    const t = plain(text) + (cont ? ' (suite)' : '');
+    const t = plain(text) + (cont ? ' (' + T('export.cont') + ')' : '');
     const tw = tag ? Math.min(2.6, 0.4 + tag.length * 0.1) : 0;
     slide.addText(t, { x: MX, y: 0.3, w: CW - tw - (tag ? 0.2 : 0), h: 0.7, fontSize: t.length > 55 ? 22 : 26, bold: true, color: C.text, fontFace: SANS, margin: 0, valign: 'middle' });
     if (tag) slide.addText(plain(tag), { x: SW - MX - tw, y: 0.45, w: tw, h: 0.38, fontSize: 11, bold: true, color: C.accentText, fill: { color: C.accentSoft }, align: 'center', valign: 'middle', fontFace: SANS, margin: 0, shape: pptx.ShapeType.roundRect, rectRadius: 0.1 });
@@ -420,17 +468,17 @@ function buildDeck(modules, opts = {}) {
   {
     const s = newSlide(null, null);
     s.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.35, h: SH, fill: { color: C.accent }, line: { color: C.accent } });
-    s.addText('🔴 OpenShift, du K8s à OCP', { x: 1, y: 2.3, w: 11, h: 1.1, fontSize: 44, bold: true, color: C.text, fontFace: SANS, margin: 0 });
-    s.addText('Support de cours · on-premise · pour qui maîtrise déjà Kubernetes', { x: 1, y: 3.5, w: 11, h: 0.5, fontSize: 20, color: C.muted, fontFace: SANS, margin: 0 });
-    s.addText(`${modules.length} module(s)${opts.version ? ' · v' + opts.version : ''}`, { x: 1, y: 4.2, w: 11, h: 0.4, fontSize: 14, color: C.muted, fontFace: SANS, margin: 0 });
-    s.addNotes('Version PowerPoint du cours : le HTML interactif (quiz, cartes, labs à cocher) reste la source de vérité.');
+    s.addText('🔴 ' + T('course.title'), { x: 1, y: 2.3, w: 11, h: 1.1, fontSize: 44, bold: true, color: C.text, fontFace: SANS, margin: 0 });
+    s.addText(T('export.deckSubtitle'), { x: 1, y: 3.5, w: 11, h: 0.5, fontSize: 20, color: C.muted, fontFace: SANS, margin: 0 });
+    s.addText(`${T('export.deckInfo', { n: modules.length })}${opts.version ? ' · v' + opts.version : ''}`, { x: 1, y: 4.2, w: 11, h: 0.4, fontSize: 14, color: C.muted, fontFace: SANS, margin: 0 });
+    s.addNotes(T('export.deckNotes'));
   }
 
   for (const m of modules) {
     const nn = Number.isFinite(m.num) ? String(m.num).padStart(2, '0') : '??';
     const mtitle = m.title || m.id;
-    const footer = `OpenShift — Module ${nn} · ${mtitle}`;
-    const entry = { id: m.id, num: m.num, title: mtitle, file: m.__file, logical: { cover: 1, slides: m.slides.length, recap: m.takeaways && m.takeaways.length ? 1 : 0 }, exported: 0, titles: [] };
+    const footer = T('export.footer', { nn, title: mtitle });
+    const entry = { id: m.id, num: m.num, title: mtitle, file: m.__file, lang: m.lang || lang, fallback: !!m.__fallback, logical: { cover: 1, slides: m.slides.length, recap: m.takeaways && m.takeaways.length ? 1 : 0 }, exported: 0, titles: [] };
     const startTotal = manifest.total;
     const warn = msg => manifest.warnings.push(`${m.__file} : ${msg}`);
 
@@ -439,15 +487,15 @@ function buildDeck(modules, opts = {}) {
       const s = newSlide(null, footer), obj = m.objectives || [];
       s.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.35, h: SH, fill: { color: C.accent }, line: { color: C.accent } });
       s.addText(m.emoji || '', { x: 1, y: 0.6, w: 1.4, h: 1.2, fontSize: 54, margin: 0, fontFace: SANS });
-      s.addText(`MODULE ${nn}`, { x: 1, y: 1.85, w: 6, h: 0.35, fontSize: 14, bold: true, color: C.accentText, fontFace: SANS, margin: 0 });
+      s.addText(`${T('cover.module').toUpperCase()} ${nn}`, { x: 1, y: 1.85, w: 6, h: 0.35, fontSize: 14, bold: true, color: C.accentText, fontFace: SANS, margin: 0 });
       s.addText(plain(mtitle), { x: 1, y: 2.2, w: 11.4, h: 0.9, fontSize: 38, bold: true, color: C.text, fontFace: SANS, margin: 0, valign: 'middle' });
       s.addText(runs(m.tagline || '', { fontSize: 18, color: C.muted, fontFace: SANS }), { x: 1, y: 3.15, w: 11.4, h: 0.6, margin: 0, valign: 'top' });
       if (obj.length) {
-        s.addText('🎯 À la fin de ce module', { x: 1, y: 3.95, w: 11, h: 0.35, fontSize: 15, bold: true, color: C.text, fontFace: SANS, margin: 0 });
+        s.addText('🎯 ' + T('cover.objectives'), { x: 1, y: 3.95, w: 11, h: 0.35, fontSize: 15, bold: true, color: C.text, fontFace: SANS, margin: 0 });
         s.addText(paragraphs(obj, { fontSize: 15, color: C.text, fontFace: SANS }, { bullet: BULLET, paraSpaceAfter: 4 }), { x: 1, y: 4.35, w: 11.4, h: 2.4, margin: 0, valign: 'top' });
       }
       const quizzes = m.slides.reduce((n, sl) => n + (sl.blocks || []).filter(b => b.t === 'quiz').length, 0);
-      s.addText([m.slides.length + ' slides', m.duration, quizzes ? quizzes + ' quiz' : ''].filter(Boolean).join(' · '), { x: 1, y: 6.75, w: 11, h: 0.3, fontSize: 12, color: C.muted, fontFace: SANS, margin: 0 });
+      s.addText([T('cover.slides', { n: m.slides.length }), m.duration, quizzes ? T('cover.quiz', { n: quizzes }) : ''].filter(Boolean).join(' · '), { x: 1, y: 6.75, w: 11, h: 0.3, fontSize: 12, color: C.muted, fontFace: SANS, margin: 0 });
       entry.titles.push('cover');
     }
 
@@ -467,11 +515,11 @@ function buildDeck(modules, opts = {}) {
     // À retenir
     if (entry.logical.recap) {
       const s = newSlide(null, footer);
-      title(s, '✅ À retenir');
+      title(s, '✅ ' + T('recap.title'));
       const qt = m.slides.reduce((n, sl) => n + (sl.blocks || []).filter(b => b.t === 'quiz').length, 0);
       const h = Math.min(BOTTOM - TOP - (qt ? 0.5 : 0), m.takeaways.length * 0.75);
       s.addText(paragraphs(m.takeaways, { fontSize: m.takeaways.length > 6 ? 16 : 18, color: C.text, fontFace: SANS }, { bullet: BULLET, paraSpaceAfter: 10 }), { x: MX, y: TOP, w: CW, h, margin: 0, valign: 'top' });
-      if (qt) s.addText(`🎯 ${qt} quiz dans ce module`, { x: MX, y: BOTTOM - 0.4, w: CW, h: 0.35, fontSize: 13, color: C.muted, fontFace: SANS, margin: 0 });
+      if (qt) s.addText(T('export.recapQuiz', { n: qt }), { x: MX, y: BOTTOM - 0.4, w: CW, h: 0.35, fontSize: 13, color: C.muted, fontFace: SANS, margin: 0 });
       entry.titles.push('recap');
     }
     entry.exported = manifest.total - startTotal;
@@ -480,25 +528,72 @@ function buildDeck(modules, opts = {}) {
   return { pptx, manifest };
 }
 
+/* ---------- Modules d'une langue ---------- */
+/* modules/<lang>/ ; langue ≠ fr : un module absent est remplacé par le module fr (m.__fallback = true), jamais en silence.
+ * Sans dossier modules/<lang>/ (arbre historique à plat), lit modules/ directement pour fr. */
+function loadLang(lang, root = path.join(ROOT, 'modules')) {
+  const dirOf = l => (fs.existsSync(path.join(root, l)) ? path.join(root, l) : (l === 'fr' ? root : null));
+  const own = dirOf(lang);
+  const res = own ? loadModules(own) : { modules: [], skipped: [], failed: [] };
+  res.dir = own;
+  res.fallbacks = [];
+  if (lang !== 'fr') {
+    const frDir = dirOf('fr');
+    const frFiles = frDir ? fs.readdirSync(frDir).filter(f => /^m\d+.*\.js$/.test(f)).sort() : [];
+    const have = new Set([...res.modules.map(m => m.__file), ...res.skipped.map(s => s.file), ...res.failed.map(f => f.file)]);
+    const miss = frFiles.filter(f => !have.has(f));
+    if (miss.length) {
+      const fr = loadModules(frDir);
+      for (const m of fr.modules.filter(m => miss.includes(m.__file))) { m.__fallback = true; res.modules.push(m); res.fallbacks.push(m.__file); }
+      const num = m => (Number.isFinite(m.num) ? m.num : Infinity);
+      res.modules.sort((a, b) => num(a) - num(b) || a.__file.localeCompare(b.__file));
+    }
+  }
+  return res;
+}
+const outName = (lang, version) => `openshift-course-${version}-${lang}.pptx`;
+
 /* ---------- CLI ---------- */
-async function main() {
-  const i = process.argv.indexOf('--out');
-  const version = readVersion();
-  const out = path.resolve(ROOT, i > -1 ? process.argv[i + 1] : `dist/openshift-course-${version}.pptx`);
-  const { modules, skipped, failed } = loadModules();
-  skipped.forEach(s => console.log(`info    ${s.file} ignoré : ${s.reason}`));
-  if (failed.length) { failed.forEach(f => console.error(`ERREUR  ${f.file} : ${f.reason}`)); console.error('Export annulé : un module présent en fichier est inutilisable.'); process.exit(1); }
-  if (!modules.length) { console.error('ERREUR  aucun module exportable.'); process.exit(1); }
-  const { pptx, manifest } = buildDeck(modules, { version });
+async function exportLang(lang, out, version, strict) {
+  const { modules, skipped, failed, fallbacks } = loadLang(lang);
+  skipped.forEach(s => console.log(`info    [${lang}] ${s.file} ignoré : ${s.reason}`));
+  if (failed.length) { failed.forEach(f => console.error(`ERREUR  [${lang}] ${f.file} : ${f.reason}`)); console.error('Export annulé : un module présent en fichier est inutilisable.'); return false; }
+  if (fallbacks.length) {
+    const msg = `[${lang}] ${fallbacks.length} module(s) absent(s) de modules/${lang}/ → repli sur le français : ${fallbacks.join(', ')}`;
+    if (strict) { console.error('ERREUR  ' + msg + ' (--strict-i18n)'); return false; }
+    console.warn('warn    ' + msg);
+  }
+  if (!modules.length) { console.error(`ERREUR  [${lang}] aucun module exportable.`); return false; }
+  const lb = loadLabels(lang);
+  console.log(`info    [${lang}] libellés : ${lb.source}${lb.missing.length && lb.source === 'assets/i18n.js' ? ` (${lb.missing.length} clé(s) absente(s), défauts export : ${lb.missing.join(', ')})` : ''}`);
+  const { pptx, manifest } = buildDeck(modules, { version, lang, labels: lb.labels });
   manifest.skipped = skipped;
   manifest.failed = failed;
+  manifest.fallbacks = fallbacks;
+  manifest.labels = { source: lb.source, missing: lb.missing };
   fs.mkdirSync(path.dirname(out), { recursive: true });
   await pptx.writeFile({ fileName: out });
   fs.writeFileSync(out.replace(/\.pptx$/, '.manifest.json'), JSON.stringify(manifest, null, 2));
-  manifest.modules.forEach(m => console.log(`ok      ${m.file} : ${m.exported} slide(s) PPTX (${m.logical.slides} logiques)`));
+  manifest.modules.forEach(m => console.log(`ok      [${lang}] ${m.file} : ${m.exported} slide(s) PPTX (${m.logical.slides} logiques)${m.fallback ? ' [repli fr]' : ''}`));
   manifest.warnings.forEach(w => console.warn('warn    ' + w));
-  console.log(`\n${modules.length} module(s), ${manifest.total} slide(s) → ${path.relative(process.cwd(), out)}`);
+  console.log(`\n[${lang}] ${modules.length} module(s), ${manifest.total} slide(s) → ${path.relative(process.cwd(), out)}`);
+  return true;
 }
 
-module.exports = { loadModules, buildDeck, plain, runs, readVersion, decode };
+async function main() {
+  const arg = n => { const i = process.argv.indexOf(n); return i > -1 ? process.argv[i + 1] : undefined; };
+  const version = readVersion();
+  const lang = arg('--lang');
+  if (lang && !LANGS.includes(lang)) { console.error(`ERREUR  --lang ${lang} : valeurs admises ${LANGS.join('|')}`); process.exit(1); }
+  if (arg('--out') && !lang) { console.error('ERREUR  --out exige --lang (un fichier par langue).'); process.exit(1); }
+  const strict = process.argv.includes('--strict-i18n');
+  let allOk = true;
+  for (const l of lang ? [lang] : LANGS) {
+    const out = path.resolve(ROOT, arg('--out') || path.join('dist', outName(l, version)));
+    if (!(await exportLang(l, out, version, strict))) allOk = false;
+  }
+  if (!allOk) process.exit(1);
+}
+
+module.exports = { LANGS, loadModules, loadLang, loadLabels, outName, T: (...a) => T(...a), buildDeck, plain, runs, readVersion, decode };
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
