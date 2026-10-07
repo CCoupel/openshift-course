@@ -162,8 +162,7 @@ Les deux versions d'un même module doivent être **structurellement identiques*
 - Pour chaque bloc : `frag`, `wide`, `kind`
 - Cardinalités : nombre d'`items`, de `rows`, de `head`, d'`options`, de `steps`, de `nodes`, de cartes, de couches
 - Champs optionnels : si un bloc a `caption`, `verdict`, `goal`, `explain`, `label`, `title`, ou `compare.*title` en français, il doit aussi les avoir en anglais (avec le contenu traduit, mais la structure doit être identique)
-- Contenus structurels : `answer` (index du quiz, l'ordre des options ne change pas), `cmds[i][0]` (commande elle-même), `lang` des blocs `code`
-- **Champ `file` des blocs `code`** : le nom de fichier doit être identique ; une précision entre parenthèses en fin (ex. « `dnsmasq.conf (lab example)`») peut être traduite. Le regex supprime `\s*\([^)]*\)\s*$` de la fin pour la comparaison de parité.
+- Contenus structurels : `answer` (index du quiz, l'ordre des options ne change pas), `cmds[i][0]` (commande elle-même), `lang` des blocs `code` (voir section « Ne se traduit pas » pour le champ `file`)
 - Propriétés de graphes : `hl` (highlight) et `base` des `flow` et `layers` doivent être aux mêmes positions
 - Marqueurs d'incertitude : nombre de « à vérifier » (fr) et « to be verified » (en), même nombre dans les deux fichiers
 
@@ -175,10 +174,14 @@ Les deux versions d'un même module doivent être **structurellement identiques*
 **NE se traduit PAS** :
 - Noms de commandes, YAML (sauf commentaires), noms d'objets/CRD/opérateurs OpenShift
 - Format et valeurs de `duration` (ex. `'≈ 45 min + lab 15 min'`)
-- **Champ `file` des blocs `code`** : le nom de fichier lui-même reste identique (ex. `dnsmasq.conf`), mais une précision entre parenthèses en fin se traduit (ex. « `dnsmasq.conf (exemple)` » → « `dnsmasq.conf (lab example)` »)
-- Lignes de code — **sauf commentaires** : un `#` précédé d'un espace peut être traduit (ex. `echo hello  # ceci se traduit`)
-
-**Limite de comparaison des commentaires de code** : `validate.js` accepte qu'une ligne de commande soit modifiée **uniquement** si le changement est un commentaire `# …` en fin de ligne (espace suivi d'un `#`). Exceptions non gérées : guillemets non appairés (ex. `echo "a # b"` sera mal parsé), commentaires de langage spécifique (`//` en C/Go, `--` en SQL, `;` en batch), `#` dans une chaîne entre guillemets doubles. En cas de doute, laisser la ligne intacte.
+- Lignes de code — structure, commandes, variables, placeholders de code
+  - **Sauf commentaires** : un `#` précédé d'un espace en fin de ligne peut être traduit (ex. `echo hello  # ceci se traduit`)
+  - **Sauf chaînes visibles à l'écran** : placeholders de mot de passe, textes de `motd`, identifiants d'exemple, messages d'annotation doivent être **neutres ou anglais** **dans les deux langues** (ex. `mot-de-passe-a-definir` → `change-me` en fr et en) ; modifiés dans le **même commit fr + en** ; empreinte recalculée. Tant que ce n'est pas fait, parité impose de laisser la valeur française dans le module en.
+  - **Sauf commentaires `;`** (zones DNS) : supprimés UNIQUEMENT dans un bloc contenant une ligne d'enregistrement DNS (ligne avec `… IN A|AAAA|CNAME|MX|NS|PTR|SOA|SRV|TXT …`) ; ailleurs (INI, shell, etc.), `;` reste du code comparé.
+- **Champ `file` des blocs `code`** : comparé partiellement selon sa forme
+  - Si le champ commence par un mot ressemblant à un nom de fichier (regex `^[\w./-]+\.[A-Za-z0-9]+$` ou contient `/`) : seul ce premier mot est comparé ; le reste (description, précision entre parenthèses) se traduit
+  - Si le champ est un seul mot (`terminal`, `motd`) : comparé intégralement (c'est un identifiant)
+  - Si le champ contient plusieurs mots sans ressembler à un nom de fichier (« zone DNS (exemple BIND) ») : non comparé (peut se traduire librement)
 
 Exemple de parité cassée : ajouter une diapositive à l'une seulement, retirer une option d'un quiz, changer un label `kind` de callout → `validate.js` rejet.
 
