@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm15', lang: 'en', num: 15, emoji: '📝',
   title: 'Cheat sheet & final quiz',
-  source: '6c16a1edee1d',
+  source: '2dcda45c9aaa',
   tagline: 'The essential commands by topic, a K8s ↔ OpenShift dictionary, decision tables and a final quiz: everything is taken from modules 00 to 14, with a pointer for details.',
   duration: '≈ 30 min',
   objectives: [
@@ -358,7 +358,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['oc get revision -n serverless-demo', 'Revisions'],
           ['kn service list -n serverless-demo', 'Services, with the kn CLI']
         ] },
-        { t: 'callout', kind: 'warn', html: 'Exact apiVersion of HyperConverged and placement options: <b>to be verified</b> in “Installing OpenShift Virtualization”; the types (instance types, CDI, boot sources) vary by version: check with <code>oc explain</code> (module 13).' }
+        { t: 'callout', kind: 'warn', html: '<code>HyperConverged</code> in <code>hco.kubevirt.io/v1beta1</code> (4.20 docs); placement options: <b>to be verified</b> in “Installing OpenShift Virtualization”; the types (instance types, CDI, boot sources) vary by version: check with <code>oc explain</code> (module 13).' }
       ]
     },
     {

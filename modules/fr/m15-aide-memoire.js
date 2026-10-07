@@ -357,7 +357,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['oc get revision -n serverless-demo', 'Révisions'],
           ['kn service list -n serverless-demo', 'Services, avec la CLI kn']
         ] },
-        { t: 'callout', kind: 'warn', html: 'apiVersion exacte du HyperConverged et options de placement : <b>à vérifier</b> dans « Installing OpenShift Virtualization » ; les types (instance types, CDI, boot sources) varient selon la version : contrôle avec <code>oc explain</code> (module 13).' }
+        { t: 'callout', kind: 'warn', html: '<code>HyperConverged</code> en <code>hco.kubevirt.io/v1beta1</code> (doc 4.20) ; options de placement : <b>à vérifier</b> dans « Installing OpenShift Virtualization » ; les types (instance types, CDI, boot sources) varient selon la version : contrôle avec <code>oc explain</code> (module 13).' }
       ]
     },
     {
