@@ -5,7 +5,7 @@
 **Référence visuelle** : `docs/mockup/v1.0.0/ui/course_shell__i18n_fr_en.html` (ouvrir à côté, sections 1 à 5)
 **Contrat** : `_work/reports/planner-i18n.md` D2, D3 et critères d'acceptation.
 
-> Lots : 6 lots, 52 cas au total, ≤ 50 par lot. Un cas = une ligne de tableau. Ne rien cocher « OK » sans l'avoir observé.
+> Lots : 6 lots, 53 cas au total, ≤ 50 par lot. Un cas = une ligne de tableau. Ne rien cocher « OK » sans l'avoir observé.
 
 ## Prérequis
 
@@ -33,7 +33,7 @@
 | A09 | Slide de quiz, basculer | Question et options traduites, **même ordre** des options, même bonne réponse après validation | | |
 | A10 | Slide « À retenir » (dernière du module), basculer | Titre « Key takeaways » en EN ; même nombre de points | | |
 
-## Lot 2 — Première visite : `?lang=`, mémorisation, navigateur — 8 cas
+## Lot 2 — Première visite : `?lang=`, mémorisation, navigateur — 9 cas
 
 | # | Action | Résultat attendu | Obtenu | OK ? |
 |---|---|---|---|---|
@@ -44,7 +44,8 @@
 | B05 | Ouvrir `index.html?lang=en#m07/5` | Slide 5 du module 07 en anglais | | |
 | B06 | Ouvrir `index.html?lang=de` (invalide) | Ignoré sans erreur console ; langue = mémorisée, sinon navigateur, sinon fr | | |
 | B07 | Choisir EN, fermer l'onglet, rouvrir `index.html` sans paramètre | Cours en anglais (langue mémorisée) | | |
-| B08 | Langue mémorisée = fr, ouvrir `index.html?lang=en` | `?lang=` prioritaire : anglais ; la langue mémorisée devient en | | |
+| B08 | Langue mémorisée = fr (`localStorage` : `lang` = `fr`), ouvrir `index.html?lang=en`, ne pas cliquer le sélecteur ; relire `localStorage` puis rouvrir `index.html` sans paramètre | `?lang=` prioritaire : anglais affiché, mais **la langue mémorisée reste fr** (le paramètre ne mémorise pas) ; la réouverture sans paramètre est en français | | |
+| B09 | Même départ qu'en B08, puis cliquer **FR** puis **EN** (première bascule manuelle) | La langue est mémorisée à la bascule manuelle : `lang` = `en` dans `ocp-course-v1` ; rouvrir sans paramètre → anglais | | |
 
 ## Lot 3 — Clavier, accessibilité, raccourci `l` — 8 cas
 
@@ -83,7 +84,7 @@ Outils de développement → mode appareil, ou fenêtre réduite.
 | E03 | Fermer puis rouvrir la fenêtre privée | Langue redemandée (navigateur, sinon fr) ; aucune erreur | | |
 | E04 | Firefox, `file://`, stockage bloqué (`dom.storage.enabled` = false, ou profil strict) | Idem E01 | | |
 | E05 | `file://?lang=en` : l'URL est-elle réécrite ? | Noter le comportement (la réécriture peut être refusée en `file://`) ; la bascule marche dans tous les cas | | |
-| E06 | Rechercher « operator » en FR, noter les résultats, basculer EN | Champ de recherche vidé ; résultats réindexés dans la langue active | | |
+| E06 | Rechercher « operator » en FR, noter les résultats, basculer EN | Le texte saisi est **conservé** dans le champ ; la liste de résultats est réindexée dans la langue active (titres et extraits en anglais) | | |
 | E07 | En EN, rechercher « Route » | Résultats en anglais, ouvrent la bonne slide | | |
 | E08 | En EN, rechercher un mot français courant (ex. « réseau ») | Aucun résultat (aucun texte fr résiduel dans les modules en) | | |
 | E09 | Répondre juste à un quiz en FR, basculer EN | Quiz marqué comme réussi ; score identique | | |
