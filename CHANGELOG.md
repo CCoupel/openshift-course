@@ -39,11 +39,11 @@ et ce projet adhère au [Versioning Sémantique](https://semver.org/spec/v2.0.0.
 ### Corrigé (Relecture technique OCP 4.20)
 
 Vérification des faits techniques contre la documentation officielle Red Hat (release notes, console, documentation produit) :
-- **Module 00, 01** : accès `cluster-admin` en offres managées (ROSA/ARO/OSD) clarifiés
-- **Module 05** : monitoring plugin COO marqué comme GA (non bêta)
-- **Module 06, 07, 15** : NetworkPolicy en multi-tenant corrigée (isolation par label, pas par namespace)
-- **Module 10** : Builds 1.7 confirmé pour OCP 4.16–4.21
-- **Module 11** : Subscription OADP confirmée sur canal `stable-1.5` (redhat-oadp-operator)
+- **Module 00, 01** : accès en offres managées clarifié — `dedicated-admin` par défaut sur ROSA/OSD, `cluster-admin` possible avec restrictions, `kubeadmin` sur ARO (le cours disait à tort « pas d'accès cluster-admin »)
+- **Module 05** : monitoring plugin COO partiellement GA — détection d'incidents et panneau de dépannage GA (COO 1.3, OCP 4.19+) ; dashboard APM en Developer Preview
+- **Module 06, 07, 15** : NetworkPolicy en multi-tenant — la formulation « les quatre politiques de la doc 4.20 » était inexacte ; le cours renvoie désormais aux sections About network policy et Configuring multitenant isolation ; la question de la politique suffisante avec routeurs HostNetwork reste marquée à vérifier
+- **Module 10** : Builds corrigé — Builds 1.7 (GA 10/02/2026) pour OCP 4.16–4.21 ; Builds 1.6 pour 4.16–4.19 (le cours disait à tort Builds 1.6 pour 4.20)
+- **Module 11** : Subscription OADP corrigée — Subscription `redhat-oadp-operator`, canal `stable-1.5` (OADP 1.5 pour OCP 4.19–4.21)
 - **Module 12, 14** : `autoSizingReserved` confirmation depuis OCP 4.21
 - **Module 01** : dates mise à jour — 4.22 GA le 9 juin 2026, EUS annoncé
 - **Module 07** : plage ANP confirmée 0-99
@@ -57,8 +57,7 @@ Vérification des faits techniques contre la documentation officielle Red Hat (r
 ### Limites connues
 
 - **66 marqueurs « à vérifier » / « to be verified »** restent — relecture technique sur sources officielles Red Hat faite par agent automatisé, à compléter par une relecture humaine exhaustive
-- **Pas de vérification visuelle** — Tests navigateur réels et rendering PowerPoint manquants (pré-version, ressources insuffisantes)
-- **Sans affiliation Red Hat** — Projet communautaire ; relire la documentation officielle avant toute procédure sensible (restauration etcd, mises à jour, configurations critiques)
+- **Pas de vérification visuelle** — Aucune vérification visuelle en navigateur réel ni dans PowerPoint n'a été faite
 
 ---
 
