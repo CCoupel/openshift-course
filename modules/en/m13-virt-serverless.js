@@ -189,7 +189,7 @@ spec:
         ], caption: 'Used to <b>empty a node</b> (drain, update: module 12) without stopping the VMs.' },
         { t: 'bullets', frag: true, items: [
           '<b>Prerequisites</b>: <b>RWX</b> shared storage, enough <b>RAM and bandwidth</b>, nodes compatible with the VM\'s “host model” CPU.',
-          '<b>Capacity</b>: plan enough free memory to absorb the VMs of a drained node (product of the number of nodes drained in parallel by the biggest VM); <b>5</b> parallel migrations by default in the cluster.',
+          '<b>Capacity</b>: plan enough free memory to absorb the VMs of a drained node (number of nodes drained in parallel × the largest VM); <b>5</b> parallel migrations by default in the cluster.',
           '<b>Network</b>: a Multus network <b>dedicated</b> to migration avoids saturating the application network.'
         ] },
         { t: 'callout', kind: 'warn', html: "A node drained in a hurry without enough capacity leaves VMs with no place. Size <b>before</b> updates (module 12): every node restart becomes a wave of migrations." }
