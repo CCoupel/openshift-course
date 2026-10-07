@@ -108,6 +108,9 @@ OpenShift, OCP, OKD, SNO, K8s, Kubernetes, RHCOS, MachineConfig, MachineSet, Mac
 - **Règle d'identifiants** : tout nom d'objet, de fichier ou de valeur dans un bloc `code` ou `cmds[i][0]` est **neutre et anglais dans les deux langues** (`example`, `my-sa`, `platform-team`, `change-me`, `other-svc`), modifié dans le même commit fr + en ; un identifiant neutralisé l'est **dans tous les modules** qui le citent (`my-sa` : m06, m09, m15 ; `other-svc` : m07, m15).
 - **Durées** : « 20 minutes ou plus » → *20 minutes or more*.
 
+- **Lots C et D** : en clair → *in plain text* (jamais *in clear*) ; jeton/secret en clair → *plaintext token/secret* ; valeurs factices (mots de passe, **jetons**) dans un bloc `code` → `change-me` dans les deux langues. Termes : garde-fou de quorum → *quorum guard* ; perte du quorum → *quorum loss* ; hôte de reprise → *recovery host* ; copie de données → *data copy* ; reconstruire / passif / étendu → *rebuild / passive / stretch* ; dérive → *drift* ; à planifier → *to schedule* (tag) ; critique → *critical* (tag) ; filet → *safety net* ; sauvegarde sur système de fichiers → *file system backup* ; miroir de registre → *mirror registry* ; fiche → *cheat sheet* ; dictionnaire → *dictionary* ; décision → *decision* (tags) ; écart cloud → *cloud gap*. Les noms de produits et de CR (OADP, Velero, kopia, Argo CD, ApplicationSet, ClusterImagePolicy, Compliance Operator…) restent tels quels.
+- **Marqueur « à vérifier »** : réservé aux **incertitudes** (il se traduit par *to be verified*, même nombre dans les deux langues). Dans un usage ordinaire (« t'obliger à contrôler », en-tête « Point à contrôler »), employer *contrôler* ou *confirmer* côté fr, pour ne pas fausser le décompte de `validate.js`.
+
 ## Choix de traduction notables (pilote m01)
 
 - `K8s vs OCP` reste tel quel (titre de module et de plan).
