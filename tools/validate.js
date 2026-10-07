@@ -142,18 +142,27 @@ function stripTrailingComment(l) {
   }
   return l;
 }
-// Commentaires `;` (zones DNS) : ligne entière commençant par `;`, ou fin de ligne ` ;` sur un enregistrement (`… IN A …`).
-const codeLines = c => String(c || '').split('\n').map(l => {
-  l = stripTrailingComment(l);
-  if (/\sIN\s+[A-Z]+\s/.test(l)) l = l.replace(/\s+;.*$/, '');
-  return l.replace(/\s+$/, '');
-}).filter(l => l.trim() && !/^\s*[#;]/.test(l));
-// `file` : le nom de fichier est identique ; une précision entre parenthèses en fin (« dnsmasq.conf (exemple de lab) ») se traduit.
-// Un libellé descriptif (avec espace avant la parenthèse : « zone DNS (exemple BIND) ») n'est pas un nom de fichier : non comparé.
+// Commentaires `;` : retirés (ligne entière et fin de ligne ` ;`) UNIQUEMENT dans un bloc de zone DNS, c.-à-d. contenant au moins
+// une ligne d'enregistrement (`… IN A|AAAA|CNAME|MX|NS|PTR|SOA|SRV|TXT …`). Ailleurs (INI, shell…), `;` reste du code comparé.
+const ZONE_RE = /\sIN\s+(A|AAAA|CNAME|MX|NS|PTR|SOA|SRV|TXT)\s/;
+const codeLines = c => {
+  const lines = String(c || '').split('\n'), zone = lines.some(l => ZONE_RE.test(l));
+  return lines.map(l => {
+    l = stripTrailingComment(l);
+    if (zone) l = l.replace(/\s+;.*$/, '');
+    return l.replace(/\s+$/, '');
+  }).filter(l => l.trim() && !/^\s*#/.test(l) && !(zone && /^\s*;/.test(l)));
+};
+// `file` : on compare le nom de fichier ; le reste du libellé (précision entre parenthèses, description) se traduit.
+// - premier mot ressemblant à un nom de fichier (`dnsmasq.conf`, `x/y`) : seul ce mot est comparé ;
+// - valeur d'un seul mot (`terminal`) : comparée telle quelle ;
+// - libellé descriptif de plusieurs mots (« zone DNS (exemple BIND) ») : non comparé.
+const FILE_RE = /^[\w./-]+\.[A-Za-z0-9]+$/;
 const baseFile = f => {
   if (f === undefined) return f;
-  const b = String(f).replace(/\s*\([^)]*\)\s*$/, '');
-  return /\s/.test(b) ? null : b;
+  const t = String(f).trim(), first = t.split(/\s+/)[0];
+  if (FILE_RE.test(first) || first.includes('/')) return first;
+  return /\s/.test(t) ? null : t;
 };
 const digits = d => (String(d === undefined ? '' : d).match(/\d+/g) || []).join(',');
 const len = x => (Array.isArray(x) ? x.length : undefined);
