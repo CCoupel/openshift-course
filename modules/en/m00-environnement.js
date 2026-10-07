@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm00', lang: 'en', num: 0, emoji: '🧪',
   title: 'Lab environment',
-  source: '1a04d93206f6',
+  source: '690d7e7e5285',
   tagline: 'Before day 1: a solid cluster, the right tools, and the certainty of knowing which lab needs what.',
   duration: '≈ 30 min',
   objectives: [
@@ -63,7 +63,7 @@ COURSE.add({
           ['<b>OKD</b>', 'Community alternative', 'Same OCP foundation without Red Hat support', 'Possible behavior differences (OS base: CentOS Stream CoreOS since OKD 4.16)'],
           ['<b>Developer Sandbox</b> ☁️', 'Discovering the console', 'Console and <code>oc</code> in a shared space', '<b>No <code>cluster-admin</code></b>: unsuitable for this course; shared cluster, limited quotas (≈ 3 cores / 14 GB / 40 GB, 30-day trial: dated figures, cross-check)']
         ] },
-        { t: 'callout', kind: 'cloud', html: "The Developer Sandbox does not give <code>cluster-admin</code>. Managed offerings (ROSA, ARO, OSD) <b>restrict</b> some actions (nodes, MachineConfig, OAuth, etcd: details to be verified per offering) and fall outside the on-prem scope of this course. For the labs, choose an environment that is <b>yours</b>." }
+        { t: 'callout', kind: 'cloud', html: "The Developer Sandbox is a shared cluster: no cluster administration rights (to be verified). Managed offerings (ROSA, ARO, OSD) give <code>cluster-admin</code> or <code>dedicated-admin</code> access depending on the offering, but <b>block or delegate</b> some actions (nodes, MachineConfig, etcd: details depend on the offering) to the provider and fall outside the on-prem scope of this course. For the labs, choose an environment that is <b>yours</b>." }
       ]
     },
     {
@@ -202,7 +202,7 @@ COURSE.add({
         { t: 'cards', items: [
           { front: 'Lab “broken” from the start', back: '<b>Insufficient RAM or CPU</b>: Degraded operators, Pending pods.' },
           { front: 'Console unreachable', back: 'Missing <code>*.apps</code> <b>wildcard DNS</b> (module 03).' },
-          { front: 'I don\'t have cluster-admin', back: '<b>Sandbox</b>: no <code>cluster-admin</code>. Managed: restricted actions (to be verified per offering). Take an environment of your own.' },
+          { front: 'I don\'t have cluster-admin', back: '<b>Sandbox</b>: shared cluster, no cluster administration rights (to be verified). Managed: <code>cluster-admin</code> or <code>dedicated-admin</code> depending on the offering, some actions blocked or delegated to the provider. Take an environment of your own.' },
           { front: 'Pull secret in Git', back: 'Download it again from the Red Hat console; in case of a leak, contact Red Hat support; never commit it.' },
           { front: 'Dormant lab', back: 'Expired license or outdated <b>certificates</b>: maintenance plan.' },
           { front: 'Version mismatch', back: '<code>oc</code> or installer of a different version than the cluster: surprising behavior.' }
@@ -238,7 +238,7 @@ COURSE.add({
   ],
   takeaways: [
     'Four levels: E0 (workstation or OpenShift Local), E1 (SNO), E2 (compact), E3 (bare metal / virtualization); a well-sized SNO covers almost the whole course.',
-    'Each lab states its level in its first step; the Developer Sandbox has no <code>cluster-admin</code> and managed offerings restrict some actions (to be verified): take an environment of your own.',
+    'Each lab states its level in its first step; the Developer Sandbox is a shared cluster with no cluster administration rights (to be verified); managed offerings give <code>cluster-admin</code> or <code>dedicated-admin</code> depending on the offering, but delegate some actions to the provider: take an environment of your own.',
     'Prepare before day 1: tools, pull secret (never in Git), <code>api</code> and <code>*.apps</code> DNS, enough resources.',
     'A healthy lab starts with <code>oc get co</code>: all Available, none Degraded.',
     '“Clean state” snapshot, <code>kubeadmin</code> and installation kubeconfig kept: the safety net of your lab.'

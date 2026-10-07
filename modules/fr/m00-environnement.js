@@ -62,7 +62,7 @@ COURSE.add({
           ['<b>OKD</b>', 'Alternative communautaire', 'Même socle OCP sans support Red Hat', 'Écarts de comportement possibles (base OS : CentOS Stream CoreOS depuis OKD 4.16)'],
           ['<b>Developer Sandbox</b> ☁️', 'Découvrir la console', 'Console et <code>oc</code> en espace partagé', '<b>Pas de <code>cluster-admin</code></b> : inadapté à ce cours ; cluster partagé, quotas limités (≈ 3 cœurs / 14 Go / 40 Go, essai de 30 jours : chiffres datés, à recouper)']
         ] },
-        { t: 'callout', kind: 'cloud', html: "Le Developer Sandbox ne donne pas <code>cluster-admin</code>. Les offres managées (ROSA, ARO, OSD) <b>restreignent</b> certaines actions (nœuds, MachineConfig, OAuth, etcd : détail à vérifier selon l\'offre) et sortent du périmètre on-prem de ce cours. Pour les labs, choisis un environnement <b>à toi</b>." }
+        { t: 'callout', kind: 'cloud', html: "Le Developer Sandbox est un cluster partagé : pas d\'accès administrateur du cluster (à vérifier). Les offres managées (ROSA, ARO, OSD) donnent un accès <code>cluster-admin</code> ou <code>dedicated-admin</code> selon l\'offre, mais <b>bloquent ou délèguent</b> au fournisseur certaines actions (nœuds, MachineConfig, etcd : détail selon l\'offre) et sortent du périmètre on-prem de ce cours. Pour les labs, choisis un environnement <b>à toi</b>." }
       ]
     },
     {
@@ -201,7 +201,7 @@ COURSE.add({
         { t: 'cards', items: [
           { front: 'Lab « cassé » dès le début', back: '<b>RAM ou CPU insuffisants</b> : opérateurs Degraded, pods Pending.' },
           { front: 'Console injoignable', back: '<b>DNS wildcard</b> <code>*.apps</code> manquant (module 03).' },
-          { front: 'Je n\'ai pas cluster-admin', back: '<b>Sandbox</b> : pas de <code>cluster-admin</code>. Managé : actions restreintes (à vérifier selon l\'offre). Prends un environnement à toi.' },
+          { front: 'Je n\'ai pas cluster-admin', back: '<b>Sandbox</b> : cluster partagé, pas d\'accès administrateur du cluster (à vérifier). Managé : <code>cluster-admin</code> ou <code>dedicated-admin</code> selon l\'offre, certaines actions bloquées ou déléguées au fournisseur. Prends un environnement à toi.' },
           { front: 'Pull secret dans Git', back: 'Re-télécharge-le depuis la console Red Hat ; en cas de fuite, contacte le support Red Hat ; ne jamais le committer.' },
           { front: 'Lab dormant', back: 'Licence expirée ou <b>certificats</b> périmés : plan de maintenance.' },
           { front: 'Version décalée', back: '<code>oc</code> ou installeur d\'une autre version que le cluster : comportements surprenants.' }
@@ -237,7 +237,7 @@ COURSE.add({
   ],
   takeaways: [
     'Quatre niveaux : E0 (poste ou OpenShift Local), E1 (SNO), E2 (compact), E3 (bare metal / virtualisation) ; un SNO bien dimensionné couvre presque tout le cours.',
-    'Chaque lab annonce son niveau dans son premier step ; le Developer Sandbox n\'a pas <code>cluster-admin</code> et les offres managées restreignent des actions (à vérifier) : prends un environnement à toi.',
+    'Chaque lab annonce son niveau dans son premier step ; le Developer Sandbox est un cluster partagé sans accès administrateur du cluster (à vérifier) ; les offres managées donnent <code>cluster-admin</code> ou <code>dedicated-admin</code> selon l\'offre, mais délèguent certaines actions au fournisseur : prends un environnement à toi.',
     'Préparer avant le jour 1 : outils, pull secret (jamais dans Git), DNS <code>api</code> et <code>*.apps</code>, ressources suffisantes.',
     'Un lab sain commence par <code>oc get co</code> : tous Available, pas Degraded.',
     'Snapshot « état propre », <code>kubeadmin</code> et kubeconfig d\'installation conservés : le filet de sécurité de ton lab.'

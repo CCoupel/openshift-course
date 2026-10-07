@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm01', lang: 'en', num: 1, emoji: '⚖️',
   title: 'K8s vs OCP',
-  source: '4a3f4bfbf944',
+  source: '74e9479bc003',
   tagline: 'Same engine, different bodywork: what OpenShift adds, enforces and renames.',
   duration: '≈ 45 min + lab 15 min',
   objectives: [
@@ -174,7 +174,7 @@ COURSE.add({
           ['<b>MicroShift</b>', 'Lightweight version for edge devices; its supported distribution is <b>Red Hat Device Edge</b> (MicroShift + RHEL)', 'You, without a console or full Operators'],
           ['<b>ROSA / ARO / OSD</b> ☁️', 'Managed OpenShift (AWS / Azure / Google)', 'Red Hat + cloud: control plane, upgrades, SRE']
         ] },
-        { t: 'callout', kind: 'cloud', html: 'In managed offerings, you are not <code>cluster-admin</code>: you get <code>dedicated-admin</code>. No free-form MachineConfig, no access to platform namespaces, upgrades scheduled with the provider. Many modules of this course (installation, MachineConfig, etcd) <b>would no longer concern you</b>.' }
+        { t: 'callout', kind: 'cloud', html: 'On managed offerings, your access depends on the offering: <code>dedicated-admin</code> by default on ROSA/OSD, <code>cluster-admin</code> possible (with restrictions); ARO provides a <code>kubeadmin</code> account. No free-form MachineConfig, no access to platform namespaces, upgrades scheduled with the provider. Many modules of this course (installation, MachineConfig, etcd) <b>would no longer concern you</b>.' }
       ]
     },
     {

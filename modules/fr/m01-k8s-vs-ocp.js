@@ -173,7 +173,7 @@ COURSE.add({
           ['<b>MicroShift</b>', 'Version allégée pour devices edge ; sa distribution supportée est <b>Red Hat Device Edge</b> (MicroShift + RHEL)', 'Toi, sans console ni Operators complets'],
           ['<b>ROSA / ARO / OSD</b> ☁️', 'OpenShift managé (AWS / Azure / Google)', 'Red Hat + cloud : control plane, upgrades, SRE']
         ] },
-        { t: 'callout', kind: 'cloud', html: 'En managé, tu n\'es pas <code>cluster-admin</code> : tu as <code>dedicated-admin</code>. Pas de MachineConfig libre, pas d\'accès aux namespaces plateforme, upgrades planifiés avec le fournisseur. Beaucoup de modules de ce cours (installation, MachineConfig, etcd) <b>ne te concerneraient plus</b>.' }
+        { t: 'callout', kind: 'cloud', html: 'En managé, ton accès dépend de l\'offre : <code>dedicated-admin</code> par défaut sur ROSA/OSD, <code>cluster-admin</code> possible (avec restrictions) ; sur ARO, un compte <code>kubeadmin</code> existe. Pas de MachineConfig libre, pas d\'accès aux namespaces plateforme, upgrades planifiés avec le fournisseur. Beaucoup de modules de ce cours (installation, MachineConfig, etcd) <b>ne te concerneraient plus</b>.' }
       ]
     },
     {
