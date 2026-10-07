@@ -93,6 +93,15 @@ OpenShift, OCP, OKD, SNO, K8s, Kubernetes, RHCOS, MachineConfig, MachineSet, Mac
 - Nouveau module en : ajouter sa balise `<script src="modules/en/…">` dans `index.html`, puis `node tools/i18n-hash.js --write mNN`.
 - Titres de `assets/plan.js` : l'entrée `en` doit être identique au `title` du module en.
 
+## Ajouts (lots A et B)
+
+- **Tags** : à consulter → *reference* ; pièges → *pitfalls* ; filet de sécurité → *safety net* ; jeu → *game* ; à faire → *to do* ; à ne pas oublier → *don't forget* ; à lire → *read this* ; à connaître → *worth knowing* ; `quiz` et `lab` inchangés.
+- **Niveaux de lab** : Noyau → *Core* ; Bonus conservé ; Lab dormant → *Dormant lab* ; lab fusible (retardable) → *safety-valve lab* (J1/J3 → *day 1* / *day-3*) ; configuration jour 1 → *day-1 configuration*.
+- **Termes** : poste de travail → *workstation* ; essai → *trial* (*60-day trial*) ; déroulé → *walkthrough* ; disséquer → *dissect* ; miroir / mirrorer → *mirror registry* / *to mirror* ; garde-fou → *safeguard* / *guardrail* ; fenêtre (de maintenance) → *maintenance window* ; liste blanche / noire → *allowlist* / *blocklist* ; check-list → *checklist* ; retour arrière → *rollback* ; coffre → *vault* ; bandeau → *banner* ; tampon → *buffer* ; repli → *fallback* ; moindre privilège → *least privilege* ; survol → *overview* ; durcir → *harden*.
+- **Placeholders dans la prose** : `NOM` → `NAME`, `&lt;domaine&gt;` → `&lt;domain&gt;`, `&lt;nœud&gt;` → `&lt;node&gt;`, `<cluster>` inchangé ; jamais dans un bloc `code` ni dans `cmds[i][0]` (lignes identiques en fr et en).
+- **Chaînes visibles à l'écran dans un bloc `code`** (placeholders de mot de passe, texte de motd, identifiants d'exemple, messages d'annotation) : neutres ou anglaises **dans les deux langues**, modifiées dans le **même commit fr + en** (empreinte recalculée) ; exemple : `mot-de-passe-a-definir` → `change-me`. Tant que ce n'est pas fait, la parité des lignes de code non commentaires impose de laisser la valeur française dans le module en.
+- **Nombres** : séparateur décimal `,` → `.` (10,5 → 10.5) ; « 40 % » → « 40% ».
+
 ## Choix de traduction notables (pilote m01)
 
 - `K8s vs OCP` reste tel quel (titre de module et de plan).
