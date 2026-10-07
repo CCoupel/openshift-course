@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm08', lang: 'en', num: 8, emoji: '💾',
   title: 'Storage',
-  source: 'd37bdc660be9',
+  source: '9aa97f2653d9',
   tagline: "On on-prem OpenShift, persistent storage is not provided: you choose the backend, and that is where projects go off the rails.",
   duration: '≈ 60 min + lab 20 min',
   objectives: [
@@ -189,7 +189,7 @@ COURSE.add({
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc patch pvc db-data -p '{\"spec\":{\"resources\":{\"requests\":{\"storage\":\"50Gi\"}}}}'\n$ oc get pvc db-data -w\n$ oc describe pvc db-data\n# Conditions: Resizing / FileSystemResizePending" },
         { t: 'bullets', items: [
           "You can <b>grow</b>, never shrink.",
-          "Online expansion is supported by most CSI drivers (to be verified for yours).",
+          "Online expansion has been stable since K8s 1.24: it depends on the <code>EXPAND_VOLUME</code> capability declared by the CSI driver (to be checked for yours).",
           "If the StorageClass does not allow it, you can edit the SC (the field is modifiable), then try again."
         ] },
         { t: 'callout', kind: 'warn', html: "With LSO (static PVs), expansion does not exist: the PV has the size of the disk." }
