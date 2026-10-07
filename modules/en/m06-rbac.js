@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm06', lang: 'en', num: 6, emoji: '🔐',
   title: 'HBAC / RBAC',
-  source: '85323ffa7d10',
+  source: '2c820551dd76',
   tagline: 'Who are you, what can you do, on what, and from where? Authentication, RBAC, groups, projects, node access and audit.',
   duration: '≈ 60 min + lab 20 min',
   objectives: [

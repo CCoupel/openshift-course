@@ -417,7 +417,7 @@ COURSE.add({
         ], answer: 1, explain: 'Un RoleBinding vers un ClusterRole applique les droits dans ce seul namespace.' },
         { t: 'quiz', q: 'Tu retires <code>self-provisioner</code> de <code>system:authenticated:oauth</code>, et le binding revient après un moment. Que manque-t-il ?', options: [
           'Un redémarrage du cluster',
-          'L\'annotation <code>rbac.authorization.k8s.io/autoupdate: "false"</code> sur le ClusterRoleBinding <code>self-provisioners</code>',
+          'L\'annotation <code>rbac.authorization.kubernetes.io/autoupdate: "false"</code> sur le ClusterRoleBinding <code>self-provisioners</code>',
           'Un quota',
           'Rien, c\'est normal'
         ], answer: 1, explain: 'Les bindings par défaut sont réconciliés à l\'auto-update ; désactive-le pour que ta modification persiste.' }
