@@ -183,7 +183,7 @@ spec:
         { t: 'code', lang: 'bash', file: 'terminal', code: "# 1. Corporate CA bundle in openshift-config\n$ oc create configmap user-ca-bundle \\\n    --from-file=ca-bundle.crt=corp-ca-bundle.pem -n openshift-config\n\n# 2. Declare it as the cluster trusted CA\n$ oc patch proxy cluster --type=merge \\\n    -p '{\"spec\":{\"trustedCA\":{\"name\":\"user-ca-bundle\"}}}'\n\n# 3. Check the distribution of the merged bundle\n$ oc get configmap trusted-ca-bundle -n openshift-config-managed -o jsonpath='{.metadata.name}'" },
         { t: 'bullets', items: [
           'The bundle is <b>merged</b> with the system CAs then distributed to the platform components (and to the nodes).',
-          'The <b>Proxy</b> serves here as the vehicle even <b>without an HTTP proxy</b>: <code>trustedCA</code> remains the entry point.',
+          'The <b>Proxy</b> resource is used here as the carrier, even <b>without an HTTP proxy</b>: <code>trustedCA</code> remains the entry point.',
           'For private registries, use <code>Image.spec.additionalTrustedCA</code>; for identity providers (LDAP, OIDC), the CA is declared in their configuration (module 06).'
         ] },
         { t: 'callout', kind: 'tip', html: "For your <b>applications</b>, the bundle can be injected into a pod via a ConfigMap with the label <code>config.openshift.io/inject-trusted-cabundle=true</code>: to be verified in the docs for your version." }

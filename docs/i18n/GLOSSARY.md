@@ -102,6 +102,12 @@ OpenShift, OCP, OKD, SNO, K8s, Kubernetes, RHCOS, MachineConfig, MachineSet, Mac
 - **Chaînes visibles à l'écran dans un bloc `code`** (placeholders de mot de passe, texte de motd, identifiants d'exemple, messages d'annotation) : neutres ou anglaises **dans les deux langues**, modifiées dans le **même commit fr + en** (empreinte recalculée) ; exemple : `mot-de-passe-a-definir` → `change-me`. Tant que ce n'est pas fait, la parité des lignes de code non commentaires impose de laisser la valeur française dans le module en.
 - **Nombres** : séparateur décimal `,` → `.` (10,5 → 10.5) ; « 40 % » → « 40% ».
 
+- **Termes validés (lot B)** : vecteur (Proxy comme vecteur de `trustedCA`) → *carrier* ; configuration jour 1 → *day-1 configuration* ; fenêtre → *maintenance window* ; check-list → *checklist* ; bandeau → *banner* ; tampon → *buffer* ; sortie → *exit* / *egress* ; repli → *fallback* ; coffre → *vault* ; retour arrière → *rollback* ; gardes-fous → *guardrails* ; durcir → *harden* ; survol → *overview* ; moindre privilège → *least privilege* ; liste blanche / noire → *allowlist* / *blocklist*.
+- **Navigation de la console** : garder les libellés anglais de la console tels quels (*Observe → Alerting*, *Administration → Cluster Settings*), identiques en fr et en.
+- **Sigles et produits** : ne pas traduire *Logging 6*, *LokiStack*, *Vector*, *Cluster Observability Operator*, *MetalLB*, *NMState*, *Multus*, *UDN/CUDN*, *ANP/BANP*, *EgressIP*, *EgressFirewall*, *Technology Preview* / *Tech Preview*.
+- **Règle d'identifiants** : tout nom d'objet, de fichier ou de valeur dans un bloc `code` ou `cmds[i][0]` est **neutre et anglais dans les deux langues** (`example`, `my-sa`, `platform-team`, `change-me`, `other-svc`), modifié dans le même commit fr + en ; un identifiant neutralisé l'est **dans tous les modules** qui le citent (`my-sa` : m06, m09, m15 ; `other-svc` : m07, m15).
+- **Durées** : « 20 minutes ou plus » → *20 minutes or more*.
+
 ## Choix de traduction notables (pilote m01)
 
 - `K8s vs OCP` reste tel quel (titre de module et de plan).

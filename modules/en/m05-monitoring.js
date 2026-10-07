@@ -303,7 +303,7 @@ receivers:
         { t: 'compare', wide: true,
           left: { title: '🗑️ Removed', items: ['<b>Elasticsearch</b> (storage), <b>Kibana</b> (visualization) and the <b>Fluentd</b> collector are no longer managed by logging', '<code>ClusterLogging</code> and <code>ClusterLogForwarder</code> APIs of the <code>logging.openshift.io</code> group not supported'] },
           right: { title: '✅ Today', items: ['Collection: <b>Vector</b>', 'Storage: <b>LokiStack</b> (Loki, on S3 object storage)', 'Configuration: <code>ClusterLogForwarder</code> in <code>observability.openshift.io/v1</code>', 'Interface: plugin in the console, via the <b>Cluster Observability Operator</b>'] },
-          verdict: 'Logging 6.x is a product with a <b>life cycle distinct</b> from OCP: check the compatibility matrix (Logging 6.4: announced as compatible with 4.20 by the errata).' },
+          verdict: 'Logging 6.x is a product with <b>its own life cycle</b>, distinct from OCP\'s: check the compatibility matrix (Logging 6.4: announced as compatible with 4.20 by the errata).' },
         { t: 'bullets', items: [
           'Operators: <b>Red Hat OpenShift Logging</b>, <b>Loki</b> and, for the interface, <b>Cluster Observability Operator</b>. Installed through OLM (module 04).',
           'Installation (6.4 docs): Loki operator in <code>openshift-operators-redhat</code> (label <code>openshift.io/cluster-monitoring: "true"</code>), Logging operator in <code>openshift-logging</code>, <code>redhat-operators</code> source, <code>stable-6.4</code> channel.'
