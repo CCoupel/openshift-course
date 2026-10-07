@@ -226,7 +226,7 @@ metadata:
           'Ordre complet : <b>phase</b> d\'abord, puis <b>wave</b>, puis type de ressource, puis nom. Délai entre deux waves : <b>2 s</b> (variable <code>ARGOCD_SYNC_WAVE_DELAY</code>).',
           'Hooks : <code>PreSync</code>, <code>Sync</code>, <code>PostSync</code>, <code>SyncFail</code> ; suppression selon <code>HookSucceeded</code>, <code>HookFailed</code> ou <code>BeforeHookCreation</code>.'
         ] },
-        { t: 'callout', kind: 'tip', html: "Cas typique de plateforme : <b>namespace → Subscription OLM → CR de l'Operator</b> dans cet ordre (module 04). <b>Attention</b> : Argo CD n'attend pas que la <b>CRD</b> installée par OLM existe ; sans précaution, la synchronisation de la CR échoue au <i>dry run</i> (type inconnu). L'option <code>SkipDryRunOnMissingResource=true</code> (annotation <code>argocd.argoproj.io/sync-options</code> sur la ressource, ou dans <code>syncOptions</code> de l'Application) saute ce dry run quand le type est absent ; il est exécuté dès que la CRD est présente (doc Argo CD « Sync options »). Un <b>retry</b> de la synchronisation est l'autre filet (à vérifier pour ta version)." }
+        { t: 'callout', kind: 'tip', html: "Cas typique de plateforme : <b>namespace → Subscription OLM → CR de l'Operator</b> dans cet ordre (module 04). <b>Attention</b> : Argo CD n'attend pas que la <b>CRD</b> installée par OLM existe ; sans précaution, la synchronisation de la CR échoue au <i>dry run</i> (type inconnu). L'option <code>SkipDryRunOnMissingResource=true</code> (annotation <code>argocd.argoproj.io/sync-options</code> sur la ressource, ou dans <code>syncOptions</code> de l'Application) saute ce dry run quand le type est absent ; il est exécuté dès que la CRD est présente (doc Argo CD « Sync options »). Un <b>retry</b> de la synchronisation (<code>syncPolicy.retry</code> : <code>limit</code>, <code>backoff</code>) est l'autre filet." }
       ]
     },
     {
@@ -306,7 +306,7 @@ spec:
           ['<b>Un Argo CD central</b>', 'Une instance enregistre plusieurs clusters et pousse', 'Simple ; l\'instance devient un point critique et a des droits sur tous'],
           ['<b>ApplicationSet (générateur de clusters)</b>', 'Une Application par cluster enregistré', 'Même base, overlays par cluster'],
           ['<b>Argo CD Agent</b>', 'Architecture <b>pull</b> : l\'agent du cluster récupère sa config', 'GA en OpenShift GitOps 1.19 (doc)'],
-          ['<b>ACM + Argo CD (pull)</b>', 'Le hub ACM distribue ; l\'agent ACM tire l\'Application', 'Introduit en Technology Preview dans ACM 2.8 ; statut actuel : à vérifier']
+          ['<b>ACM + Argo CD (pull)</b>', 'Le hub ACM distribue ; l\'agent ACM tire l\'Application', 'Introduit en Technology Preview dans ACM 2.8 ; reste disponible en 2.14/2.15 (certaines fonctions, comme l\'ApplicationSet dans un namespace quelconque, encore en Technology Preview)']
         ] },
         { t: 'flow', nodes: [
           'Cluster perdu',
