@@ -154,7 +154,7 @@ COURSE.add({
       blocks: [
         { t: 'cmds', items: [['dig +short test.apps.ocp4.example.com', 'le wildcard doit répondre']] },
         { t: 'callout', kind: 'trap', html: '<b>Piège OCP</b> : un deny-all coupe aussi les <b>routeurs</b> : prévois <code>allow-from-openshift-ingress</code> (label <code>policy-group.network.openshift.io/ingress</code>) et, avec des routeurs en <b>HostNetwork</b> (défaut on-prem), <code>allow-from-hostnetwork</code> (label <code>policy-group.network.openshift.io/host-network</code>).' },
-        { t: 'callout', kind: 'warn', html: 'Les deux YAML <code>allow-from-openshift-ingress</code> et <code>allow-from-hostnetwork</code> sont ceux de la doc 4.20. <b>Laquelle suffit selon le mode de publication</b> de l\'<code>IngressController</code> (HostNetwork ou LoadBalancerService/NodePort) n\'est pas énoncé explicitement dans les pages lues : <b>à vérifier</b> ; en pratique, applique les deux puis teste. Attention : un deny-all mal ouvert te coupe l\'accès à tes propres applications.' }
+        { t: 'callout', kind: 'warn', html: 'Les deux YAML <code>allow-from-openshift-ingress</code> et <code>allow-from-hostnetwork</code> s\'inspirent de la doc 4.20 (sections About network policy et Configuring multitenant isolation). <b>Laquelle suffit selon le mode de publication</b> de l\'<code>IngressController</code> (HostNetwork ou LoadBalancerService/NodePort) n\'est pas énoncé explicitement dans les pages lues : <b>à vérifier</b> ; en pratique, applique les deux puis teste. Attention : un deny-all mal ouvert te coupe l\'accès à tes propres applications.' }
       ]
     },
     {

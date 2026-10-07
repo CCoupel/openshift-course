@@ -325,7 +325,7 @@ COURSE.add({
           '- name: PROJECT_NAME',
           '- name: PROJECT_ADMIN_USER'
         ].join('\n') },
-        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) plafonne la somme des ressources de <b>plusieurs projets</b> sélectionnés par label ou annotation (par équipe, par application). Un <code>deny-all</code> nu casse aussi la Route : prévois dans le template les policies d\'ouverture de la doc : <code>allow-from-openshift-ingress</code> et, avec des routeurs en HostNetwork, <code>allow-from-hostnetwork</code> (laquelle suffit selon le mode de publication : à vérifier ; détail, YAML et AdminNetworkPolicy : module 07).' }
+        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) plafonne la somme des ressources de <b>plusieurs projets</b> sélectionnés par label ou annotation (par équipe, par application). Un <code>deny-all</code> nu casse aussi la Route : prévois dans le template les policies d\'ouverture inspirées de la doc 4.20 (About network policy, Configuring multitenant isolation) : <code>allow-from-openshift-ingress</code> et, avec des routeurs en HostNetwork, <code>allow-from-hostnetwork</code> (laquelle suffit selon le mode de publication : à vérifier ; détail, YAML et AdminNetworkPolicy : module 07).' }
       ]
     },
     {

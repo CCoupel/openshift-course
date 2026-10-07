@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm07', lang: 'en', num: 7, emoji: '🌐',
   title: 'Networking',
-  source: '59f7c7d1bd28',
+  source: '7b87cae8f5ac',
   tagline: 'From the pod to the cluster exit: OVN-Kubernetes, Services and Routes, NetworkPolicy, egress, MetalLB, NMState, secondary networks and UDN.',
   duration: '≈ 70 min + lab 20 min',
   objectives: [
@@ -201,10 +201,10 @@ spec:
   - from:
     - podSelector: {}` },
         { t: 'bullets', items: [
-          'Same API as on K8s: <b>deny-all</b> then <b>targeted openings</b>. The four policies above (names from the 4.20 docs) go in the <b>project template</b> (module 06).',
+          'Same API as on K8s: <b>deny-all</b> then <b>targeted openings</b>. The four policies above (policies inspired by the 4.20 docs: About network policy and Configuring multitenant isolation sections) go in the <b>project template</b> (module 06).',
           '<b>OCP pitfall</b>: a deny-all also cuts off the <b>routers</b>: plan <code>allow-from-openshift-ingress</code> (label <code>policy-group.network.openshift.io/ingress</code>) and, with <b>HostNetwork</b> routers (on-prem default), <code>allow-from-hostnetwork</code> (label <code>policy-group.network.openshift.io/host-network</code>).'
         ] },
-        { t: 'callout', kind: 'warn', html: "The two YAMLs <code>allow-from-openshift-ingress</code> and <code>allow-from-hostnetwork</code> are the ones from the 4.20 docs. <b>Which one is enough depending on the publishing mode</b> of the <code>IngressController</code> (HostNetwork or LoadBalancerService/NodePort) is not stated explicitly in the pages read: <b>to be verified</b>; in practice, apply both then test. Beware: a badly opened deny-all cuts you off from your own applications." }
+        { t: 'callout', kind: 'warn', html: "The two YAMLs <code>allow-from-openshift-ingress</code> and <code>allow-from-hostnetwork</code> are inspired by the 4.20 docs (About network policy and Configuring multitenant isolation sections). <b>Which one is enough depending on the publishing mode</b> of the <code>IngressController</code> (HostNetwork or LoadBalancerService/NodePort) is not stated explicitly in the pages read: <b>to be verified</b>; in practice, apply both then test. Beware: a badly opened deny-all cuts you off from your own applications." }
       ]
     },
     {

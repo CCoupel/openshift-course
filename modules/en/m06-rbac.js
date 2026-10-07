@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm06', lang: 'en', num: 6, emoji: '🔐',
   title: 'HBAC / RBAC',
-  source: '86d8f3802c02',
+  source: '5440978e6ef2',
   tagline: 'Who are you, what can you do, on what, and from where? Authentication, RBAC, groups, projects, node access and audit.',
   duration: '≈ 60 min + lab 20 min',
   objectives: [
@@ -326,7 +326,7 @@ COURSE.add({
           '- name: PROJECT_NAME',
           '- name: PROJECT_ADMIN_USER'
         ].join('\n') },
-        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) caps the sum of resources of <b>several projects</b> selected by label or annotation (per team, per application). A bare <code>deny-all</code> also breaks the Route: plan the docs\' opening policies in the template: <code>allow-from-openshift-ingress</code> and, with HostNetwork routers, <code>allow-from-hostnetwork</code> (which one is enough depends on the publishing mode: to be verified; details, YAML and AdminNetworkPolicy: module 07).' }
+        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) caps the sum of resources of <b>several projects</b> selected by label or annotation (per team, per application). A bare <code>deny-all</code> also breaks the Route: plan the opening policies inspired by the 4.20 docs (About network policy, Configuring multitenant isolation) in the template: <code>allow-from-openshift-ingress</code> and, with HostNetwork routers, <code>allow-from-hostnetwork</code> (which one is enough depends on the publishing mode: to be verified; details, YAML and AdminNetworkPolicy: module 07).' }
       ]
     },
     {
