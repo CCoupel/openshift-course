@@ -185,7 +185,7 @@ spec:
           'Le <b>Proxy</b> sert ici de vecteur même <b>sans proxy HTTP</b> : <code>trustedCA</code> reste le point d\'entrée.',
           'Pour les registres privés, c\'est <code>Image.spec.additionalTrustedCA</code> ; pour les fournisseurs d\'identité (LDAP, OIDC), la CA se déclare dans leur configuration (module 06).'
         ] },
-        { t: 'callout', kind: 'tip', html: "Pour tes <b>applications</b>, le bundle peut être injecté dans un pod via une ConfigMap avec le label <code>config.openshift.io/inject-trusted-cabundle=true</code> : à vérifier dans la doc de ta version." }
+        { t: 'callout', kind: 'tip', html: "Pour tes <b>applications</b>, le bundle peut être injecté dans un pod via une ConfigMap <b>vide</b> portant le label <code>config.openshift.io/inject-trusted-cabundle=true</code> (le cluster la remplit ; clé <code>ca-bundle.crt</code>, à monter en volume)." }
       ]
     },
     {
@@ -212,7 +212,7 @@ storage:
         rtcsync
         logdir /var/log/chrony` },
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ butane 99-worker-chrony.bu -o 99-worker-chrony.yaml\n$ oc apply -f 99-worker-chrony.yaml\n$ oc get mcp -w            # rolling : drain, apply, reboot\n$ oc debug node/worker-0 -- chroot /host chronyc sources" },
-        { t: 'callout', kind: 'trap', wide: true, html: "Le label <code>role: worker</code> ne cible <b>que le pool worker</b>. Les masters gardent leur propre configuration : il faut un second MachineConfig avec <code>role: master</code> (et, sur un SNO, c'est le pool master qui s'applique : à vérifier). Tous les nœuds doivent partager la même source de temps." },
+        { t: 'callout', kind: 'trap', wide: true, html: "Le label <code>role: worker</code> ne cible <b>que le pool worker</b>. Les masters gardent leur propre configuration : il faut un second MachineConfig avec <code>role: master</code> (et, sur un SNO, c'est le pool master qui s'applique). Tous les nœuds doivent partager la même source de temps." },
         { t: 'callout', kind: 'onprem', wide: true, html: "En réseau isolé, les serveurs NTP publics sont injoignables : pointe vers tes sources internes. C'est un des premiers réglages du jour 1 (certificats et etcd en dépendent)." }
       ]
     },
@@ -380,7 +380,7 @@ spec:
           '<code>ConsoleLink</code>, <code>ConsoleNotification</code>, <code>ConsoleCLIDownload</code> : liens, bandeaux et téléchargements de CLI personnalisés.',
           'Le nom et l\'URL de la console dépendent du domaine <code>*.apps</code> (module 07).'
         ] },
-        { t: 'callout', kind: 'tip', html: "Un bandeau « environnement de production » ou « maintenance » évite beaucoup d'erreurs de contexte entre clusters. Options de personnalisation avancée (logo, nom du produit) : à vérifier selon la version." }
+        { t: 'callout', kind: 'tip', html: "Un bandeau « environnement de production » ou « maintenance » évite beaucoup d'erreurs de contexte entre clusters. Personnalisation avancée : <code>customLogoFile</code> et <code>customProductName</code> dans la CR <code>Console</code>." }
       ]
     },
     {
@@ -417,7 +417,7 @@ spec:
         { t: 'lab', title: 'Chrony, Operator en approbation manuelle (bonus : certificat Ingress)', goal: 'Noyau en séance (5 étapes) sur un SNO ou un cluster de lab (cluster-admin). Les étapes (bonus), dont le remplacement du certificat Ingress, sont à faire en autonomie.', steps: [
           'Prérequis : environnement E1 (SNO) avec <code>cluster-admin</code>, voir module 00 ; <code>butane</code> et <code>openssl</code> sur ton poste.',
           'Repère la configuration : <code>oc api-resources --api-group=config.openshift.io</code> puis <code>oc get proxy,apiserver,image.config cluster -o yaml</code> ; qu\'est-ce qui est déjà renseigné ?',
-          'Écris un <code>99-…-chrony.bu</code> (rôle du pool de ton nœud : <b>master</b> sur un SNO, à vérifier avec <code>oc get mcp</code>), génère le YAML avec <code>butane</code>, applique-le et suis <code>oc get mcp -w</code> ; contrôle avec <code>chronyc sources</code> via <code>oc debug node/&lt;nœud&gt;</code>. <b>Sur un SNO, le nœud redémarre</b> : l\'API est indisponible quelques minutes.',
+          'Écris un <code>99-…-chrony.bu</code> (rôle du pool de ton nœud : <b>master</b> sur un SNO ; vérifie avec <code>oc get mcp</code>), génère le YAML avec <code>butane</code>, applique-le et suis <code>oc get mcp -w</code> ; contrôle avec <code>chronyc sources</code> via <code>oc debug node/&lt;nœud&gt;</code>. <b>Sur un SNO, le nœud redémarre</b> : l\'API est indisponible quelques minutes.',
           'Installe un Operator avec <code>installPlanApproval: Manual</code> (Namespace, OperatorGroup, Subscription) ; constate l\'<code>InstallPlan</code> en attente, approuve-le avec <code>oc patch</code> et attends la phase <code>Succeeded</code> du CSV.',
           'Désactive la source <code>community-operators</code> de l\'OperatorHub et vérifie qu\'elle disparaît de <code>oc get catalogsource -n openshift-marketplace</code> ; contrôle enfin <code>oc get co</code> et <code>oc get mcp</code> : tout doit rester sain (Available, non Degraded).',
           '(bonus, <b>risqué</b> : à faire sur un cluster jetable, dans cet ordre, avec le retour arrière prêt) Crée une CA de lab et un certificat wildcard <code>*.apps.&lt;cluster&gt;.&lt;domaine&gt;</code> avec <code>openssl</code>.',

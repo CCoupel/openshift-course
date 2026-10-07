@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm04', lang: 'en', num: 4, emoji: '⚙️',
   title: 'Configuration',
-  source: 'ed1abdd4960f',
+  source: 'd1a69df5a350',
   tagline: 'The cluster is installed: proxy, registries, certificates, chrony, Operators. “Day-1” configuration, declarative, without touching the nodes by hand.',
   duration: '≈ 60 min + lab 20 min',
   objectives: [
@@ -186,7 +186,7 @@ spec:
           'The <b>Proxy</b> resource is used here as the carrier, even <b>without an HTTP proxy</b>: <code>trustedCA</code> remains the entry point.',
           'For private registries, use <code>Image.spec.additionalTrustedCA</code>; for identity providers (LDAP, OIDC), the CA is declared in their configuration (module 06).'
         ] },
-        { t: 'callout', kind: 'tip', html: "For your <b>applications</b>, the bundle can be injected into a pod via a ConfigMap with the label <code>config.openshift.io/inject-trusted-cabundle=true</code>: to be verified in the docs for your version." }
+        { t: 'callout', kind: 'tip', html: "For your <b>applications</b>, the bundle can be injected into a pod via an <b>empty</b> ConfigMap carrying the label <code>config.openshift.io/inject-trusted-cabundle=true</code> (the cluster fills it; key <code>ca-bundle.crt</code>, to be mounted as a volume)." }
       ]
     },
     {
@@ -213,7 +213,7 @@ storage:
         rtcsync
         logdir /var/log/chrony` },
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ butane 99-worker-chrony.bu -o 99-worker-chrony.yaml\n$ oc apply -f 99-worker-chrony.yaml\n$ oc get mcp -w            # rolling: drain, apply, reboot\n$ oc debug node/worker-0 -- chroot /host chronyc sources" },
-        { t: 'callout', kind: 'trap', wide: true, html: "The <code>role: worker</code> label targets <b>only the worker pool</b>. The masters keep their own configuration: you need a second MachineConfig with <code>role: master</code> (and, on a SNO, it is the master pool that applies: to be verified). All nodes must share the same time source." },
+        { t: 'callout', kind: 'trap', wide: true, html: "The <code>role: worker</code> label targets <b>only the worker pool</b>. The masters keep their own configuration: you need a second MachineConfig with <code>role: master</code> (and, on a SNO, it is the master pool that applies). All nodes must share the same time source." },
         { t: 'callout', kind: 'onprem', wide: true, html: "On an isolated network, public NTP servers are unreachable: point to your internal sources. It is one of the first day-1 settings (certificates and etcd depend on it)." }
       ]
     },
@@ -381,7 +381,7 @@ spec:
           '<code>ConsoleLink</code>, <code>ConsoleNotification</code>, <code>ConsoleCLIDownload</code>: custom links, banners and CLI downloads.',
           'The console name and URL depend on the <code>*.apps</code> domain (module 07).'
         ] },
-        { t: 'callout', kind: 'tip', html: "A “production environment” or “maintenance” banner avoids many context mix-ups between clusters. Advanced customization options (logo, product name): to be verified depending on the version." }
+        { t: 'callout', kind: 'tip', html: "A “production environment” or “maintenance” banner avoids many context mix-ups between clusters. Advanced customization: <code>customLogoFile</code> and <code>customProductName</code> in the <code>Console</code> CR." }
       ]
     },
     {
@@ -418,7 +418,7 @@ spec:
         { t: 'lab', title: 'Chrony, Operator with manual approval (bonus: Ingress certificate)', goal: 'Core during the session (5 steps) on a SNO or a lab cluster (cluster-admin). The (bonus) steps, including replacing the Ingress certificate, are to be done on your own.', steps: [
           'Prerequisites: environment E1 (SNO) with <code>cluster-admin</code>, see module 00; <code>butane</code> and <code>openssl</code> on your workstation.',
           'Locate the configuration: <code>oc api-resources --api-group=config.openshift.io</code> then <code>oc get proxy,apiserver,image.config cluster -o yaml</code>; what is already filled in?',
-          'Write a <code>99-…-chrony.bu</code> (role of your node\'s pool: <b>master</b> on a SNO, to be verified with <code>oc get mcp</code>), generate the YAML with <code>butane</code>, apply it and follow <code>oc get mcp -w</code>; verify with <code>chronyc sources</code> via <code>oc debug node/&lt;node&gt;</code>. <b>On a SNO, the node reboots</b>: the API is unavailable for a few minutes.',
+          'Write a <code>99-…-chrony.bu</code> (role of your node\'s pool: <b>master</b> on a SNO; check with <code>oc get mcp</code>), generate the YAML with <code>butane</code>, apply it and follow <code>oc get mcp -w</code>; verify with <code>chronyc sources</code> via <code>oc debug node/&lt;node&gt;</code>. <b>On a SNO, the node reboots</b>: the API is unavailable for a few minutes.',
           'Install an Operator with <code>installPlanApproval: Manual</code> (Namespace, OperatorGroup, Subscription); see the pending <code>InstallPlan</code>, approve it with <code>oc patch</code> and wait for the CSV <code>Succeeded</code> phase.',
           'Disable the <code>community-operators</code> source of the OperatorHub and check that it disappears from <code>oc get catalogsource -n openshift-marketplace</code>; finally check <code>oc get co</code> and <code>oc get mcp</code>: everything must stay healthy (Available, not Degraded).',
           '(bonus, <b>risky</b>: do it on a disposable cluster, in this order, with the rollback ready) Create a lab CA and a wildcard certificate <code>*.apps.&lt;cluster&gt;.&lt;domain&gt;</code> with <code>openssl</code>.',
