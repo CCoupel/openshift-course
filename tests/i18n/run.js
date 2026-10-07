@@ -154,6 +154,18 @@ const CASES = [
   { id: 'F06', title: 'file : libellé descriptif entièrement réécrit en en : accepté', edits: [ed(EN1, sub("'DNS zone (BIND sample)'", "'Zone file used by the lab resolver'"))], args: ['--strict-i18n'], expect: OK },
   { id: 'F07', title: 'file : premier mot (nom de fichier) différent, précision traduite : erreur', edits: [ed(EN1, sub("'app.ini (example)'", "'config.ini (example)'"))], args: [], expect: ERR(/file/i) },
   { id: 'F08', title: 'file : précision entre parenthèses supprimée sur un nom de fichier (app.ini) : accepté', edits: [ed(EN1, sub("'app.ini (example)'", "'app.ini'"))], args: ['--strict-i18n'], expect: OK },
+  // — YAML : valeurs de texte visible traduisibles (liste blanche message/summary/text/description/displayName ; validate.js 81b40d7) —
+  { id: 'Y01', title: 'YAML : valeurs différentes sous message/summary/description/displayName/`- text:` : accepté (base)', edits: [], args: ['--strict-i18n'], expect: OK },
+  { id: 'Y02', title: 'YAML : élément de liste `- text:` avec une autre valeur : accepté', edits: [ed(EN1, sub('- text: Hello', '- text: A completely different sentence'))], args: ['--strict-i18n'], expect: OK },
+  { id: 'Y03', title: 'YAML : clé différente (`msg` au lieu de `message`) : erreur', edits: [ed(EN1, sub('  message: The pod is down', '  msg: The pod is down'))], args: [], expect: ERR(/code|clé|key|ligne|line/i) },
+  { id: 'Y04', title: 'YAML : clé listée avec une casse différente (`displayname`) : erreur', edits: [ed(EN1, sub('  displayName: Demo', '  displayname: Demo'))], args: [], expect: ERR(/code|clé|key|ligne|line/i) },
+  { id: 'Y05', title: 'YAML : valeur de `name` (clé non listée) modifiée : erreur', edits: [ed(EN1, sub('  name: demo', '  name: demo-en'))], args: [], expect: ERR(/code|clé|key|ligne|line/i) },
+  { id: 'Y06', title: 'YAML : valeur de `namespace` (clé non listée) modifiée : erreur', edits: [ed(EN1, sub('  namespace: lab', '  namespace: laboratory'))], args: [], expect: ERR(/code|clé|key|ligne|line/i) },
+  { id: 'Y07', title: 'YAML : valeur de `password` (clé non listée, élément de liste) modifiée : erreur', edits: [ed(EN1, sub('- password: secret', '- password: secreto'))], args: [], expect: ERR(/code|clé|key|ligne|line/i) },
+  // Comportement réel documenté : la normalisation ne s'applique qu'à `clé: valeur` (valeur non vide) ; une clé listée dont la valeur manque en en
+  // (`message:` nu) ou dont la ligne disparaît (nombre de lignes différent) est une ERREUR.
+  { id: 'Y08', title: 'YAML : clé listée sans valeur en en (`message:` nu) : erreur (comportement réel)', edits: [ed(EN1, sub('  message: The pod is down', '  message:'))], args: [], expect: ERR(/code|clé|key|ligne|line/i) },
+  { id: 'Y09', title: 'YAML : ligne d\'une clé listée supprimée en en : erreur (nombre de lignes)', edits: [ed(EN1, sub('\\n  summary: Pod down', ''))], args: [], expect: ERR(/code|lignes|line/i) },
   { id: 'R17', title: 'validate.js --root sans valeur : usage, exit 2', edits: [], steps: [{ tool: 'validate', raw: true, args: ['--root'], expect: { exit: 2, out: [/usage/i] } }] },
   { id: 'R18', title: 'validate.js --root suivi d\'une option : usage, exit 2', edits: [], steps: [{ tool: 'validate', raw: true, args: ['--root', '--strict-i18n'], expect: { exit: 2, out: [/usage/i] } }] },
   { id: 'R19', title: 'i18n-hash.js --root sans valeur : usage, exit 2', edits: [], steps: [{ tool: 'hash', raw: true, args: ['--check', '--root'], expect: { exit: 2, out: [/usage/i] } }] },
