@@ -324,7 +324,7 @@ spec:
         { t: 'table', head: ['Outil', 'Rôle', 'À retenir côté plateforme'], rows: [
           ['<b>OpenShift Pipelines</b> (Tekton)', 'CI/CD en pipelines de tâches dans des pods', 'Operator via OLM ; version 1.20 : OCP 4.14 et 4.16 à 4.21 ; 1.21 : intégration console jusqu\'à 4.20'],
           ['<b>ClusterTask</b>', 'Ancienne tâche cluster-scoped', 'Dépréciée, <b>retirée en 1.17</b> : remplacée par les <b>résolveurs</b> Tekton (GA depuis 1.11)'],
-          ['<b>Builds for OpenShift</b> (Shipwright)', 'Construction d\'images sur le cluster', 'Builds 1.6 (Shipwright 0.17, GA) pour 4.20 ; 1.7 pour 4.16 à 4.21'],
+          ['<b>Builds for OpenShift</b> (Shipwright)', 'Construction d\'images sur le cluster', 'Builds 1.7 (GA 10/02/2026) pour OCP 4.16 à 4.21 (Builds 1.6 : 4.16 à 4.19)'],
           ['<b>BuildConfig</b>', 'Mécanisme de build historique d\'OCP', 'Toujours présent ; statut de dépréciation en 4.20 non confirmé : à vérifier']
         ] },
         { t: 'callout', kind: 'ocp', wide: true, html: "Ces outils relèvent du <b>développement applicatif</b> et des équipes : l'admin plateforme les <b>installe, versionne et supervise</b> (Operators, droits, quotas des namespaces de build). Le détail des pipelines est hors périmètre de ce cours." }

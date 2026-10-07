@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm10', lang: 'en', num: 10, emoji: '🔄',
   title: 'CI/CD & GitOps',
-  source: '797128e8e11d',
+  source: '0f51ed7f3794',
   tagline: 'Your cluster\'s configuration in Git, applied and watched by Argo CD: platform GitOps first, Pipelines and Builds as an overview.',
   duration: '≈ 45 min + lab 20 min',
   objectives: [
@@ -325,7 +325,7 @@ spec:
         { t: 'table', head: ['Tool', 'Role', 'To remember on the platform side'], rows: [
           ['<b>OpenShift Pipelines</b> (Tekton)', 'CI/CD as pipelines of tasks in pods', 'Operator via OLM; version 1.20: OCP 4.14 and 4.16 to 4.21; 1.21: console integration up to 4.20'],
           ['<b>ClusterTask</b>', 'Old cluster-scoped task', 'Deprecated, <b>removed in 1.17</b>: replaced by Tekton <b>resolvers</b> (GA since 1.11)'],
-          ['<b>Builds for OpenShift</b> (Shipwright)', 'Building images on the cluster', 'Builds 1.6 (Shipwright 0.17, GA) for 4.20; 1.7 for 4.16 to 4.21'],
+          ['<b>Builds for OpenShift</b> (Shipwright)', 'Building images on the cluster', 'Builds 1.7 (GA Feb 10, 2026) for OCP 4.16 to 4.21 (Builds 1.6: 4.16 to 4.19)'],
           ['<b>BuildConfig</b>', 'OCP\'s historical build mechanism', 'Still present; deprecation status in 4.20 not confirmed: to be verified']
         ] },
         { t: 'callout', kind: 'ocp', wide: true, html: "These tools belong to <b>application development</b> and the teams: the platform admin <b>installs, versions and monitors</b> them (Operators, rights, quotas of the build namespaces). The pipeline details are out of scope for this course." }
