@@ -27,7 +27,7 @@ Destiné aux contributeurs. Valide la traduction des 16 modules ; établi sur le
 | piège | pitfall | callout `trap` ; tag « piège n°1 » → *pitfall #1* |
 | astuce | tip | callout `tip` |
 | attention | warning | callout `warn` |
-| on-prem / on-premise | on-prem / on-premises | *On-prem* en libellé court, *on-premises* en phrase |
+| on-prem / on-premise | on-prem | forme unique dans `modules/en/` et `assets/i18n.js` (jamais *on-premises* ni *on-premise*) |
 | côté K8s / côté OCP | K8s side / OCP side | callouts `k8s`, `ocp` |
 | à vérifier | to be verified | **même nombre** dans les deux langues ; contrôlé par `validate.js` |
 | À retenir | Key takeaways | `recap.title` |
@@ -112,6 +112,8 @@ OpenShift, OCP, OKD, SNO, K8s, Kubernetes, RHCOS, MachineConfig, MachineSet, Mac
 - **Marqueur « à vérifier »** : réservé aux **incertitudes** (il se traduit par *to be verified*, même nombre dans les deux langues). Dans un usage ordinaire (« t'obliger à contrôler », en-tête « Point à contrôler »), employer *contrôler* ou *confirmer* côté fr, pour ne pas fausser le décompte de `validate.js`.
 
 - **Texte visible des YAML** (décision utilisateur) : les **valeurs** des clés `message`, `summary`, `text`, `description`, `displayName` d'un bloc `code` sont **traduites** (fr en français, en en anglais) ; la clé reste identique (liste blanche dans `tools/validate.js`, `VISIBLE_TEXT_KEYS`). Tout le reste (noms d'objets, identifiants, placeholders comme `change-me`, commandes) reste neutre et identique dans les deux langues.
+
+- **Tags et libellés (lots D)** : *checklist · reference* (tag m14), *cheat sheet* / *dictionary* / *decision* (tags m15), *to recognize*, *Final quiz n/7*, *Item to check* (« Point à contrôler »), *Cloud gap* (titre de slide), *Control Plane Only* (nom de procédure, non traduit).
 
 ## Choix de traduction notables (pilote m01)
 
