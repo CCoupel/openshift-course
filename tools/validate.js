@@ -263,7 +263,7 @@ const indexFile = path.join(ROOT, 'index.html');
 if (fs.existsSync(indexFile)) {
   const html = fs.readFileSync(indexFile, 'utf8');
   for (const m of html.matchAll(/<script src="([^"]+)"/g)) if (!fs.existsSync(path.join(ROOT, m[1]))) err('index.html', `script inexistant (404) : ${m[1]}`);
-  for (const lang of LANGS) for (const name of Object.keys(paths[lang])) if (!html.includes(`modules/${lang}/${name}`)) warn(paths[lang][name], 'module non chargé par index.html');
+  for (const lang of LANGS) for (const name of Object.keys(paths[lang])) if (!html.includes(`modules/${lang}/${name}`)) (strict ? err : warn)(paths[lang][name], `module non chargé par index.html (ajouter <script src="modules/${lang}/${name}"></script> : le moteur ne charge rien dynamiquement)`);
 }
 const total = frNames.length + enNames.length;
 console.log(`\n${total} module(s) (${frNames.length} fr, ${enNames.length} en), ${errors} erreur(s), ${warns} avertissement(s)${strict ? ' [--strict-i18n]' : ''}.`);
