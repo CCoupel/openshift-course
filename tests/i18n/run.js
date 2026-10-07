@@ -2,7 +2,7 @@
 /* Fixtures de parité fr/en — lance tools/validate.js (et tools/i18n-hash.js) sur des arbres de test.
    Usage : node tests/i18n/run.js [--dry (applique les éditions sans lancer les outils)] [--verbose] [--exit-only] [--only <id>] [--keep] [--refresh-hashes]
    Sans dépendance. Ne modifie jamais le dépôt : chaque cas travaille sur une copie de fixtures/base/
-   sous _work/tmp/i18n-fixtures/<id>/ (sauf --refresh-hashes, qui recalcule les empreintes de fixtures/base/).
+   sous un dossier unique _work/tmp/i18n-fixtures-XXXXXX/<id>/ (sauf --refresh-hashes, qui recalcule les empreintes de fixtures/base/).
 
    ┌─ ATTENTES SUPPOSÉES (écrites à partir du plan _work/reports/planner-i18n.md, avant tools/validate.js T4) ─┐
    │ A1. validate.js accepte `--root <dir>` : <dir> est un arbre de type dépôt (assets/, modules/fr|en/, index.html). │
@@ -23,7 +23,7 @@ const { spawnSync } = require('child_process');
 // ───────────── CONFIG (à ajuster si le contrat réel de validate.js diffère) ─────────────
 const REPO = path.join(__dirname, '..', '..');
 const BASE = path.join(__dirname, 'fixtures', 'base');
-const WORK = path.join(REPO, '_work', 'tmp', 'i18n-fixtures');
+const WORK_PARENT = path.join(REPO, '_work', 'tmp');   // chaque exécution crée son propre sous-dossier unique (exécutions parallèles sûres)
 const TOOLS = { validate: path.join(REPO, 'tools', 'validate.js'), hash: path.join(REPO, 'tools', 'i18n-hash.js') };
 const rootArgs = dir => ['--root', dir];                       // A1
 const hashOf = src => crypto.createHash('sha256').update(src).digest('hex').slice(0, 12); // A4
@@ -161,7 +161,10 @@ function check(expect, res) {
 }
 
 const missing = Object.entries(TOOLS).filter(([, p]) => !fs.existsSync(p)).map(([k]) => k);
-fs.rmSync(WORK, { recursive: true, force: true });
+fs.mkdirSync(WORK_PARENT, { recursive: true });
+const WORK = fs.mkdtempSync(path.join(WORK_PARENT, 'i18n-fixtures-'));
+// Nettoyage garanti à la sortie (succès, échec ou exception), sauf --keep (conservé pour le diagnostic).
+process.on('exit', () => { if (!opt('--keep')) fs.rmSync(WORK, { recursive: true, force: true }); else console.log(`Fixtures conservées : ${WORK}`); });
 let fail = 0, total = 0, skipped = 0;
 for (const c of CASES) {
   if (only && c.id !== only) continue;
@@ -181,6 +184,5 @@ for (const c of CASES) {
   if (problems.length && !(opt('--exit-only') && msgOnly)) { fail++; console.log(`FAIL ${c.id}  ${c.title}\n${problems.map(p => '       ' + p).join('\n')}`); }
   else console.log(`ok   ${c.id}  ${c.title}${c.tags ? '  [' + c.tags.join(',') + ']' : ''}`);
 }
-if (!opt('--keep')) fs.rmSync(WORK, { recursive: true, force: true });
 console.log(`\n${total} cas exécutés, ${fail} en échec, ${skipped} ignorés (outil absent).`);
 process.exit(fail || (skipped && !total) ? 1 : 0);

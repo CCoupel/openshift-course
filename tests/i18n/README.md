@@ -19,7 +19,7 @@ node tests/i18n/run.js --dry            # applique les éditions sans lancer les
 node tests/i18n/run.js --refresh-hashes # recalcule `source` dans fixtures/base/ si on touche un module fr
 ```
 
-Chaque cas copie `fixtures/base/` dans `_work/tmp/i18n-fixtures/<id>/`, applique une mutation, recalcule l'empreinte `source`
+Chaque cas copie `fixtures/base/` dans un dossier unique par exécution `_work/tmp/i18n-fixtures-XXXXXX/<id>/` (exécutions parallèles sûres, nettoyé à la sortie ; `--keep` le conserve), applique une mutation, recalcule l'empreinte `source`
 (sauf cas « périmé »), lance l'outil et compare : code de sortie (dur) et motifs de message (larges, `out` / `notOut`).
 
 ## Contrat supposé (à confirmer par dev-course en T4)
