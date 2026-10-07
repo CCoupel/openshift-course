@@ -14,6 +14,8 @@ COURSE.add({
     { title: 'Slide deux', blocks: [
       { t: 'cmds', items: [['oc get co', 'Liste les opérateurs'], ['oc get nodes', 'Liste les nœuds']] },
       { t: 'code', lang: 'bash', file: 'demo.sh (exemple de lab)', caption: 'Légende du code.', code: '# Santé de la plateforme\n$ oc get clusterversion\n$ echo "a # b"\n$ oc get nodes  # note\n# Fin' },
+      { t: 'code', lang: 'text', file: 'zone DNS (exemple BIND)', code: '; Zone de démo\nwww    IN A 10.0.0.1 ; serveur web\napi    IN CNAME www' },
+      { t: 'code', lang: 'ini', file: 'app.ini (exemple)', code: '[main]\nport = 80 ; défaut\n; commentaire' },
       { t: 'table', head: ['Terme', 'Définition'], rows: [['A', 'Un'], ['B', 'Deux']] }
     ] },
     { title: 'Slide trois', blocks: [
