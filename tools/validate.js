@@ -142,9 +142,19 @@ function stripTrailingComment(l) {
   }
   return l;
 }
-const codeLines = c => String(c || '').split('\n').map(l => stripTrailingComment(l).replace(/\s+$/, '')).filter(l => l.trim() && !/^\s*#/.test(l));
+// Commentaires `;` (zones DNS) : ligne entière commençant par `;`, ou fin de ligne ` ;` sur un enregistrement (`… IN A …`).
+const codeLines = c => String(c || '').split('\n').map(l => {
+  l = stripTrailingComment(l);
+  if (/\sIN\s+[A-Z]+\s/.test(l)) l = l.replace(/\s+;.*$/, '');
+  return l.replace(/\s+$/, '');
+}).filter(l => l.trim() && !/^\s*[#;]/.test(l));
 // `file` : le nom de fichier est identique ; une précision entre parenthèses en fin (« dnsmasq.conf (exemple de lab) ») se traduit.
-const baseFile = f => (f === undefined ? f : String(f).replace(/\s*\([^)]*\)\s*$/, ''));
+// Un libellé descriptif (avec espace avant la parenthèse : « zone DNS (exemple BIND) ») n'est pas un nom de fichier : non comparé.
+const baseFile = f => {
+  if (f === undefined) return f;
+  const b = String(f).replace(/\s*\([^)]*\)\s*$/, '');
+  return /\s/.test(b) ? null : b;
+};
 const digits = d => (String(d === undefined ? '' : d).match(/\d+/g) || []).join(',');
 const len = x => (Array.isArray(x) ? x.length : undefined);
 
