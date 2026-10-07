@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm00', lang: 'en', num: 0, emoji: '🧪',
   title: 'Lab environment',
-  source: 'e8483f8d9222',
+  source: '2433291db1c5',
   tagline: 'Before day 1: a solid cluster, the right tools, and the certainty of knowing which lab needs what.',
   duration: '≈ 30 min',
   objectives: [
@@ -61,7 +61,7 @@ COURSE.add({
           ['<b>SNO / compact on bare metal</b>', 'If you have hardware, E1 to E3', 'Closest to production', 'Hardware and network are on you'],
           ['<b>3-node compact</b> (VMs)', 'E2 bonus steps', 'Quorum, MHC, ODF', 'RAM and disk ×3'],
           ['<b>OKD</b>', 'Community alternative', 'Same OCP foundation without Red Hat support', 'Possible behavior differences (OS base: CentOS Stream CoreOS since OKD 4.16)'],
-          ['<b>Developer Sandbox</b> ☁️', 'Discovering the console', 'Console and <code>oc</code> in a shared space', '<b>No <code>cluster-admin</code></b>: unsuitable for this course; shared cluster, limited quotas (≈ 3 cores / 14 GB / 40 GB, 30-day trial: dated figures, cross-check)']
+          ['<b>Developer Sandbox</b> ☁️', 'Discovering the console', 'Console and <code>oc</code> in a shared space', '<b>No cluster administrator access (to be verified)</b>: unsuitable for this course; shared cluster, limited quotas (≈ 3 cores / 14 GB / 40 GB, 30-day trial: dated figures, cross-check)']
         ] },
         { t: 'callout', kind: 'cloud', html: "The Developer Sandbox is a shared cluster: no cluster administration rights (to be verified). Managed offerings (ROSA, ARO, OSD) give <code>cluster-admin</code> or <code>dedicated-admin</code> access depending on the offering, but <b>block or delegate</b> some actions (nodes, MachineConfig, etcd: details depend on the offering) to the provider and fall outside the on-prem scope of this course. For the labs, choose an environment that is <b>yours</b>." }
       ]

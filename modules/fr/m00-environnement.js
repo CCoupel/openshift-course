@@ -60,7 +60,7 @@ COURSE.add({
           ['<b>SNO / compact sur bare metal</b>', 'Si tu as du matériel, E1 à E3', 'Le plus proche de la production', 'Matériel et réseau à ta charge'],
           ['<b>Compact 3 nœuds</b> (VM)', 'Étapes bonus E2', 'Quorum, MHC, ODF', 'RAM et disque ×3'],
           ['<b>OKD</b>', 'Alternative communautaire', 'Même socle OCP sans support Red Hat', 'Écarts de comportement possibles (base OS : CentOS Stream CoreOS depuis OKD 4.16)'],
-          ['<b>Developer Sandbox</b> ☁️', 'Découvrir la console', 'Console et <code>oc</code> en espace partagé', '<b>Pas de <code>cluster-admin</code></b> : inadapté à ce cours ; cluster partagé, quotas limités (≈ 3 cœurs / 14 Go / 40 Go, essai de 30 jours : chiffres datés, à recouper)']
+          ['<b>Developer Sandbox</b> ☁️', 'Découvrir la console', 'Console et <code>oc</code> en espace partagé', '<b>Pas d\'accès administrateur du cluster (à vérifier)</b> : inadapté à ce cours ; cluster partagé, quotas limités (≈ 3 cœurs / 14 Go / 40 Go, essai de 30 jours : chiffres datés, à recouper)']
         ] },
         { t: 'callout', kind: 'cloud', html: "Le Developer Sandbox est un cluster partagé : pas d\'accès administrateur du cluster (à vérifier). Les offres managées (ROSA, ARO, OSD) donnent un accès <code>cluster-admin</code> ou <code>dedicated-admin</code> selon l\'offre, mais <b>bloquent ou délèguent</b> au fournisseur certaines actions (nœuds, MachineConfig, etcd : détail selon l\'offre) et sortent du périmètre on-prem de ce cours. Pour les labs, choisis un environnement <b>à toi</b>." }
       ]
