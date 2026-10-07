@@ -82,7 +82,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           '<b>UPI / platform none</b>: two L4 LBs of your own (API 6443 + MCS 22623; Ingress 80 + 443), with health checks.',
           '<b>IPI / Agent with VIPs</b>: two free VIPs in the nodes\' subnet (<code>apiVIPs</code>, <code>ingressVIPs</code>); DNS points to them.',
-          'Reverse resolution of the nodes is required depending on the method: to be verified in the 4.20 docs.'
+          '<b>Reverse</b> resolution of the nodes is required depending on the method: to be verified in the 4.20 docs.'
         ] },
         { t: 'callout', kind: 'trap', html: "A forgotten <code>*.apps</code> wildcard is the #1 failure: the installation <b>seems to progress</b>, then <code>install-complete</code> never finishes (console and OAuth unreachable)." }
       ]
@@ -310,7 +310,7 @@ hosts:
           'It must support <b>multi-arch / OCI manifests</b> and be reachable by all nodes, with a trusted certificate.',
           'Sizing: several tens to hundreds of GB depending on the mirrored operators.'
         ] },
-        { t: 'callout', kind: 'onprem', html: "The mirror registry is a <b>critical service</b>: its availability conditions installations, updates and image rescheduling. Back it up (module 11) and monitor it." }
+        { t: 'callout', kind: 'onprem', html: "The mirror registry is a <b>critical service</b>: installations, updates and image rescheduling all depend on its availability. Back it up (module 11) and monitor it." }
       ]
     },
     {

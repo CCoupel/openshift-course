@@ -170,7 +170,7 @@ sh-5$ etcdctl endpoint health --cluster -w table` },
       ]
     },
     {
-      title: 'API LB, DNS and VIPs: the on-prem point',
+      title: 'API LB, DNS and VIPs: the on-prem sticking point',
       layout: 'two',
       blocks: [
         { t: 'compare', wide: true,
