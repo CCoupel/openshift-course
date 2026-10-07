@@ -3,11 +3,13 @@ on:
   push:
     tags: ['v*']
 permissions:
-  contents: write
+  contents: read
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,6 +23,8 @@ jobs:
           echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "Tag non SemVer: $GITHUB_REF_NAME"; exit 1; }
           [ "$(cat VERSION)" = "$VERSION" ] || { echo "VERSION ($(cat VERSION)) != tag ($VERSION)"; exit 1; }
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          awk -v v="$VERSION" 'index($0, "## [" v "]")==1 {f=1; next} f && /^## / {exit} f && !/^---$/' CHANGELOG.md > notes.md 2>/dev/null || true
+          [ -s notes.md ] || { echo "CHANGELOG.md ne contient pas d'entrée pour $VERSION"; exit 1; }
       - run: node --check assets/engine.js
       - run: node --check assets/plan.js
       - run: node tools/validate.js
@@ -37,10 +41,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -f CHANGELOG.md ]; then
-            awk -v v="$VERSION" '$0 ~ "^## \\[?"v {f=1; next} f && /^## / {exit} f' CHANGELOG.md > notes.md
-          fi
-          if [ -s notes.md ]; then NOTES=(--notes-file notes.md); else NOTES=(--generate-notes); fi
+          NOTES=(--notes-file notes.md)
           PRE=()
           case "$VERSION" in 0.*|*-*) PRE=(--prerelease) ;; esac
           gh release create "$GITHUB_REF_NAME" "openshift-course-${VERSION}.zip" "openshift-course-${VERSION}.zip.sha256" "dist/openshift-course-${VERSION}.pptx" "dist/openshift-course-${VERSION}.pptx.sha256" --title "v${VERSION}" "${NOTES[@]}" "${PRE[@]}"
