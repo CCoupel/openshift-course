@@ -60,7 +60,7 @@ Pas de HTML dans les blocs `code` et `cmds[0]` : le moteur échappe. **Tous les 
 
 ## Exigences de contenu
 
-- **Exact et à jour** : **version de référence OpenShift 4.20 EUS** (cf. `docs/PLAN.md` §1.1). Dater tout comportement introduit ou retiré autour de 4.18–4.22. Si un point dépend de la version ou n'est pas certain, le dire (« à vérifier dans les release notes ») plutôt qu'affirmer. Ne jamais inventer d'option de CLI ou de champ YAML.
+- **Exact et à jour** : **version de référence OpenShift 4.20 EUS** (cf. `docs/PLAN.md` §1.1). Dater tout comportement introduit ou retiré autour de 4.18–4.22. Si un point dépend de la version ou n'est pas certain, le dire (« à confirmer dans les release notes ») plutôt qu'affirmer ; en bilingue, utiliser le marqueur « à vérifier » / « to be verified » dans un callout pour signaler une incertitude factuelle qui sera relue en phase 4. Ne jamais inventer d'option de CLI ou de champ YAML.
 - Commandes `oc` et YAML **réalistes et copiables**.
 - Un **lab** et un **quiz** par module, avec des pièges réalistes (erreurs fréquentes d'un admin qui vient de K8s).
 - **Labs** : le premier `step` est le prérequis d'environnement (E0 à E3, cf. `docs/PLAN.md` §3) avec renvoi au module 00 ; noyau en séance, étapes facultatives en fin de lab marquées « (bonus) ».
@@ -187,9 +187,16 @@ Exemple de parité cassée : ajouter une diapositive à l'une seulement, retirer
 
 ### Marqueur « à vérifier » ↔ « to be verified »
 
-La phrase « **à vérifier** » (fr) correspond à « **to be verified** » (en). Ces marqueurs aident à tracer les faits douteuses en relecture technique. Chaque module traduit doit avoir **le même nombre** des deux marqueurs.
+Le marqueur « **à vérifier** » (fr) ↔ « **to be verified** » (en) est **réservé aux incertitudes factuelles**. Il signale un fait qui n'a pas pu être confirmé par rapport à la doc Red Hat et qui devra être vérifié en relecture technique (phase 4).
 
-Exemple :
+**Règle stricte** : `validate.js` compte **chaque occurrence** de « à vérifier » comme un marqueur et exige un équivalent exact « to be verified » en anglais. Si vous utilisez « à vérifier » pour autre chose (consigne, titre de point à contrôler), le contrôle échouera.
+
+**Usages ordinaires** (à utiliser à la place) :
+- Pour une consigne ou un titre de section : « à contrôler » (fr) / « check » ou « to verify » (en, pas « to be verified »)
+- Pour une action à faire ultérieurement : « à confirmer » (fr) / « to confirm » (en)
+- Pour une vérification en général : « vérifier que… » (fr) / « verify that… » (en)
+
+Exemple d'usage correct du marqueur :
 ```js
 // modules/fr/m05-monitoring.js
 { t: 'callout', kind: 'warn', html: 'À vérifier sur OCP 4.20 : les alertes natives…' }
@@ -198,7 +205,7 @@ Exemple :
 { t: 'callout', kind: 'warn', html: 'To be verified on OCP 4.20: native alerts…' }
 ```
 
-Contrôle : `validate.js` compte les occurrences et les compare entre les deux fichiers.
+Contrôle : `validate.js` compte les occurrences de « à vérifier » (fr) et « to be verified » (en) et exige une parité exacte. Toute autre forme de ces termes n'est pas comptée comme marqueur.
 
 ### Localisation (`assets/i18n.js`)
 
