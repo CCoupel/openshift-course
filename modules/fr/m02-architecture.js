@@ -274,7 +274,7 @@ spec:
       title: 'Appliquer un MachineConfig (et ses effets)',
       layout: 'two',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'mc-chrony.yaml', code: `apiVersion: machineconfiguration.openshift.io/v1
+        { t: 'code', lang: 'yaml', file: 'mc-motd.yaml', code: `apiVersion: machineconfiguration.openshift.io/v1
 kind: MachineConfig
 metadata:
   name: 99-worker-motd

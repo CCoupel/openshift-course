@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm02', lang: 'en', num: 2, emoji: '🏗️',
   title: 'Architecture',
-  source: '658e3eb335ac',
+  source: '89e7a5107fd2',
   tagline: 'Under the hood: nodes, immutable OS, etcd, operators and the Machine API. Who does what, and who talks to whom.',
   duration: '≈ 60 min + lab 20 min',
   objectives: [
@@ -275,7 +275,7 @@ spec:
       title: 'Applying a MachineConfig (and its effects)',
       layout: 'two',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'mc-chrony.yaml', code: `apiVersion: machineconfiguration.openshift.io/v1
+        { t: 'code', lang: 'yaml', file: 'mc-motd.yaml', code: `apiVersion: machineconfiguration.openshift.io/v1
 kind: MachineConfig
 metadata:
   name: 99-worker-motd
