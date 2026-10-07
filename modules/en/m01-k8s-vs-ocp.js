@@ -34,7 +34,7 @@ COURSE.add({
           { label: 'CVO', sub: 'Cluster Version Operator', hl: true },
           { label: 'Cluster Operators', sub: '≈ 30: network, ingress, auth, monitoring…' },
           { label: 'Components', sub: 'Pods, DaemonSets, configs' }
-        ], caption: 'The CVO reconciles the state required by the release (release image) towards each operator.' },
+        ], caption: 'The CVO reconciles the desired state defined by the release (release image) towards each operator.' },
         { t: 'code', lang: 'bash', file: 'terminal', code: '# Platform health in one command\n$ oc get clusteroperators   # alias: oc get co\n$ oc get clusterversion\n# Each operator: Available / Progressing / Degraded' },
         { t: 'callout', kind: 'tip', html: 'Diagnostic reflex #1: <code>oc get co</code>. A <b>Degraded</b> operator already tells you which component to look into.' }
       ]
@@ -54,7 +54,7 @@ COURSE.add({
       blocks: [
         { t: 'table', head: ['Topic', '☸️ Vanilla K8s', '🔴 OpenShift'], rows: [
           ['Installation', 'kubeadm, Kubespray, Cluster API…', '<code>openshift-install</code> (IPI/UPI), Assisted/Agent installer'],
-          ['Node OS', 'Free choice (Ubuntu, RHEL…)', 'RHCOS (control plane and workers); RHEL compute nodes deprecated in 4.16, <b>removed since 4.19</b> (RHCOS image layering replaces adding packages)'],
+          ['Node OS', 'Free choice (Ubuntu, RHEL…)', 'RHCOS (control plane and workers); RHEL compute nodes deprecated in 4.16, <b>removed as of 4.19</b> (RHCOS image layering replaces adding packages)'],
           ['Networking (CNI)', 'Calico, Cilium, Flannel…', 'OVN-Kubernetes (Cilium not natively supported)'],
           ['HTTP exposure', 'Ingress + a controller of your choice', 'HAProxy Router via the Ingress Operator, <code>Route</code> objects'],
           ['Authentication', 'OIDC / webhook to configure', 'Built-in OAuth server + Identity Providers'],
@@ -72,7 +72,7 @@ COURSE.add({
         { t: 'table', head: ['You say (K8s)', 'OpenShift says', 'Good to know'], rows: [
           ['Namespace', '<b>Project</b>', 'Namespace + annotations + creation template + <code>self-provisioner</code>'],
           ['Ingress', '<b>Route</b>', 'Ingress is still supported (converted to a Route behind the scenes)'],
-          ['Deployment', 'Deployment', '<code>DeploymentConfig</code> still exists but is <b>deprecated</b>: don\'t use it any more'],
+          ['Deployment', 'Deployment', '<code>DeploymentConfig</code> still exists but is <b>deprecated</b>: don\'t use it anymore'],
           ['Pod Security (PSA)', '<b>SCC</b>', 'Cluster objects, bound to ServiceAccounts via RBAC'],
           ['Image + tag', '<b>ImageStream</b>', 'Pointer to images, with redeployment triggers'],
           ['Dockerfile / Kaniko', '<b>BuildConfig</b> / S2I', 'Gradually replaced by Tekton / Shipwright'],
@@ -120,12 +120,12 @@ COURSE.add({
       ]
     },
     {
-      title: 'SCC: the 1st surprise when migrating',
+      title: 'SCC: the first surprise when migrating',
       tag: 'pitfall #1',
       blocks: [
         { t: 'text', html: '<p>By default, a pod runs with the <code>restricted-v2</code> SCC: <b>random UID within a range assigned to the namespace, no root, capabilities dropped, no hostPath, etc.</b> Many “Docker Hub” images crash because of it. <i>Details (strategies, priorities, creating SCCs): module 09.</i></p>' },
         { t: 'code', lang: 'bash', file: 'terminal', code: '# Which SCC did a pod get?\n$ oc get pod web-abc -o jsonpath=\'{.metadata.annotations.openshift\\.io/scc}\'\nrestricted-v2\n\n# Simulate: which SCC would admit this ServiceAccount?\n$ oc adm policy who-can use scc anyuid\n$ oc get scc' },
-        { t: 'callout', kind: 'trap', html: 'The “<code>oc adm policy add-scc-to-user anyuid</code>” reflex fixes the symptom but opens a hole. The right answer: <b>fix the image</b> (listen on a port &gt; 1024, folders set to <code>g=u</code>, no hard-coded <code>USER</code>).' },
+        { t: 'callout', kind: 'trap', html: 'The “<code>oc adm policy add-scc-to-user anyuid</code>” reflex fixes the symptom but opens a security hole. The right answer: <b>fix the image</b> (listen on a port &gt; 1024, folders set to <code>g=u</code>, no hard-coded <code>USER</code>).' },
         { t: 'quiz', q: 'An official nginx image won\'t start on OCP (“permission denied” on port 80). What is the best fix?', options: [
           'Give the <code>privileged</code> SCC to the ServiceAccount',
           'Use an “unprivileged” nginx image that listens on 8080',
@@ -159,7 +159,7 @@ COURSE.add({
           '<b>The control plane is not yours</b>: you don\'t edit its manifests by hand.',
           '<b>Sequential minor-version updates</b> (4.18 → 4.19 → 4.20).'
         ] },
-        { t: 'callout', kind: 'trap', html: 'Edit a file by hand on a node: it will be overwritten (or the <b>MachineConfigPool</b> will go Degraded) at the next render. Any OS change goes through a declarative object.' },
+        { t: 'callout', kind: 'trap', html: 'If you edit a file by hand on a node, it will be overwritten (or the <b>MachineConfigPool</b> will go Degraded) at the next render. Any OS change goes through a declarative object.' },
         { t: 'callout', kind: 'onprem', wide: true, html: 'On bare metal and vSphere, these rules apply fully, plus firmware, IPAM and storage management are on you. That is the price of autonomy.' }
       ]
     },
@@ -209,7 +209,7 @@ COURSE.add({
       layout: 'two',
       blocks: [
         { t: 'compare', wide: true,
-          left: { title: '✅ OCP is a good choice if…', items: ['You want a platform supported end to end', 'You need compliance and security by default', 'Many teams, need for multi-tenancy', 'Managed life cycle and updates', 'Red Hat ecosystem already in place'] },
+          left: { title: '✅ OCP is a good choice if…', items: ['You want a platform supported end to end', 'You need compliance and security by default', 'Many teams, need for multi-tenancy', 'Controlled life cycle and updates', 'Red Hat ecosystem already in place'] },
           right: { title: '🤔 Something else may fit better if…', items: ['Small cluster, a single team, little budget', 'You need a very specific CNI or OS', 'You want the latest K8s version as soon as it ships', '“We assemble everything ourselves” culture', 'Very constrained edge (see MicroShift, k3s)'] } }
       ]
     },
@@ -222,7 +222,7 @@ COURSE.add({
           ['oc new-project demo', 'Creates a Project and switches to it'],
           ['oc new-app <image|git>', 'Deploys an app from an image or a repository (S2I)'],
           ['oc expose svc/web', 'Creates a Route'],
-          ['oc rollout status deploy/web', 'Follows a rollout'],
+          ['oc rollout status deploy/web', 'Rollout progress'],
           ['oc debug node/<n>', 'Privileged shell on a node (<code>chroot /host</code>)'],
           ['oc adm top nodes', 'Node resource usage'],
           ['oc adm must-gather', 'Diagnostic collection for support'],
