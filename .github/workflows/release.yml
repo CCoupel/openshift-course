@@ -27,15 +27,21 @@ jobs:
           [ -s notes.md ] || { echo "CHANGELOG.md ne contient pas d'entrée pour $VERSION"; exit 1; }
       - run: node --check assets/engine.js
       - run: node --check assets/plan.js
-      - run: node tools/validate.js
-      - name: Export PowerPoint (dependances de dev, scripts d'installation desactives)
+      - run: node --check assets/i18n.js
+      - name: Validation stricte i18n (module en manquant ou empreinte perimee = echec)
+        run: node tools/validate.js --strict-i18n
+      - name: Export PowerPoint fr et en (dependances de dev, scripts d'installation desactives)
         run: |
           npm ci --ignore-scripts
-          node tools/export-pptx.js
-          (cd dist && sha256sum "openshift-course-${VERSION}.pptx" > "openshift-course-${VERSION}.pptx.sha256")
+          node tools/export-pptx.js --strict-i18n
+          node tools/check-pptx.js --strict-i18n
+          for L in fr en; do
+            test -s "dist/openshift-course-${VERSION}-${L}.pptx" || { echo "pptx ${L} absent"; exit 1; }
+            (cd dist && sha256sum "openshift-course-${VERSION}-${L}.pptx" > "openshift-course-${VERSION}-${L}.pptx.sha256")
+          done
       - name: Livrable (archive du cours + somme de controle)
         run: |
-          zip -r "openshift-course-${VERSION}.zip" index.html assets modules VERSION
+          zip -r "openshift-course-${VERSION}.zip" index.html assets modules VERSION   # modules/ contient fr/ et en/
           sha256sum "openshift-course-${VERSION}.zip" > "openshift-course-${VERSION}.zip.sha256"
       - name: GitHub Release
         env:
@@ -44,7 +50,7 @@ jobs:
           NOTES=(--notes-file notes.md)
           PRE=()
           case "$VERSION" in 0.*|*-*) PRE=(--prerelease) ;; esac
-          gh release create "$GITHUB_REF_NAME" "openshift-course-${VERSION}.zip" "openshift-course-${VERSION}.zip.sha256" "dist/openshift-course-${VERSION}.pptx" "dist/openshift-course-${VERSION}.pptx.sha256" --title "v${VERSION}" "${NOTES[@]}" "${PRE[@]}"
+          gh release create "$GITHUB_REF_NAME" "openshift-course-${VERSION}.zip" "openshift-course-${VERSION}.zip.sha256" "dist/openshift-course-${VERSION}-fr.pptx" "dist/openshift-course-${VERSION}-fr.pptx.sha256" "dist/openshift-course-${VERSION}-en.pptx" "dist/openshift-course-${VERSION}-en.pptx.sha256" --title "v${VERSION}" "${NOTES[@]}" "${PRE[@]}"
   pages:
     needs: release
     permissions:
