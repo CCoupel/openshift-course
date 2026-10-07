@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm14', lang: 'en', num: 14, emoji: '✅',
   title: 'Best practices',
-  source: 'fbfa8bcc0deb',
+  source: '202f3e36aa50',
   tagline: 'A cross-cutting go-live checklist, reusable on engagements: each item points to the module that covers it, nothing is repeated here.',
   duration: '≈ 30 min + lab 15 min',
   objectives: [
