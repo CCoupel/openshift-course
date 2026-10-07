@@ -139,7 +139,8 @@
 
   function renderSlide(f) {
     const banner = f.mod && fallback.has(f.mod.id) ? `<div class="fallback-banner" role="note">🌐 ${esc(t('lang.fallback'))}</div>` : '';
-    return banner + renderBody(f);
+    // Contenu non traduit : il reste en français sous <html lang="en"> → lang="fr" (lecteurs d'écran, césure). Le bandeau, lui, est dans la langue de l'interface.
+    return banner ? banner + `<div class="fb-content" lang="fr">${renderBody(f)}</div>` : renderBody(f);
   }
 
   function renderBody(f) {
@@ -314,9 +315,12 @@
     lang = l; state.lang = l; save();
     try { const u = new URL(location.href); u.searchParams.set('lang', l); history.replaceState(null, '', u.toString()); } catch (e) { /* file:// restrictif */ }
     const uid = cur ? cur.uid : 'home', kept = fragIdx;
+    // Pas de double annonce : la région live du slide est coupée le temps du re-rendu, seule la bulle annonce la bascule.
+    const live = slideEl(); live.setAttribute('aria-live', 'off');
     build(); index = null; applyStatic();
     const i = flat.findIndex(f => f.uid === uid);
     show(i < 0 ? 0 : i, kept);
+    setTimeout(() => live.setAttribute('aria-live', 'polite'), 500);
     announce(t('lang.toast.' + l));
   }
 
