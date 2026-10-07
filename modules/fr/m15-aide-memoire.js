@@ -77,7 +77,7 @@ COURSE.add({
           ['oc rollout status deploy/web', 'Suivi d\'un déploiement'],
           ['oc explain route.spec.tls', 'Doc des API, aussi pour les CRD OCP'],
           ['oc get events --sort-by=.lastTimestamp', 'Événements récents, triés par date : un pod refusé ou un PVC bloqué s\'y lit en premier (modules 08 et 09)'],
-          ['oc exec deploy/web -- curl -sI http://autre-svc:8080', 'Teste depuis un pod l\'accès à un autre Service (diagnostic réseau)'],
+          ['oc exec deploy/web -- curl -sI http://other-svc:8080', 'Teste depuis un pod l\'accès à un autre Service (diagnostic réseau)'],
           ['oc get endpoints web', 'Le Service a-t-il des endpoints ?'],
           ['oc debug node/<n>', 'Shell privilégié sur un nœud (<code>chroot /host</code>)'],
           ['oc adm must-gather', 'Collecte de diagnostic pour le support'],
@@ -125,8 +125,8 @@ COURSE.add({
       blocks: [
         { t: 'cmds', items: [
           ['oc get csr | grep Pending', 'Plus aucun CSR en attente ?'],
-          ['oc get csr -o custom-columns=NOM:.metadata.name,DEMANDEUR:.spec.username,SIGNATAIRE:.spec.signerName,ETAT:.status.conditions[*].type', 'Tous les CSR avec demandeur et signataire (ceux sans état sont en attente)'],
-          ['oc adm certificate approve NOM_DU_CSR', 'Approuver une demande <b>dont tu as vérifié le demandeur</b>']
+          ['oc get csr -o custom-columns=NAME:.metadata.name,REQUESTOR:.spec.username,SIGNER:.spec.signerName,STATE:.status.conditions[*].type', 'Tous les CSR avec demandeur et signataire (ceux sans état sont en attente)'],
+          ['oc adm certificate approve CSR_NAME', 'Approuver une demande <b>dont tu as vérifié le demandeur</b>']
         ] },
         { t: 'callout', kind: 'trap', html: 'N\'approuve que les CSR <b>en <code>Pending</code></b> et dont tu as <b>vérifié le demandeur</b> (nom du nœud attendu, signataire) : un CSR approuvé à l\'aveugle peut donner à un intrus un certificat de nœud, donc un faux nœud dans ton cluster. Remplacement des certificats API et Ingress : module 04.' }
       ]
@@ -299,7 +299,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['oc get scc', 'Liste des SCC'],
           ['oc adm policy who-can use scc privileged', 'Audit : qui peut créer des pods privilégiés ?'],
           ['oc adm policy scc-subject-review -f pod.yaml', 'Quels SCC admettraient ce pod pour moi ?'],
-          ['oc adm policy scc-subject-review -z mon-sa -n team-a -f root-pod.yaml', 'Quelles SCC admettraient ce pod pour un ServiceAccount donné ?']
+          ['oc adm policy scc-subject-review -z my-sa -n team-a -f root-pod.yaml', 'Quelles SCC admettraient ce pod pour un ServiceAccount donné ?']
         ] },
         { t: 'callout', kind: 'trap', html: 'Le réflexe « <code>add-scc-to-user anyuid</code> » règle le symptôme et ouvre une faille : l\'image n\'est <b>pas réparée</b> et plus rien ne limite ses privilèges. Ordre de préférence : <b>réparer l\'image</b>, puis <code>nonroot-v2</code> ou une SCC dédiée, puis (en dernier recours, tracé) <code>anyuid</code>.' }
       ]
@@ -309,9 +309,9 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
       tag: 'fiche',
       blocks: [
         { t: 'cmds', items: [
-          ['oc create sa mon-sa -n team-a', 'ServiceAccount utilisé par la charge'],
+          ['oc create sa my-sa -n team-a', 'ServiceAccount utilisé par la charge'],
           ['oc create clusterrole use-nonroot-bind80 --verb=use --resource=scc --resource-name=nonroot-bind80', 'Rôle qui n\'autorise <b>que</b> cette SCC (verbe <code>use</code>)'],
-          ['oc create rolebinding mon-sa-scc --clusterrole=use-nonroot-bind80 --serviceaccount=team-a:mon-sa -n team-a', 'Lien limité au namespace'],
+          ['oc create rolebinding my-sa-scc --clusterrole=use-nonroot-bind80 --serviceaccount=team-a:my-sa -n team-a', 'Lien limité au namespace'],
           ['oc get compliancesuite -n openshift-compliance -w', 'Suivre un scan de conformité'],
           ['oc get compliancecheckresult -n openshift-compliance -l compliance.openshift.io/check-status=FAIL', 'Contrôles en échec (un FAIL n\'est pas toujours une faute)']
         ] },
