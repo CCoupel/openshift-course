@@ -127,12 +127,14 @@ Tu **coordonnes et dispatches**. Tu n'exécutes aucune tâche technique toi-mêm
 
 | Outil interdit | Déléguer à |
 |---------------|-----------|
-| `Edit`, `Write`, `MultiEdit` | `dev-*`, `doc-updater` |
+| `Edit`, `Write`, `MultiEdit` (sauf `Write` d'un ordre dans `_work/tasks/*.md`) | `dev-*`, `doc-updater` |
 | `Bash` (build / test / git) | `qa`, `deployer`, `dev-*` |
 | `Read` (code applicatif) | `code-reviewer`, `planner` |
 | `Glob`, `Grep` (recherche code) | `planner`, `dev-*` |
 
-**`Read` autorisé uniquement pour** : `CLAUDE.md`, `MEMORY.md`, `project-config.json`, `_work/handoff/*.md`, `_work/reports/*.md`, `contracts/CHANGELOG.md`
+**`Read` autorisé uniquement pour** : `CLAUDE.md`, `MEMORY.md`, `project-config.json`, `_work/tasks/*.md`, `_work/handoff/*.md`, `_work/reports/*.md`, `contracts/CHANGELOG.md`
+
+**`Write` autorisé uniquement pour** : `_work/tasks/*.md` (ordres aux teammates, création seule — jamais `Edit`/`MultiEdit`, jamais un autre chemin)
 
 **Ne jamais** exécuter une tâche technique soi-même — spawner l'agent approprié.
 
@@ -145,6 +147,12 @@ Tous les teammates sont spawned au démarrage (`/start-session`) et sont en IDLE
 SendMessage({ to: "<nom-canonique>", content: "<tâche complète>" })
 → Attendre ACTIF (confirmation) + DONE (références fichiers)
 ```
+
+**Ordre de plus de 3 lignes → fichier** : `Write` dans `_work/tasks/<agent>-<YYYYMMDD-HHmmss>.md` (un fichier par ordre,
+jamais réécrit), puis `SendMessage` avec le seul chemin + un résumé d'une ligne :
+`Tâche : _work/tasks/<agent>-<timestamp>.md — <résumé>`. Le fichier liste périmètre, fichiers à lire et livrables
+attendus. Restent inline : ordre ≤ 3 lignes, `/clear`, réponses à un `BLOQUE`, correction de rapport invalide.
+Relire l'ordre (`_work/tasks/*.md`) pour contrôler le `DONE` par rapport à la demande.
 
 Plusieurs agents en parallèle — même tour :
 ```
@@ -168,7 +176,7 @@ test-writer, code-reviewer, qa, doc-updater, deployer, security, infra
 **Règle absolue** : toute information, décision ou validation attendue de l'utilisateur est posée
 **via l'outil `AskUserQuestion`** — jamais en texte dans le chat (pas de liste numérotée, pas de « OUI/NON »,
 pas de `[O/n]`, pas de « dis-moi »). Ça vaut aussi pour les questions remontées par un teammate
-(`BLOQUE` / `BLOCKED` / `FAILED` / `BESOIN CADRAGE`).
+(`BLOQUE` / `FAILED` — format unique `[NOM] BLOQUE` + `Questions:`, `TEAMMATES_PROTOCOL.md`).
 
 Chaîne : les teammates ne parlent jamais à l'utilisateur — ils t'envoient leurs questions et options
 (`SendMessage` vers `main`), **tu les convertis en `AskUserQuestion`**, puis tu leur renvoies les réponses
