@@ -211,7 +211,7 @@ spec:
       layout: 'two',
       blocks: [
         { t: 'compare', wide: true,
-          left: { title: '👮 AdminNetworkPolicy (ANP)', items: ['Objet <b>cluster</b>, évalué <b>avant</b> les NetworkPolicy', 'Actions : <code>Allow</code>, <code>Deny</code>, <code>Pass</code>', '<code>priority</code> de 0 à 99 (« 100 ANP au plus » : à vérifier ; plus la valeur est basse, plus la priorité est haute ; la doc conseille 30-70)', 'Les équipes ne peuvent pas la contourner'] },
+          left: { title: '👮 AdminNetworkPolicy (ANP)', items: ['Objet <b>cluster</b>, évalué <b>avant</b> les NetworkPolicy', 'Actions : <code>Allow</code>, <code>Deny</code>, <code>Pass</code>', '<code>priority</code> de 0 à 99 (100 ANP au plus ; plus la valeur est basse, plus la priorité est haute ; la doc conseille 30-70)', 'Les équipes ne peuvent pas la contourner'] },
           right: { title: '🛟 BaselineAdminNetworkPolicy (BANP)', items: ['<b>Un seul</b> objet par cluster', 'Garde-fou <b>par défaut</b> si aucune NetworkPolicy ne correspond', 'Les NetworkPolicy des équipes peuvent la <b>surcharger</b>'] },
           verdict: 'ANP = ce que personne ne peut ouvrir ; BANP = le défaut que les équipes peuvent assouplir ; NetworkPolicy = règles des projets.' },
         { t: 'code', lang: 'yaml', file: 'anp-example.yaml', code: `apiVersion: policy.networking.k8s.io/v1alpha1
@@ -230,7 +230,7 @@ spec:
     to:
     - networks:
       - 10.99.0.0/16` },
-        { t: 'callout', kind: 'warn', wide: true, html: "L'API est en <code>policy.networking.k8s.io/v1alpha1</code> dans la doc 4.20. Historique : Technology Preview dès 4.14 (feature set <code>TechPreviewNoUpgrade</code>). <b>Statut GA en 4.20</b> : non confirmé dans les release notes lues (la doc 4.20 la présente comme fonctionnalité standard, sans marque Tech Preview) : à vérifier. Priorité : la doc 4.20 indique « 0-99 » pour OVN-Kubernetes (une autre section de la même doc parle de 0-100) ; champs <code>to</code> / <code>networks</code> de l'exemple : à vérifier." }
+        { t: 'callout', kind: 'warn', wide: true, html: "L'API est en <code>policy.networking.k8s.io/v1alpha1</code> dans la doc 4.20. Historique : Technology Preview dès 4.14 (feature set <code>TechPreviewNoUpgrade</code>). <b>Statut en 4.20</b> : GA (présentée sans mention Tech Preview dans les docs 4.19-4.20). Priorité : la doc 4.20 indique « 0-99 » pour OVN-Kubernetes (une autre section de la même doc parle de 0-100) ; champs <code>to</code> / <code>networks</code> de l'exemple : à vérifier." }
       ]
     },
     {
@@ -279,7 +279,7 @@ spec:
           '<b>MetalLB Operator</b> (OLM, module 04) ; installé de préférence en CLI dans <code>metallb-system</code> (Subscription <code>metadata.name: metallb-operator-sub</code>, <code>spec.name: metallb-operator</code>, canal <code>stable</code>, source <code>redhat-operators</code>, doc 4.20) ; l\'IPAddressPool doit être dans le namespace de l\'Operator.',
           'Objets : <code>IPAddressPool</code>, <code>L2Advertisement</code>, <code>BGPPeer</code>, <code>BGPAdvertisement</code>, API <code>metallb.io/v1beta1</code>.'
         ] },
-        { t: 'callout', kind: 'warn', html: "Namespace, canal et Subscription : doc « Installing the MetalLB Operator » 4.20. Nom exact de la CR <code>MetalLB</code> à créer après l'Operator et version FRR en BGP : à lire dans « Load balancing with MetalLB » de ta version (à vérifier)." }
+        { t: 'callout', kind: 'warn', html: "Namespace, canal et Subscription : doc « Installing the MetalLB Operator » 4.20. Après l'Operator, créer la CR <code>MetalLB</code> nommée <code>metallb</code> dans <code>metallb-system</code> ; version FRR en BGP : à lire dans « Load balancing with MetalLB » de ta version (à vérifier)." }
       ]
     },
     {
@@ -430,7 +430,7 @@ spec:
           '(bonus, E1) Pose un <code>EgressFirewall</code> <code>default</code> qui refuse <code>0.0.0.0/0</code> sauf un CIDR choisi et teste une sortie autorisée et une refusée. <b>Nettoyage</b> : <code>oc delete egressfirewall default -n &lt;projet&gt;</code>.',
           '(bonus, E1 avec plage IP libre du sous-réseau) Installe le MetalLB Operator, crée un <code>IPAddressPool</code> et une <code>L2Advertisement</code> sur une plage libre de ton réseau, puis un Service <code>LoadBalancer</code>. <b>Nettoyage</b> : <code>oc delete svc &lt;service&gt;</code>, puis l\'<code>IPAddressPool</code> et la <code>L2Advertisement</code>.',
           '(bonus, E1) Crée un <code>UserDefinedNetwork</code> primaire <code>Layer2</code> dans un nouveau namespace (avec le label requis) et compare les adresses IP des pods. <b>Nettoyage</b> : <code>oc delete userdefinednetwork udn-1 -n &lt;namespace&gt;</code>, puis le namespace.',
-          '(bonus, E2 de préférence) EgressIP (nœud labellisé, IP libre) ; sur SNO, à tenter avec prudence (à vérifier). <b>Nettoyage</b> : <code>oc delete egressip &lt;nom&gt;</code> et <code>oc label node &lt;nœud&gt; k8s.ovn.org/egress-assignable-</code>. NMState : seulement sur un cluster jetable (E1 ou plus), avec accès console aux nœuds ; retour arrière : politique avec <code>state: absent</code> pour l\'interface, puis suppression du NNCP (comportement à vérifier).'
+          '(bonus, E2 de préférence) EgressIP (nœud labellisé, IP libre) ; sur SNO, à tenter avec prudence (à vérifier). <b>Nettoyage</b> : <code>oc delete egressip &lt;nom&gt;</code> et <code>oc label node &lt;nœud&gt; k8s.ovn.org/egress-assignable-</code>. NMState : seulement sur un cluster jetable (E1 ou plus), avec accès console aux nœuds ; retour arrière : politique avec <code>state: absent</code> pour l\'interface, puis suppression du NNCP.'
         ] }
       ]
     }
