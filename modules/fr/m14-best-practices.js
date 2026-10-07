@@ -79,7 +79,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           '<b>Pods par nœud</b> : 250 par défaut (paramètre <code>maxPods</code> du kubelet). 2 500 est un maximum testé, qui exige un <code>hostPrefix</code> à 20 et un <code>maxPods</code> à 2500 : pas un objectif.',
           'Nombre de nœuds = pods attendus ÷ pods par nœud, puis <b>vérifie CPU, mémoire et disque</b> de l\'application.',
-          'Réservations système (<code>system-reserved</code>) : la doc cite <b>500m de CPU et 1 Gi de mémoire</b> par défaut, mais précise que les valeurs par défaut dépendent des versions d\'OpenShift et du MCO (à vérifier, voir module 12) ; l\'ajustement automatique (<code>autoSizingReserved: true</code> dans une <code>KubeletConfig</code>) est <b>désactivé par défaut en 4.20</b> (automatique dès la 4.21 d\'après les notes de version, module 12).'
+          'Réservations système (<code>system-reserved</code>) : la doc cite <b>500m de CPU et 1 Gi de mémoire</b> par défaut, mais précise que les valeurs par défaut dépendent des versions d\'OpenShift et du MCO (voir module 12) ; l\'ajustement automatique (<code>autoSizingReserved: true</code> dans une <code>KubeletConfig</code>) est <b>désactivé par défaut en 4.20</b> (automatique dès la 4.21 d\'après les notes de version, module 12).'
         ] },
         { t: 'callout', kind: 'trap', html: 'Les maximums sont testés <b>un par un</b> : viser plusieurs maximums à la fois n\'est pas garanti. Un cluster qui dépasse ces chiffres reste exploitable mais sort de ce que Red Hat a validé. Quotas et capacité au quotidien : modules 06 et 12.' }
       ]
@@ -141,7 +141,7 @@ COURSE.add({
           ['<code>PodDisruptionBudget</code>', 'Nombre minimal de pods disponibles lors d\'une éviction <b>volontaire</b> (drain, mise à jour)', '<code>minAvailable</code> à 100 % ou <code>maxUnavailable: 0</code> bloque le drain']
         ] },
         { t: 'code', lang: 'yaml', file: 'extrait de Deployment et PDB', code: '# Dans le template de pod\ntopologySpreadConstraints:\n- maxSkew: 1\n  topologyKey: topology.kubernetes.io/zone\n  whenUnsatisfiable: DoNotSchedule\n  labelSelector:\n    matchLabels:\n      app: web\n---\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: web\nspec:\n  maxUnavailable: 1\n  selector:\n    matchLabels:\n      app: web' },
-        { t: 'callout', kind: 'onprem', html: 'Un PDB n\'est honoré que pour les <b>évictions volontaires</b>, pas pour une panne de nœud. Les zones : en vSphere, les <code>failureDomains</code> se déclarent dans <code>install-config.yaml</code> (module 03) ; ailleurs, les nœuds doivent porter un label de zone pour que la répartition fonctionne (à vérifier selon ta plateforme). Les PDB qui bloquent une mise à jour : module 12.' }
+        { t: 'callout', kind: 'onprem', html: 'Un PDB n\'est honoré que pour les <b>évictions volontaires</b>, pas pour une panne de nœud. Les zones : en vSphere, les <code>failureDomains</code> se déclarent dans <code>install-config.yaml</code> (module 03) ; hors cloud, étiquette toi-même les nœuds (<code>topology.kubernetes.io/zone</code>) pour que la répartition fonctionne. Les PDB qui bloquent une mise à jour : module 12.' }
       ]
     },
     {
