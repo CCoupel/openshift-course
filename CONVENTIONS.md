@@ -174,14 +174,28 @@ Les deux versions d'un même module doivent être **structurellement identiques*
 **NE se traduit PAS** :
 - Noms de commandes, YAML (sauf commentaires), noms d'objets/CRD/opérateurs OpenShift
 - Format et valeurs de `duration` (ex. `'≈ 45 min + lab 15 min'`)
-- Lignes de code — structure, commandes, variables, placeholders de code
+- Lignes de code — structure, commandes, variables, identifiants
   - **Sauf commentaires** : un `#` précédé d'un espace en fin de ligne peut être traduit (ex. `echo hello  # ceci se traduit`)
-  - **Sauf chaînes visibles à l'écran** : placeholders de mot de passe, textes de `motd`, identifiants d'exemple, messages d'annotation doivent être **neutres ou anglais** **dans les deux langues** (ex. `mot-de-passe-a-definir` → `change-me` en fr et en) ; modifiés dans le **même commit fr + en** ; empreinte recalculée. Tant que ce n'est pas fait, parité impose de laisser la valeur française dans le module en.
+  - **Sauf texte visible des YAML** : dans un bloc `code` contenant du YAML, les **valeurs** des clés `message`, `summary`, `text`, `description`, `displayName` sont **traduites** (fr en français, en en anglais) ; la **clé reste identique**. Tout le reste (noms d'objets, identifiants, placeholders comme `change-me`, commandes) reste **neutre et anglais dans les deux langues**, modifié dans le **même commit fr + en** si neutralisé pour la première fois (ex. `mot-de-passe-a-definir` → `change-me` en fr et en). L'identifiant neutralisé l'est **dans tous les modules** qui le citent.
   - **Sauf commentaires `;`** (zones DNS) : supprimés UNIQUEMENT dans un bloc contenant une ligne d'enregistrement DNS (ligne avec `… IN A|AAAA|CNAME|MX|NS|PTR|SOA|SRV|TXT …`) ; ailleurs (INI, shell, etc.), `;` reste du code comparé.
 - **Champ `file` des blocs `code`** : comparé partiellement selon sa forme
   - Si le champ commence par un mot ressemblant à un nom de fichier (regex `^[\w./-]+\.[A-Za-z0-9]+$` ou contient `/`) : seul ce premier mot est comparé ; le reste (description, précision entre parenthèses) se traduit
   - Si le champ est un seul mot (`terminal`, `motd`) : comparé intégralement (c'est un identifiant)
   - Si le champ contient plusieurs mots sans ressembler à un nom de fichier (« zone DNS (exemple BIND) ») : non comparé (peut se traduire librement)
+
+**Liste blanche des clés YAML traduisibles** : `message`, `summary`, `text`, `description`, `displayName`. Pour une ligne `clé: valeur` dont la clé figure dans cette liste, la **clé reste identique** et la **valeur se traduit**. Toute autre clé garde la comparaison stricte (identifiants, noms d'objets, commandes). Exemples :
+
+```yaml
+# Bloc code fr
+message: "Alerte détectée"
+name: "mon-alerteur"
+
+# Bloc code en — parité validée par validate.js
+message: "Alert detected"
+name: "mon-alerteur"  # identique
+```
+
+Aucune clé n'est ajoutée à la liste blanche sans décision explicite de l'utilisateur.
 
 Exemple de parité cassée : ajouter une diapositive à l'une seulement, retirer une option d'un quiz, changer un label `kind` de callout → `validate.js` rejet.
 
