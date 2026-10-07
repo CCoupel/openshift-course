@@ -7,6 +7,19 @@ et ce projet adhère au [Versioning Sémantique](https://semver.org/spec/v2.0.0.
 
 ---
 
+## [0.9.1] - 2026-10-07
+
+### Modifié
+
+- **Déploiement du site sur les tags de production** — GitHub Pages n'est plus mis à jour par push main ; le site est désormais publié après la création de la Release GitHub, si elle réussit (sources : `.github/workflows/release.yml`, `.github/workflows/pages.yml`)
+- **Extraction des notes de release bornée et obligatoire** — Les notes de release sont extraites du CHANGELOG avec une borne exacte (`## [X.Y.Z]`) ; le workflow échoue explicitement si l'entrée est manquante (source : `.github/workflows/release.yml`)
+- **Checksum du PowerPoint en chemin relatif** — Le fichier `.sha256` du PPTX est généré avec le nom court uniquement (compatible `sha256sum -c`) (source : `.github/workflows/release.yml`)
+- **Marquage automatique des pré-releases** — Les versions `0.x` sont marquées `prerelease` à la création de la Release GitHub (source : `.github/workflows/release.yml`)
+- **Permissions par job dans le workflow de release** — Permissions décentralisées pour chaque job (release : contents write ; pages : pages write + id-token write) (source : `.github/workflows/release.yml`)
+- **Le contenu du cours est identique à la 0.9.0** — Aucun module, convention ou documentation n'a été modifié (vérification : seuls les fichiers sous `.github/workflows/` ont changé)
+
+---
+
 ## [0.9.0] - 2026-10-06
 
 ### Ajouté
@@ -29,7 +42,7 @@ et ce projet adhère au [Versioning Sémantique](https://semver.org/spec/v2.0.0.
 
 ## Limites connues
 
-- **Pré-version (0.9.0)** — Première release publique ; structure et cohérence vérifiées par des tests automatisés (schéma, syntaxe, renvois) ; le contenu technique n'est pas garanti. Pas de vérification visuelle en navigateur réel ni en PowerPoint.
+- **Pré-version (0.9.x)** — Structure et cohérence vérifiées par des tests automatisés (schéma, syntaxe, renvois) ; le contenu technique n'est pas garanti. Pas de vérification visuelle en navigateur réel ni en PowerPoint.
 - **Vérification des faits** — Les faits techniques ont été recoupés avec la documentation officielle Red Hat 4.20 à l'aide d'outils de lecture automatique (résumés) ; la confiance est variable ; les points non confirmés sont marqués « à vérifier » dans les modules.
 - **Sans affiliation** — Projet communautaire, sans affiliation avec Red Hat, sans support Red Hat. Relire la documentation officielle Red Hat avant toute procédure sensible (restauration etcd, mises à jour de version).
 
