@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm04', num: 4, emoji: '⚙️',
+  id: 'm04', lang: 'fr', num: 4, emoji: '⚙️',
   title: 'Configuration',
   tagline: 'Le cluster est installé : proxy, registres, certificats, chrony, Operators. La configuration « jour 1 », déclarative, sans toucher aux nœuds à la main.',
   duration: '≈ 60 min + lab 20 min',
@@ -327,10 +327,10 @@ spec:
       title: 'Catalogues miroités (déconnecté)',
       blocks: [
         { t: 'text', html: "<p>Le miroir des images et des index d'Operators se prépare à l'installation (<b>module 03</b>, <code>oc-mirror</code>). Côté <b>configuration</b>, il reste à désactiver les sources publiques et à déclarer ton <code>CatalogSource</code>.</p>" },
-        { t: 'code', lang: 'yaml', file: 'catalogsource-miroir.yaml', code: `apiVersion: operators.coreos.com/v1alpha1
+        { t: 'code', lang: 'yaml', file: 'catalogsource-mirror.yaml', code: `apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: redhat-operators-miroir
+  name: redhat-operators-mirror
   namespace: openshift-marketplace
 spec:
   sourceType: grpc
@@ -359,22 +359,22 @@ spec:
         { t: 'code', lang: 'yaml', file: 'clusterextension.yaml', code: `apiVersion: olm.operatorframework.io/v1
 kind: ClusterExtension
 metadata:
-  name: exemple
+  name: example
 spec:
-  namespace: exemple-ns
+  namespace: example-ns
   serviceAccount:
-    name: exemple-installer
+    name: example-installer
   source:
     sourceType: Catalog
     catalog:
-      packageName: exemple-operator` },
+      packageName: example-operator` },
         { t: 'callout', kind: 'warn', wide: true, html: "Les champs ci-dessus (<code>serviceAccount</code> obligatoire, <code>source.catalog.packageName</code>, <code>channels</code>, <code>version</code>) correspondent à la doc 4.20 ; le nom du paquet est un exemple. Pour la production, reste sur OLM v0 tant que le périmètre de ton Operator n'est pas confirmé." }
       ]
     },
     {
       title: 'Console : plugins et personnalisation',
       blocks: [
-        { t: 'code', lang: 'bash', file: 'terminal', code: "# Plugins de la console (fournis par certains Operators)\n# Attention : cette commande REMPLACE la liste existante ; pour ajouter à une liste\n# déjà présente, utilise path /spec/plugins/- avec value \"nom-du-plugin\"\n$ oc get consoleplugin\n$ oc patch console.operator.openshift.io cluster --type=json \\\n    -p '[{\"op\":\"add\",\"path\":\"/spec/plugins\",\"value\":[\"nom-du-plugin\"]}]'\n\n# Bandeau d'information visible de tous\n$ cat <<'EOF' | oc apply -f -\napiVersion: console.openshift.io/v1\nkind: ConsoleNotification\nmetadata:\n  name: maintenance\nspec:\n  text: Maintenance prévue samedi 22h\n  location: BannerTop\nEOF" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "# Plugins de la console (fournis par certains Operators)\n# Attention : cette commande REMPLACE la liste existante ; pour ajouter à une liste\n# déjà présente, utilise path /spec/plugins/- avec value \"plugin-name\"\n$ oc get consoleplugin\n$ oc patch console.operator.openshift.io cluster --type=json \\\n    -p '[{\"op\":\"add\",\"path\":\"/spec/plugins\",\"value\":[\"plugin-name\"]}]'\n\n# Bandeau d'information visible de tous\n$ cat <<'EOF' | oc apply -f -\napiVersion: console.openshift.io/v1\nkind: ConsoleNotification\nmetadata:\n  name: maintenance\nspec:\n  text: Maintenance prévue samedi 22h\n  location: BannerTop\nEOF" },
         { t: 'bullets', items: [
           'Les <b>plugins</b> (ex. GitOps, virtualisation) apparaissent après installation de l\'Operator <b>et</b> activation dans la CR <code>Console</code>.',
           '<code>ConsoleLink</code>, <code>ConsoleNotification</code>, <code>ConsoleCLIDownload</code> : liens, bandeaux et téléchargements de CLI personnalisés.',

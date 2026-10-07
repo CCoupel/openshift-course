@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm10', num: 10, emoji: '🔄',
+  id: 'm10', lang: 'fr', num: 10, emoji: '🔄',
   title: 'CI/CD & GitOps',
   tagline: 'La configuration de ton cluster dans Git, appliquée et surveillée par Argo CD : GitOps de plateforme d\'abord, Pipelines et Builds en survol.',
   duration: '≈ 45 min + lab 20 min',
@@ -117,11 +117,11 @@ spec:
       title: 'Une instance Argo CD d\'équipe : la CR ArgoCD',
       layout: 'two',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'argocd-equipe.yaml (exemple)', code: `apiVersion: argoproj.io/v1beta1
+        { t: 'code', lang: 'yaml', file: 'argocd-team.yaml (exemple)', code: `apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
 metadata:
-  name: equipe-a
-  namespace: equipe-a-gitops
+  name: team-a
+  namespace: team-a-gitops
 spec:
   server:
     route:
@@ -131,14 +131,14 @@ spec:
     dex:
       openShiftOAuth: true
   rbac:
-    policy: 'g, equipe-a-admins, role:admin'
+    policy: 'g, team-a-admins, role:admin'
     scopes: '[groups]'` },
         { t: 'bullets', items: [
           '<code>spec.server.route.enabled</code> : crée une <b>Route OpenShift</b> vers l\'interface (module 07).',
           '<code>spec.sso.provider: dex</code> avec <code>dex.openShiftOAuth: true</code> : Dex s\'appuie sur le <b>serveur OAuth d\'OpenShift</b> ; la page de connexion propose alors <b>« LOG IN VIA OPENSHIFT »</b> avec les comptes et <b>groupes</b> de ton fournisseur d\'identité (module 06). L\'ancien champ <code>spec.dex</code> n\'est plus supporté depuis la 1.10.',
           'Les droits <b>dans Argo CD</b> (<code>rbac</code>) sont indépendants du RBAC d\'OpenShift : décris-les par <b>groupes</b>.'
         ] },
-        { t: 'callout', kind: 'warn', wide: true, html: "Structure <code>sso</code> et <code>rbac</code> conforme à l'exemple de la doc OpenShift GitOps 1.20 « Access control and user management » (le groupe <code>equipe-a-admins</code> est un exemple : prends un groupe de ton cluster). Keycloak n'est plus supporté (module 06 pour l'identité). Une instance par équipe isole les droits et les erreurs." }
+        { t: 'callout', kind: 'warn', wide: true, html: "Structure <code>sso</code> et <code>rbac</code> conforme à l'exemple de la doc OpenShift GitOps 1.20 « Access control and user management » (le groupe <code>team-a-admins</code> est un exemple : prends un groupe de ton cluster). Keycloak n'est plus supporté (module 06 pour l'identité). Une instance par équipe isole les droits et les erreurs." }
       ]
     },
     {
@@ -152,7 +152,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://git.example.com/plateforme/cluster-config.git
+    repoURL: https://git.example.com/platform/cluster-config.git
     targetRevision: HEAD
     path: lab
   destination:
@@ -164,18 +164,18 @@ spec:
       selfHeal: true
     syncOptions:
     - ApplyOutOfSyncOnly=true` },
-        { t: 'code', lang: 'yaml', file: 'depot-prive.yaml (dépôt privé, HTTPS)', code: `apiVersion: v1
+        { t: 'code', lang: 'yaml', file: 'private-repo.yaml (dépôt privé, HTTPS)', code: `apiVersion: v1
 kind: Secret
 metadata:
-  name: depot-cluster-config
+  name: repo-cluster-config
   namespace: openshift-gitops
   labels:
     argocd.argoproj.io/secret-type: repository
 stringData:
   type: git
-  url: https://git.example.com/plateforme/cluster-config.git
+  url: https://git.example.com/platform/cluster-config.git
   username: argocd
-  password: JETON_A_NE_PAS_METTRE_EN_CLAIR_DANS_GIT` },
+  password: change-me` },
         { t: 'bullets', items: [
           '<b>Dépôt privé</b> : les identifiants se déclarent dans un <b>Secret</b> portant le label <code>argocd.argoproj.io/secret-type: repository</code>, avec <code>type: git</code>, <code>url</code> et <code>username</code>/<code>password</code> (HTTPS) ou <code>sshPrivateKey</code> (SSH), dans le <b>namespace de l\'instance</b> (doc Argo CD) ; ce Secret ne se met <b>pas</b> en clair dans Git (slide secrets).',
           '<code>destination.server: https://kubernetes.default.svc</code> : le <b>cluster où tourne Argo CD</b>.',
@@ -241,7 +241,7 @@ metadata:
         { t: 'code', lang: 'yaml', file: 'applicationset.yaml (illustration)', code: `apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: config-par-cluster
+  name: config-per-cluster
   namespace: openshift-gitops
 spec:
   generators:
@@ -252,7 +252,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://git.example.com/plateforme/cluster-config.git
+        repoURL: https://git.example.com/platform/cluster-config.git
         targetRevision: HEAD
         path: 'overlays/{{name}}'
       destination:
@@ -356,7 +356,7 @@ spec:
         { t: 'code', lang: 'yaml', file: 'lab/configmap.yaml', code: `apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: banniere
+  name: banner
   namespace: gitops-lab
 data:
   message: "Géré par GitOps : ne pas modifier à la main"` },
@@ -372,7 +372,7 @@ data:
           'Installe <b>OpenShift GitOps</b> (OperatorHub, canal <code>latest</code>, namespace <code>openshift-gitops-operator</code>) puis vérifie les pods de <code>openshift-gitops</code> et la connexion à Argo CD via « LOG IN VIA OPENSHIFT ».',
           'Crée le namespace géré : <code>oc create namespace gitops-lab</code> puis <code>oc label namespace gitops-lab argocd.argoproj.io/managed-by=openshift-gitops</code> ; pousse dans <code>lab/</code> les deux manifestes de la slide précédente.',
           'Crée l\'<code>Application</code> (slide dédiée, avec l\'URL de ton dépôt, sans <code>CreateNamespace</code> puisque le namespace existe) et vérifie qu\'elle passe <b>Synced</b> et <b>Healthy</b> et que le quota et le ConfigMap existent.',
-          'Provoque une dérive : <code>oc delete configmap banniere -n gitops-lab</code> puis modifie le quota à la main ; observe la <b>correction par selfHeal</b>. Coupe ensuite <code>selfHeal</code> et constate l\'état <b>OutOfSync</b>. <b>Retour arrière</b> : supprime l\'Application (<code>oc delete application cluster-config-lab -n openshift-gitops</code>) puis le namespace du lab.',
+          'Provoque une dérive : <code>oc delete configmap banner -n gitops-lab</code> puis modifie le quota à la main ; observe la <b>correction par selfHeal</b>. Coupe ensuite <code>selfHeal</code> et constate l\'état <b>OutOfSync</b>. <b>Retour arrière</b> : supprime l\'Application (<code>oc delete application cluster-config-lab -n openshift-gitops</code>) puis le namespace du lab.',
           '(bonus, E1) Transforme le dossier en <b>app-of-apps</b> : une Application racine qui déploie deux Applications filles ; ajoute une sync wave entre elles.',
           '(bonus, E1 jetable) Donne à l\'instance un <code>ClusterRole</code>/<code>ClusterRoleBinding</code> minimal pour gérer une ressource de cluster (par exemple un <code>ResourceQuota</code> via template de projet, module 06) et vérifie ses droits avec <code>oc auth can-i create resourcequotas --as system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n gitops-lab</code>.',
           '(bonus, E2) <code>ApplicationSet</code> avec le générateur de clusters sur deux clusters enregistrés.'

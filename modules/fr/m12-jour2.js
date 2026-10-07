@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm12', num: 12, emoji: '🔧',
+  id: 'm12', lang: 'fr', num: 12, emoji: '🔧',
   title: 'Opérations jour 2',
   tagline: 'Mettre à jour sans mauvaise surprise, étendre le cluster, diagnostiquer et tenir la capacité : ce qui occupe un admin OCP au quotidien.',
   duration: '≈ 60 min + lab 20 min',
@@ -82,7 +82,7 @@ COURSE.add({
       blocks: [
         { t: 'bullets', frag: true, items: [
           'Avant certaines montées de version mineure, OCP exige un <b>acquittement manuel</b> : le cluster passe <code>Upgradeable=False</code> avec la raison <code>AdminAckRequired</code>.',
-          'Objectif : t\'obliger à vérifier que <b>des APIs Kubernetes retirées</b> ne sont plus utilisées par tes charges et tes outils.',
+          'Objectif : t\'obliger à contrôler que <b>des APIs Kubernetes retirées</b> ne sont plus utilisées par tes charges et tes outils.',
           'L\'acquittement se fait dans la ConfigMap <code>admin-acks</code> du namespace <code>openshift-config</code>.',
           '<b>Exemple de la doc 4.20</b> (montée 4.19 → 4.20) : clé <code>ack-4.19-admissionregistration-v1beta1-api-removals-in-4.20</code> ; la clé change à chaque version.'
         ] },
@@ -170,7 +170,7 @@ COURSE.add({
           ['<b>UPI</b>', 'Image RHCOS + Ignition worker, puis approbation des CSR', 'Comme à l\'installation (module 03)'],
           ['<b>Worker RHEL</b>', 'Non : nœuds de calcul RHEL retirés depuis la 4.19', 'RHCOS uniquement (module 01)']
         ] },
-        { t: 'code', lang: 'bash', file: 'terminal', code: "# Après démarrage du nouveau nœud\n$ oc get csr | grep Pending\n$ oc adm certificate approve NOM_DU_CSR\n$ oc get nodes" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "# Après démarrage du nouveau nœud\n$ oc get csr | grep Pending\n$ oc adm certificate approve CSR_NAME\n$ oc get nodes" },
         { t: 'callout', kind: 'tip', html: "Ne scale jamais un MachineSet sans avoir vérifié <b>capacité réseau</b> (DHCP, IPAM), <b>DNS</b> et stockage du template : c'est la cause n°1 de Machines bloquées en <code>Provisioning</code>." }
       ]
     },
@@ -184,7 +184,7 @@ COURSE.add({
           'Le CA des kubelets se renouvelle automatiquement (292 jours) ; un renouvellement manuel anticipé est possible par annotation du secret <code>kube-apiserver-to-kubelet-signer</code>.',
           'Après un <b>long arrêt</b> du cluster, des certificats peuvent avoir expiré : la doc a une procédure de reprise (« scenario 3 : expired certs ») qui passe par l\'approbation de CSR.'
         ] },
-        { t: 'code', lang: 'bash', file: 'terminal', code: "# 1. Lister TOUS les CSR avec demandeur et signataire (ceux sans état dans la dernière colonne sont en attente)\n$ oc get csr -o custom-columns=NOM:.metadata.name,DEMANDEUR:.spec.username,SIGNATAIRE:.spec.signerName,ETAT:.status.conditions[*].type\n\n# 2. Approuver une demande dont tu as vérifié le demandeur\n$ oc adm certificate approve NOM_DU_CSR\n\n# 3. En lot, UNIQUEMENT les demandes encore en attente (sans statut), après contrôle de la liste\n$ oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{\"\\n\"}}{{end}}{{end}}' | xargs -r oc adm certificate approve" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "# 1. Lister TOUS les CSR avec demandeur et signataire (ceux sans état dans la dernière colonne sont en attente)\n$ oc get csr -o custom-columns=NAME:.metadata.name,REQUESTOR:.spec.username,SIGNER:.spec.signerName,STATE:.status.conditions[*].type\n\n# 2. Approuver une demande dont tu as vérifié le demandeur\n$ oc adm certificate approve CSR_NAME\n\n# 3. En lot, UNIQUEMENT les demandes encore en attente (sans statut), après contrôle de la liste\n$ oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{\"\\n\"}}{{end}}{{end}}' | xargs -r oc adm certificate approve" },
         { t: 'callout', kind: 'trap', wide: true, html: "N'approuve que les CSR <b>en <code>Pending</code></b> et dont tu as <b>vérifié le demandeur</b> (nom du nœud attendu, signataire) : un CSR approuvé à l'aveugle peut donner à un intrus un certificat de nœud, donc un faux nœud dans ton cluster. Remplacement des certificats API et Ingress : module 04." }
       ]
     },

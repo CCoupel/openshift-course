@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 /* Contrôle l'export PPTX : nb de slides exportées = couverture + slides + « À retenir » par module (+ pages de suite).
- * Usage : node tools/check-pptx.js [fichier.pptx]   (génère l'export s'il est absent)
- *         node tools/check-pptx.js --selftest        (modules vides / module 00 / non évaluable, dans un dossier temporaire)
+ * Usage : node tools/check-pptx.js [--lang fr|en] [fichier.pptx]   (sans --lang : contrôle fr ET en ; génère l'export s'il est absent)
+ *         node tools/check-pptx.js --selftest        (modules vides / module 00 / non évaluable / module en absent, dans un dossier temporaire)
+ *         --strict-i18n : un module en absent (repli sur le fr) devient une erreur.
  * Sortie : code 0 si OK. Dépendance de dev : pptxgenjs (jszip en transitif). */
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const JSZip = require('jszip');
-const { loadModules, buildDeck, plain, readVersion } = require('./export-pptx.js');
+const { LANGS, loadModules, loadLang, loadLabels, outName, buildDeck, plain, readVersion } = require('./export-pptx.js');
 
 const ROOT = path.join(__dirname, '..');
 let errors = 0;
@@ -45,21 +46,35 @@ function tokens(mod) {
   return [...out];
 }
 
-async function check(file, modulesDir) {
+/* opts : { lang, strict, dir } — dir : dossier de modules à plat (auto-test) ; sinon modules/<lang>/ avec repli fr. */
+async function check(file, opts = {}) {
+  const lang = opts.lang || 'fr';
+  const modulesDir = opts.dir;
+  const LB = loadLabels(lang).labels;
   const manifestFile = file.replace(/\.pptx$/, '.manifest.json');
   if (!fs.existsSync(manifestFile)) return ko(`manifeste absent : ${manifestFile}`);
   const mf = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
-  const { modules } = loadModules(modulesDir);
+  if (mf.lang && mf.lang !== lang) ko(`manifeste en '${mf.lang}', langue contrôlée '${lang}'`);
+  const loaded = modulesDir ? { ...loadModules(modulesDir), fallbacks: [], dir: modulesDir } : loadLang(lang, opts.root);
+  const { modules } = loaded;
   const { slides: texts, notes } = await slideTexts(file);
   const notesAll = squash(notes.join(''));
 
   // Contrôle indépendant du chargeur : chaque fichier modules/m*.js doit être exporté, ou déclaré « à venir » ET ne contenir aucune slide.
   if (mf.failed && mf.failed.length) mf.failed.forEach(f => ko(`${f.file} : module cassé (${f.reason})`));
-  const dir = modulesDir || path.join(ROOT, 'modules');
+  const dir = loaded.dir;
+  const fbManifest = new Set(mf.fallbacks || []);
+  const fbExpected = new Set(loaded.fallbacks || []);
+  for (const f of fbExpected) {
+    if (!fbManifest.has(f)) ko(`[${lang}] ${f} : absent de modules/${lang}/ mais non déclaré en repli dans le manifeste`);
+    else if (opts.strict) ko(`[${lang}] ${f} : module non traduit (repli sur le français, --strict-i18n)`);
+  }
+  if (fbExpected.size) ok(`[${lang}] ${fbExpected.size} module(s) en repli sur le français (non traduits)`);
+  for (const f of fbManifest) if (!fbExpected.has(f)) ko(`[${lang}] ${f} : déclaré en repli dans le manifeste mais présent dans modules/${lang}/`);
   const inManifest = new Set(mf.modules.map(m => m.file));
   const skippedSet = new Set((mf.skipped || []).map(s => s.file));
   const failedSet = new Set((mf.failed || []).map(s => s.file));
-  for (const f of fs.readdirSync(dir).filter(f => /^m\d+.*\.js$/.test(f))) {
+  for (const f of (dir ? fs.readdirSync(dir) : []).filter(f => /^m\d+.*\.js$/.test(f))) {
     if (inManifest.has(f)) continue;
     if (failedSet.has(f)) continue;
     if (!skippedSet.has(f)) { ko(`${f} : fichier de module absent du manifeste d'export`); continue; }
@@ -81,13 +96,13 @@ async function check(file, modulesDir) {
     if (m.exported < logical) ko(`${m.id} : ${m.exported} slide(s) PPTX < ${logical} logiques`);
     // chaque titre attendu apparaît, dans l'ordre, dans les slides du module
     const slice = texts.slice(cursor, cursor + m.exported);
-    const wanted = [`MODULE ${String(src.num).padStart(2, '0')}`, ...src.slides.map(s => plain(s.title || '')), ...(m.logical.recap ? ['À retenir'] : [])];
+    const wanted = [`${LB['cover.module'].toUpperCase()} ${String(src.num).padStart(2, '0')}`, ...src.slides.map(s => plain(s.title || '')), ...(m.logical.recap ? [LB['recap.title']] : [])];
     let at = 0, missing = [];
     for (const t of wanted) {
       const i = slice.findIndex((x, k) => k >= at && x.includes(t));
       if (i < 0) missing.push(t); else at = i;
     }
-    if (missing.length) ko(`${m.id} : titre(s) absent(s) ou hors ordre : ${missing.slice(0, 3).join(' | ')}`);
+    if (missing.length) ko(`[${lang}] ${m.id} : titre(s) absent(s) ou hors ordre : ${missing.slice(0, 3).join(' | ')}`);
     else ok(`${m.id} : ${m.exported} slide(s) PPTX, ${logical} logiques${m.exported > logical ? ` (+${m.exported - logical} page(s) de suite)` : ''}`);
     // aucune perte de <...> (ex. oc debug node/<n>) : chaque jeton du source doit se retrouver dans les slides ou les notes
     const hay = squash(slice.join('')) + notesAll;
@@ -103,7 +118,23 @@ async function check(file, modulesDir) {
     if (bad.length) ko(`${m.id} : ${bad.length} commande(s)/ligne(s) de code absente(s) du PPTX : ${bad.slice(0, 3).join(' | ')}`);
     cursor += m.exported;
   }
+
+  // Non-régression des emojis de l'export (🎯 N quiz au récap, 📐 schéma) : valeurs lues dans assets/i18n.js de la langue
+  const esc = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const hasBlock = t => modules.some(m => m.slides.some(s => (s.blocks || []).some(b => b.t === t)));
+  const hasQuizModule = modules.some(m => m.takeaways && m.takeaways.length && hasQuizIn(m));
+  const all = texts.join('\n');
+  if (hasQuizModule) {
+    const re = new RegExp(esc(LB['export.recapQuiz']).replace('\\{n\\}', '\\d+'));
+    if (!re.test(all)) ko(`[${lang}] aucune slide ne contient « ${LB['export.recapQuiz']} » (🎯 N quiz) : emoji/libellé perdu`);
+    else ok(`[${lang}] « 🎯 N quiz » présent`);
+  }
+  if (hasBlock('diagram')) {
+    if (!all.includes(LB['export.diagramPlaceholder'])) ko(`[${lang}] aucune slide ne contient « ${LB['export.diagramPlaceholder']} » (📐) : emoji/libellé perdu`);
+    else ok(`[${lang}] « 📐 » présent`);
+  }
 }
+const hasQuizIn = m => m.slides.some(s => (s.blocks || []).some(b => b.t === 'quiz'));
 
 /* Auto-test : module 00, module vide, module à venir, fichier non évaluable. */
 async function selftest() {
@@ -121,7 +152,7 @@ async function selftest() {
 async function selftestIn(dir) {
   const mk = (n, extra) => `COURSE.add(${JSON.stringify({ id: 'm' + n, num: +n, emoji: '🧪', title: 'Module ' + n, tagline: 'x', duration: '≈ 60 min + lab 20 min',
     objectives: ['a', 'b', 'c'], takeaways: ['1', '2', '3', '4'], ...extra })});`;
-  const slides = [{ title: 'S1', blocks: [{ t: 'text', html: 'Bonjour <b>monde</b>' }, { t: 'quiz', q: 'Q ?', options: ['a', 'b'], answer: 1, explain: 'e' }] }];
+  const slides = [{ title: 'S1', blocks: [{ t: 'text', html: 'Bonjour <b>monde</b>' }, { t: 'quiz', q: 'Q ?', options: ['a', 'b'], answer: 1, explain: 'e' }, { t: 'diagram', html: '<svg><text>x</text></svg>' }] }];
   fs.writeFileSync(path.join(dir, 'm00-env.js'), mk('00', { slides }));
   fs.writeFileSync(path.join(dir, 'm03-vide.js'), mk('03', { slides: [] }));
   fs.writeFileSync(path.join(dir, 'm04-avenir.js'), "COURSE.add({ id: 'm04', num: 4, title: 'À venir' });");
@@ -148,7 +179,7 @@ async function selftestIn(dir) {
   if (!manifest.warnings.some(w => w.includes('futur'))) ko('selftest : bloc inconnu non signalé');
   // 1) cas nominal avec un module cassé : l'erreur DOIT être détectée (on la retire du compteur)
   const before = errors;
-  await check(out, dir);
+  await check(out, { dir });
   const detected = errors - before;
   errors = before;
   if (!detected) ko('selftest : un module cassé n\'a pas fait échouer le contrôle');
@@ -157,7 +188,7 @@ async function selftestIn(dir) {
   fs.rmSync(broken);
   failed.length = 0;
   await build(modules);
-  await check(out, dir);
+  await check(out, { dir });
   // 3) une perte de <...> est détectée
   const mfFile = out.replace(/\.pptx$/, '.manifest.json');
   const lossy = modules.map(m => m.num === 8 ? { ...m, slides: m.slides.map(s => ({ ...s, blocks: s.blocks.map(b => b.t === 'cmds' ? { ...b, items: b.items.map(([c, d]) => [c.replace('<n>', '<n>'), d]) } : b) })) } : m);
@@ -167,21 +198,79 @@ async function selftestIn(dir) {
   const srcFile = path.join(dir, 'm08-cmds.js');
   fs.writeFileSync(srcFile, fs.readFileSync(srcFile, 'utf8').replace('oc debug node/<n>', 'oc debug node/<n> --to <x>'));
   const b2 = errors;
-  await check(out, dir);   // la source a changé après l'export : <x> n'existe pas dans le PPTX → perte détectée
+  await check(out, { dir });   // la source a changé après l'export : <x> n'existe pas dans le PPTX → perte détectée
   const lostDetected = errors - b2;
   errors = b2;
   if (!lostDetected) ko('selftest : une perte de <...> n\'a pas été détectée');
   else ok('selftest : perte de <...> détectée');
+  await selftestLang(dir, mk, slides);
+  // 5) emojis : un .pptx sans « 🎯 N quiz » / « 📐 » doit échouer, avec libellés fr et en
+  for (const lg of LANGS) {
+    const lb = loadLabels(lg).labels;
+    const one = path.join(dir, 'emoji'); fs.mkdirSync(one, { recursive: true }); fs.copyFileSync(path.join(dir, 'm00-env.js'), path.join(one, 'm00-env.js'));
+    const mods = loadModules(one).modules;
+    const bare = { ...lb, 'export.recapQuiz': 'x', 'export.diagramPlaceholder': 'y' }; // libellés sans emoji dans le fichier
+    const deck = buildDeck(mods, { version: 'test', lang: lg, labels: bare });
+    const o = path.join(dir, `selftest-emoji-${lg}.pptx`);
+    await deck.pptx.writeFile({ fileName: o });
+    fs.writeFileSync(o.replace(/\.pptx$/, '.manifest.json'), JSON.stringify({ ...deck.manifest, skipped: [], failed: [], fallbacks: [] }));
+    const b = errors; await check(o, { lang: lg, dir: one }); const d = errors - b; errors = b;
+    if (d < 2) ko(`selftest emojis [${lg}] : perte de « 🎯 N quiz » / « 📐 » non détectée (${d} erreur(s), 2 attendues)`);
+    else ok(`selftest : perte des emojis détectée [${lg}]`);
+    const deck2 = buildDeck(mods, { version: 'test', lang: lg, labels: lb });
+    await deck2.pptx.writeFile({ fileName: o });
+    fs.writeFileSync(o.replace(/\.pptx$/, '.manifest.json'), JSON.stringify({ ...deck2.manifest, skipped: [], failed: [], fallbacks: [] }));
+    const b2 = errors; await check(o, { lang: lg, dir: one }); const d2 = errors - b2; errors = b2;
+    if (d2) ko(`selftest emojis [${lg}] : un export correct est refusé`); else ok(`selftest : emojis présents acceptés [${lg}]`);
+  }
+}
+
+/* 4) langues : module en absent → repli fr déclaré (ok), non déclaré (erreur), strict (erreur) ; libellés en dans le .pptx en. */
+async function selftestLang(dir, mk, slides) {
+  const root = path.join(dir, 'root');
+  fs.mkdirSync(path.join(root, 'fr'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'en'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'fr', 'm00-env.js'), mk('00', { lang: 'fr', slides }));
+  fs.writeFileSync(path.join(root, 'fr', 'm01-k8s.js'), mk('01', { lang: 'fr', slides }));
+  fs.writeFileSync(path.join(root, 'en', 'm00-env.js'), mk('00', { lang: 'en', slides, takeaways: ['k1', 'k2', 'k3', 'k4'] }));
+  const res = loadLang('en', root);
+  if (res.fallbacks.join() !== 'm01-k8s.js' || res.modules.length !== 2) return ko(`selftest langue : repli ${res.fallbacks} / ${res.modules.length} module(s) (attendu m01-k8s.js / 2)`);
+  const lb = loadLabels('en');
+  const deck = buildDeck(res.modules, { version: 'test', lang: 'en', labels: lb.labels });
+  const out = path.join(dir, 'selftest-en.pptx');
+  await deck.pptx.writeFile({ fileName: out });
+  const mfFile = out.replace(/\.pptx$/, '.manifest.json');
+  const save = fb => fs.writeFileSync(mfFile, JSON.stringify({ ...deck.manifest, skipped: [], failed: [], fallbacks: fb }));
+  const run = async o => { const b = errors; await check(out, { lang: 'en', root, ...o }); const d = errors - b; errors = b; return d; };
+  save(res.fallbacks);
+  if (await run({})) ko('selftest langue : un repli déclaré doit passer sans --strict-i18n');
+  else ok('selftest : repli en→fr déclaré accepté');
+  if (!(await run({ strict: true }))) ko('selftest langue : --strict-i18n doit refuser un module en absent');
+  else ok('selftest : module en absent refusé en strict');
+  save([]);
+  if (!(await run({}))) ko('selftest langue : un repli non déclaré dans le manifeste doit être détecté');
+  else ok('selftest : repli non déclaré détecté');
+  const texts = (await slideTexts(out)).slides.join('\n');
+  if (!texts.includes('Key takeaways') || !texts.includes('MODULE 00')) ko('selftest langue : libellés en absents du .pptx en');
+  else ok('selftest : libellés en dans le .pptx en');
 }
 
 (async () => {
-  const arg = process.argv[2];
-  if (arg === '--selftest') await selftest();
+  const flag = n => { const i = process.argv.indexOf(n); return i > -1 ? process.argv[i + 1] : undefined; };
+  const file = process.argv.slice(2).find((a, i, v) => !a.startsWith('--') && v[i - 1] !== '--lang');
+  if (process.argv.includes('--selftest')) await selftest();
   else {
     const version = readVersion();
-    const file = path.resolve(arg || path.join(ROOT, `dist/openshift-course-${version}.pptx`));
-    if (!fs.existsSync(file)) execFileSync(process.execPath, [path.join(__dirname, 'export-pptx.js'), '--out', file], { stdio: 'inherit' });
-    await check(file);
+    const lang = flag('--lang');
+    if (lang && !LANGS.includes(lang)) { console.error(`ERREUR  --lang ${lang} : valeurs admises ${LANGS.join('|')}`); process.exit(1); }
+    const strict = process.argv.includes('--strict-i18n');
+    if (file && !lang) { console.error('ERREUR  un fichier explicite exige --lang.'); process.exit(1); }
+    for (const l of lang ? [lang] : LANGS) {
+      const f = path.resolve(file || path.join(ROOT, 'dist', outName(l, version)));
+      if (!fs.existsSync(f)) execFileSync(process.execPath, [path.join(__dirname, 'export-pptx.js'), '--lang', l, '--out', f, ...(strict ? ['--strict-i18n'] : [])], { stdio: 'inherit' });
+      console.log(`\n== ${l} : ${path.relative(ROOT, f)}`);
+      await check(f, { lang: l, strict });
+    }
   }
   console.log(`\n${errors} erreur(s).`);
   process.exit(errors ? 1 : 0);

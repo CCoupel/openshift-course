@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm09', num: 9, emoji: '🛡️',
+  id: 'm09', lang: 'fr', num: 9, emoji: '🛡️',
   title: 'Sécurité avancée',
   tagline: 'Au-delà du RBAC : ce qu\'un pod a le droit de faire (SCC, PSA), ce qu\'on lui donne à exécuter (images, secrets) et comment prouver que le cluster est conforme.',
   duration: '≈ 60 min + lab 20 min',
@@ -128,7 +128,7 @@ spec:
     command: ["sleep", "3600"]
     securityContext:
       runAsUser: 0           # demande root : refusé par restricted-v2` },
-        { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc apply -f root-pod.yaml\n# Erreur du type : unable to validate against any security context constraint\n\n$ oc get events --sort-by=.lastTimestamp | tail\n\n# Quelles SCC admettraient ce pod pour moi, ou pour un ServiceAccount ?\n$ oc adm policy scc-subject-review -f root-pod.yaml\n$ oc adm policy scc-subject-review -z mon-sa -n team-a -f root-pod.yaml" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc apply -f root-pod.yaml\n# Erreur du type : unable to validate against any security context constraint\n\n$ oc get events --sort-by=.lastTimestamp | tail\n\n# Quelles SCC admettraient ce pod pour moi, ou pour un ServiceAccount ?\n$ oc adm policy scc-subject-review -f root-pod.yaml\n$ oc adm policy scc-subject-review -z my-sa -n team-a -f root-pod.yaml" },
         { t: 'bullets', wide: true, items: [
           '<code>scc-subject-review</code> renvoie la <b>liste des SCC qui admettraient</b> la ressource, pour un utilisateur (<code>-u</code>), des groupes (<code>-g</code>) ou un ServiceAccount du namespace courant (<code>-z</code>) ; ressource lue avec <code>-f</code>, sortie avec <code>-o</code>.',
           'Pour un Deployment, le pod est créé par un contrôleur : c\'est le <b>ServiceAccount du pod</b> qui compte, pas toi (module 06).'
@@ -180,11 +180,11 @@ groups: []` },
       layout: 'two',
       blocks: [
         { t: 'cmds', wide: true, items: [
-          ['oc create sa mon-sa -n team-a', 'ServiceAccount utilisé par la charge'],
+          ['oc create sa my-sa -n team-a', 'ServiceAccount utilisé par la charge'],
           ['oc create clusterrole use-nonroot-bind80 --verb=use --resource=scc --resource-name=nonroot-bind80', 'Rôle qui n\'autorise <b>que</b> cette SCC (verbe <code>use</code>)'],
-          ['oc create rolebinding mon-sa-scc --clusterrole=use-nonroot-bind80 --serviceaccount=team-a:mon-sa -n team-a', 'Lien limité au namespace'],
+          ['oc create rolebinding my-sa-scc --clusterrole=use-nonroot-bind80 --serviceaccount=team-a:my-sa -n team-a', 'Lien limité au namespace'],
           ['oc adm policy who-can use scc nonroot-bind80', 'Audit : qui peut utiliser cette SCC ?'],
-          ['oc adm policy add-scc-to-user nonroot-bind80 -z mon-sa -n team-a', 'Raccourci historique équivalent']
+          ['oc adm policy add-scc-to-user nonroot-bind80 -z my-sa -n team-a', 'Raccourci historique équivalent']
         ] },
         { t: 'callout', kind: 'trap', html: "Le réflexe « <code>add-scc-to-user anyuid</code> » règle le symptôme et ouvre une faille : l'image n'est <b>pas réparée</b> et plus rien ne limite ses privilèges. Ordre de préférence : <b>réparer l'image</b>, puis <code>nonroot-v2</code> ou une SCC dédiée, puis (en dernier recours, tracé) <code>anyuid</code>." },
         { t: 'callout', kind: 'tip', html: "Côté autorisation (verbe <code>use</code>, ServiceAccount vs utilisateur, rôles) : module 06. Ici : le contenu de la SCC et son choix." }

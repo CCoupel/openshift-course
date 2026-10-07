@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm02', num: 2, emoji: '🏗️',
+  id: 'm02', lang: 'fr', num: 2, emoji: '🏗️',
   title: 'Architecture',
   tagline: 'Sous le capot : nœuds, OS immuable, etcd, opérateurs et Machine API. Qui fait quoi, et qui parle à qui.',
   duration: '≈ 60 min + lab 20 min',
@@ -274,7 +274,7 @@ spec:
       title: 'Appliquer un MachineConfig (et ses effets)',
       layout: 'two',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'mc-chrony.yaml', code: `apiVersion: machineconfiguration.openshift.io/v1
+        { t: 'code', lang: 'yaml', file: 'mc-motd.yaml', code: `apiVersion: machineconfiguration.openshift.io/v1
 kind: MachineConfig
 metadata:
   name: 99-worker-motd

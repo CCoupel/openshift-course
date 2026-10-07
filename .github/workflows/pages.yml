@@ -20,6 +20,7 @@ jobs:
           node-version: 'lts/*'
       - run: node --check assets/engine.js
       - run: node --check assets/plan.js
+      - run: node --check assets/i18n.js
       - run: node tools/validate.js
       - name: Artefact (uniquement le cours HTML)
         run: |

@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm00', num: 0, emoji: '🧪',
+  id: 'm00', lang: 'fr', num: 0, emoji: '🧪',
   title: 'Environnement de lab',
   tagline: 'Avant le jour 1 : un cluster qui tient la route, les bons outils, et la certitude de savoir quel lab demande quoi.',
   duration: '≈ 30 min',

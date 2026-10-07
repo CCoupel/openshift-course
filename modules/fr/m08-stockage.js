@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm08', num: 8, emoji: '💾',
+  id: 'm08', lang: 'fr', num: 8, emoji: '💾',
   title: 'Stockage',
   tagline: "Sur OpenShift on-prem, le stockage persistant n'est pas fourni : c'est toi qui choisis le backend, et c'est là que les projets déraillent.",
   duration: '≈ 60 min + lab 20 min',
@@ -303,13 +303,13 @@ COURSE.add({
         { t: 'lab', title: 'Cycle de vie complet d\'un volume', goal: "Cluster avec une StorageClass CSI qui supporte snapshot et expansion (LVMS, ODF ou vSphere CSI). Remplace &lt;SC&gt; par son nom.", steps: [
           "Prérequis : environnement E1 (SNO avec LVMS, ou cluster avec une StorageClass CSI), voir module 00",
           "Liste l'existant : <code>oc get sc</code>, <code>oc get csidriver</code>, <code>oc get volumesnapshotclass</code>. Laquelle est par défaut ?",
-          "Crée un projet : <code>oc new-project lab-stockage</code>",
+          "Crée un projet : <code>oc new-project lab-storage</code>",
           "Crée un PVC 1Gi RWO sur <code>&lt;SC&gt;</code> : en <i>Pending</i> ? Lis <code>oc describe pvc</code> et explique pourquoi (WaitForFirstConsumer).",
           "Lance un pod qui monte le PVC et écrit un fichier : <code>oc run writer --image=registry.access.redhat.com/ubi9/ubi --command -- sleep infinity</code>, puis ajoute le volume (YAML), et vérifie <code>id</code> et <code>ls -ld</code> du point de montage.",
           "Crée un <code>VolumeSnapshot</code> du PVC, attends <code>readyToUse: true</code>, puis restaure-le dans un nouveau PVC (<code>dataSource</code>).",
           "Agrandis le PVC à 2Gi avec <code>oc patch pvc</code> et vérifie la taille avec <code>df -h</code> dans le pod.",
           "(bonus) Provoque une erreur : supprime le PVC pendant que le pod tourne. Observe <i>Terminating</i> et le finalizer, puis supprime le pod.",
-          "Nettoie : <code>oc delete project lab-stockage</code>. Que devient le PV ? (regarde la <code>reclaimPolicy</code>)"
+          "Nettoie : <code>oc delete project lab-storage</code>. Que devient le PV ? (regarde la <code>reclaimPolicy</code>)"
         ] }
       ]
     }

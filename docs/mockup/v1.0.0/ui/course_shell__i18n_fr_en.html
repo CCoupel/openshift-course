@@ -1,0 +1,415 @@
+<!--
+mockup:
+  composant: course_shell
+  feature: i18n_fr_en
+  version: 1.0.0
+  type: ui
+  issue: "#3"
+  validee_le: 2026-10-07
+  complete: []           # aucune maquette active pour course_shell (docs/mockup/INDEX.md vide)
+  remplace: []
+  note: "Brouillon planner. L'interface existante (index.html + assets/style.css, v0.9.1) sert de référence ; seuls le sélecteur et les libellés traduits sont nouveaux."
+-->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sélecteur de langue</title>
+<style>
+/* Jetons repris de assets/style.css (v0.9.1) — l'interface réelle les garde tels quels. */
+:root {
+  --bg: #faf9f7; --surface: #ffffff; --surface2: #f3f1ee; --text: #1c1b1a; --muted: #6b6560;
+  --border: #e4e0db; --accent: #ee0000; --accent-soft: #fde8e8; --accent-text: #b80000;
+  --code-bg: #1e1e24; --code-text: #e8e6e3; --code-dim: #8b8b99; --code-prompt: #ff7b72;
+  --tip: #1a7f4b; --tip-bg: #e6f5ec;
+  --note: #0b6bcb; --note-bg: #e5f1fc;
+  --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.05);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141315; --surface: #1d1c1f; --surface2: #262529; --text: #ece9e6; --muted: #a29b94;
+    --border: #34323a; --accent: #ff4d4d; --accent-soft: #3a1c1c; --accent-text: #ff8a8a;
+    --code-bg: #0e0e12; --tip: #5fd18f; --tip-bg: #14281d; --note: #6cb6ff; --note-bg: #12263b;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141315; --surface: #1d1c1f; --surface2: #262529; --text: #ece9e6; --muted: #a29b94;
+  --border: #34323a; --accent: #ff4d4d; --accent-soft: #3a1c1c; --accent-text: #ff8a8a;
+  --code-bg: #0e0e12; --tip: #5fd18f; --tip-bg: #14281d; --note: #6cb6ff; --note-bg: #12263b;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+button { font: inherit; color: inherit; cursor: pointer; }
+code { font-family: var(--mono); font-size: .88em; background: var(--surface2); border: 1px solid var(--border); padding: .08em .35em; border-radius: 5px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Page de maquette ---------- */
+.doc { max-width: 1180px; margin: 0 auto; padding: 28px 16px 60px; }
+.doc > header h1 { font-size: 1.7rem; margin: 0 0 4px; }
+.doc > header p { margin: 0; color: var(--muted); }
+.doc section { margin-top: 40px; }
+.doc h2 { font-size: 1.2rem; margin: 0 0 4px; display: flex; gap: 10px; align-items: baseline; }
+.doc h2 .n { color: var(--accent-text); font-size: .8rem; font-weight: 800; letter-spacing: .1em; }
+.doc .lead { color: var(--muted); margin: 0 0 16px; font-size: .95rem; }
+.note { background: var(--note-bg); border-left: 4px solid var(--note); border-radius: 10px; padding: 10px 14px; font-size: .92rem; margin-top: 14px; }
+.note b { color: var(--note); }
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.spec .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); font-size: .92rem; }
+.spec .card h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 0 0 8px; }
+.spec .card ol, .spec .card ul { margin: 0; padding-left: 1.2rem; }
+.spec .card li { margin: .25em 0; }
+.pill { display: inline-block; font-size: .72rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); }
+
+/* ---------- Réplique du shell du cours (échelle réduite) ---------- */
+.shell { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); background: var(--bg); display: grid; grid-template-columns: 250px 1fr; height: 560px; position: relative; }
+.side { background: var(--surface); border-right: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+.side-head { padding: 14px 14px 10px; border-bottom: 1px solid var(--border); }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.05rem; margin-bottom: 10px; }
+.brand small { color: var(--muted); font-weight: 500; font-size: .75rem; margin-left: auto; }
+.search { width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--muted); font-size: .85rem; }
+.navl { padding: 8px; font-size: .86rem; overflow: hidden; }
+.navl .it { display: flex; gap: 8px; padding: 6px 8px; border-radius: 8px; align-items: center; }
+.navl .it b { color: var(--muted); font-weight: 600; }
+.navl .it .pct { margin-left: auto; font-size: .7rem; color: var(--muted); }
+.navl .it.on { background: var(--accent-soft); font-weight: 600; }
+.navl ol { list-style: none; margin: 2px 0 6px 20px; padding: 0 0 0 8px; border-left: 2px solid var(--border); font-size: .8rem; color: var(--muted); }
+.navl ol li { padding: 3px 6px; border-radius: 6px; }
+.navl ol li.on { color: var(--accent-text); font-weight: 700; background: var(--accent-soft); }
+.main { display: flex; flex-direction: column; min-width: 0; }
+.top { display: flex; align-items: center; gap: 10px; padding: 7px 14px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.top > button.ic { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 3px 9px; }
+.crumb { flex: 1; font-size: .85rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crumb b { color: var(--text); }
+.counter { font-size: .76rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.progress { height: 3px; background: var(--border); } .progress i { display: block; height: 100%; width: 14%; background: var(--accent); }
+.slide { flex: 1; overflow: hidden; padding: 20px 26px; }
+.foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; border-top: 1px solid var(--border); background: var(--surface); }
+.foot button { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 6px 14px; font-weight: 600; font-size: .88rem; }
+.foot .hint { font-size: .72rem; color: var(--muted); text-align: center; }
+
+/* Contenu de slide (styles du moteur) */
+h2.stitle { font-size: 1.45rem; margin: 0 0 14px; line-height: 1.2; }
+.blocks { display: flex; flex-direction: column; gap: 12px; }
+.blk.text p { margin: 0; font-size: .98rem; }
+.flow { display: flex; flex-wrap: wrap; gap: 6px; }
+.fnode { flex: 1 1 110px; background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 8px 10px; text-align: center; box-shadow: var(--shadow); font-size: .9rem; }
+.fnode b { display: block; } .fnode small { color: var(--muted); display: block; font-size: .74rem; }
+.fnode.hl { border-color: var(--accent); background: var(--accent-soft); }
+.farrow { align-self: center; color: var(--accent); font-weight: 800; }
+.flowcap { font-size: .78rem; color: var(--muted); text-align: center; margin-top: 4px; }
+.codebox { border-radius: 12px; overflow: hidden; background: var(--code-bg); }
+.codebar { display: flex; align-items: center; gap: 8px; padding: 5px 12px; background: rgba(255,255,255,.06); color: var(--code-dim); font: .72rem var(--mono); }
+.codebar .dots { display: flex; gap: 5px; } .codebar .dots i { width: 8px; height: 8px; border-radius: 50%; display: block; }
+.codebar .dots i:nth-child(1) { background: #ff5f56; } .codebar .dots i:nth-child(2) { background: #ffbd2e; } .codebar .dots i:nth-child(3) { background: #27c93f; }
+.codebar .fn { flex: 1; } .codebar .copy { background: none; border: 1px solid rgba(255,255,255,.2); color: var(--code-dim); border-radius: 6px; padding: 0 8px; font-size: .7rem; }
+.codebox pre { margin: 0; padding: 10px 14px; color: var(--code-text); font: .78rem/1.5 var(--mono); white-space: pre-wrap; }
+.c-cm { color: var(--code-dim); } .c-ps { color: var(--code-prompt); }
+.callout { border-left: 5px solid var(--tip); background: var(--tip-bg); border-radius: 10px; padding: 9px 14px; font-size: .9rem; }
+.callout .ch { font-weight: 800; font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--tip); }
+.callout p { margin: 0; }
+.frag:not(.show) { opacity: .18; }
+
+/* ---------- LE NOUVEAU COMPOSANT : sélecteur de langue ---------- */
+.lang { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface); flex: none; }
+.lang button { border: 0; background: none; padding: 3px 9px; font-size: .78rem; font-weight: 700; letter-spacing: .05em; color: var(--muted); line-height: 1.5; }
+.lang button + button { border-left: 1px solid var(--border); }
+.lang button:hover:not([aria-pressed="true"]) { background: var(--surface2); color: var(--text); }
+.lang button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-text); cursor: default; }
+.lang button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* états figés pour la planche d'états */
+.lang.f-hover button.h { background: var(--surface2); color: var(--text); }
+.lang.f-focus button.h { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.toast { position: absolute; left: 50%; bottom: 58px; transform: translateX(-50%) translateY(8px); background: var(--text); color: var(--bg); padding: 7px 14px; border-radius: 999px; font-size: .82rem; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; white-space: nowrap; }
+.toast.on { opacity: 1; transform: translateX(-50%); }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+
+/* Planches */
+.states { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.state { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; font-size: .84rem; }
+.state .mini { display: flex; gap: 8px; align-items: center; }
+.state .mini .ic { border: 1px solid var(--border); border-radius: 8px; padding: 3px 9px; background: none; }
+.state small { color: var(--muted); }
+.dark-sample { background: #1d1c1f; color: #ece9e6; --surface: #1d1c1f; --surface2: #262529; --border: #34323a; --muted: #a29b94; --text: #ece9e6; --accent-soft: #3a1c1c; --accent-text: #ff8a8a; --accent: #ff4d4d; }
+.dark-sample small { color: #a29b94; }
+
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pair .shell { grid-template-columns: 1fr; height: 470px; }
+.pair .shell .side { display: none; }
+.pair figcaption { font-size: .82rem; color: var(--muted); margin-top: 6px; text-align: center; }
+.pair figure { margin: 0; min-width: 0; }
+
+.phones { display: flex; gap: 24px; flex-wrap: wrap; }
+.phone { width: 340px; max-width: 100%; border: 10px solid #2b2a2e; border-radius: 30px; overflow: hidden; background: var(--bg); box-shadow: var(--shadow); }
+.phone .shell { border: 0; border-radius: 0; grid-template-columns: 1fr; height: 600px; box-shadow: none; }
+.phone .side { display: none; }
+.phone .slide { padding: 14px 16px; }
+.phone h2.stitle { font-size: 1.2rem; }
+.phone .foot .hint { display: none; }
+.phone .counter { display: none; }
+.phone.drawer .side { display: flex; position: absolute; inset: 0 18% 0 0; z-index: 3; box-shadow: 0 0 0 2000px rgba(0,0,0,.35); }
+.phone .lang-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--border); font-size: .82rem; color: var(--muted); }
+
+.alts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.alt { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; font-size: .88rem; }
+.alt h3 { margin: 0 0 8px; font-size: .95rem; }
+.alt .bar { display: flex; gap: 8px; align-items: center; border: 1px dashed var(--border); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; font-size: .8rem; color: var(--muted); }
+.alt .bar .grow { flex: 1; }
+.alt .bar .ic { border: 1px solid var(--border); border-radius: 8px; padding: 2px 8px; color: var(--text); }
+.alt .menu { border: 1px solid var(--border); border-radius: 8px; padding: 4px; background: var(--surface); box-shadow: var(--shadow); font-size: .8rem; width: 140px; margin-left: auto; }
+.alt .menu div { padding: 3px 8px; border-radius: 6px; } .alt .menu div.on { background: var(--accent-soft); color: var(--accent-text); font-weight: 700; }
+.verdict { font-weight: 700; } .verdict.ok { color: var(--tip); } .verdict.ko { color: var(--muted); }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; } .shell .side { display: none; }
+  .pair { grid-template-columns: 1fr; }
+  .foot .hint { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="doc">
+  <header>
+    <h1>🌐 Sélecteur de langue fr / en</h1>
+    <p>Maquette du shell du cours (issue #3, milestone v1.0.0). Brouillon à valider avant toute traduction. Tout est cliquable dans la section 1.</p>
+  </header>
+
+  <!-- ===================== 1. Démo interactive ===================== -->
+  <section>
+    <h2><span class="n">1</span> Le sélecteur en place (bureau)</h2>
+    <p class="lead">Interrupteur segmenté <b>FR | EN</b> dans la barre du haut, juste avant le bouton thème. Clique sur FR / EN, ou presse <kbd>l</kbd> quand la démo a le focus. La slide reste la même (même module, même position, mêmes éléments déjà affichés).</p>
+
+    <div class="shell" id="demo" tabindex="0" aria-label="Démo du shell du cours">
+      <aside class="side">
+        <div class="side-head">
+          <div class="brand"><span>🔴</span> OpenShift<small data-i="tagline"></small></div>
+          <div class="search" data-i="search"></div>
+        </div>
+        <div class="navl">
+          <div class="it"><span>🏠</span><span data-i="home"></span></div>
+          <div class="it"><span>🧪</span><span><b>00</b> <span data-i="m00"></span></span><span class="pct">100%</span></div>
+          <div class="it on"><span>⚖️</span><span><b>01</b> K8s vs OCP</span><span class="pct">14%</span></div>
+          <ol>
+            <li>K8s vs OCP</li>
+            <li data-i="s1"></li>
+            <li class="on" data-i="s2"></li>
+            <li data-i="s3"></li>
+            <li data-i="s4"></li>
+          </ol>
+          <div class="it"><span>🏗️</span><span><b>02</b> Architecture</span><span class="pct">0%</span></div>
+          <div class="it"><span>🚀</span><span><b>03</b> Installation</span><span class="pct">0%</span></div>
+          <div class="it"><span>📈</span><span><b>05</b> <span data-i="m05"></span></span><span class="pct">0%</span></div>
+          <div class="it"><span>🌐</span><span><b>07</b> <span data-i="m07"></span></span><span class="pct">0%</span></div>
+        </div>
+      </aside>
+      <div class="main">
+        <div class="top">
+          <button class="ic" type="button" data-a="menu">☰</button>
+          <div class="crumb">⚖️ <b>01 K8s vs OCP</b> › <span data-i="s2"></span></div>
+          <span class="counter">3 / 22</span>
+          <div class="lang" role="group" data-a="lang">
+            <button type="button" lang="fr" data-l="fr" title="Français">FR</button>
+            <button type="button" lang="en" data-l="en" title="English">EN</button>
+          </div>
+          <button class="ic" type="button" data-a="theme">🌓</button>
+        </div>
+        <div class="progress"><i></i></div>
+        <div class="slide"><div class="slide-body"></div></div>
+        <div class="foot">
+          <button type="button" data-i="prev"></button>
+          <span class="hint" data-i="hint"></span>
+          <button type="button" data-i="next"></button>
+        </div>
+      </div>
+      <div class="toast" role="status" aria-live="polite"></div>
+    </div>
+    <div class="note"><b>Ce qui est conservé au changement</b> : l'adresse <code>#m01/2</code>, les fragments déjà révélés (ici les deux premiers blocs), la progression et les scores de quiz (communs aux deux langues). <b>Ce qui est perdu</b>, comme aujourd'hui quand on change de slide : cases de lab cochées, cartes retournées, réponse « Réfléchis, puis clique » ouverte. La recherche est vidée puis réindexée dans la nouvelle langue.</div>
+  </section>
+
+  <!-- ===================== 2. États ===================== -->
+  <section>
+    <h2><span class="n">2</span> États du sélecteur</h2>
+    <p class="lead">Deux boutons <code>aria-pressed</code> dans un <code>role="group"</code> au nom accessible « Langue / Language ». La langue active ne réagit plus au clic.</p>
+    <div class="states">
+      <div class="state"><div class="mini"><div class="lang"><button aria-pressed="true">FR</button><button>EN</button></div><span class="ic">🌓</span></div><b>Repos, FR actif</b><small>Fond accent doux, texte accent. EN en gris.</small></div>
+      <div class="state"><div class="mini"><div class="lang f-hover"><button aria-pressed="true">FR</button><button class="h">EN</button></div><span class="ic">🌓</span></div><b>Survol de EN</b><small>Fond surface2, texte plein. Infobulle « English ».</small></div>
+      <div class="state"><div class="mini"><div class="lang f-focus"><button aria-pressed="true">FR</button><button class="h">EN</button></div><span class="ic">🌓</span></div><b>Focus clavier</b><small>Contour accent 2 px (même règle que le reste du site). Tab puis Entrée/Espace.</small></div>
+      <div class="state"><div class="mini"><div class="lang"><button>FR</button><button aria-pressed="true">EN</button></div><span class="ic">🌓</span></div><b>EN actif</b><small>Symétrique. Infobulle de FR : « Français ».</small></div>
+      <div class="state dark-sample"><div class="mini"><div class="lang"><button aria-pressed="true">FR</button><button>EN</button></div><span class="ic" style="border-color:#34323a">🌓</span></div><b>Thème sombre</b><small>Mêmes jetons CSS, aucune couleur nouvelle.</small></div>
+    </div>
+    <div class="note"><b>Pas de drapeaux</b> : une langue n'est pas un pays (fr-CA, en-GB…), et les emojis drapeaux s'affichent en lettres sous Windows. Codes <b>FR / EN</b> en texte, nom complet en infobulle et pour les lecteurs d'écran.</div>
+  </section>
+
+  <!-- ===================== 3. Même écran, deux langues ===================== -->
+  <section>
+    <h2><span class="n">3</span> Le même écran dans les deux langues</h2>
+    <p class="lead">Slide « tout est un Operator » du module 01. Ce qui change : textes, libellés du moteur (callout, boutons, aide). Ce qui ne change pas : commandes, noms d'objets Kubernetes/OpenShift, emojis, structure.</p>
+    <div class="pair">
+      <figure><div class="shell" data-static="fr"></div><figcaption>Français (actuel)</figcaption></figure>
+      <figure><div class="shell" data-static="en"></div><figcaption>English</figcaption></figure>
+    </div>
+    <div class="note"><b>Blocs de code</b> : les commandes restent identiques ; seuls les commentaires (<code># …</code>) sont traduits. Le contrôle de parité de <code>validate.js</code> comparera les lignes de commande, pas les commentaires.</div>
+  </section>
+
+  <!-- ===================== 4. Mobile ===================== -->
+  <section>
+    <h2><span class="n">4</span> Mobile (≤ 900 px)</h2>
+    <p class="lead">Le sélecteur reste dans la barre du haut (il tient en ≈ 70 px) ; le fil d'Ariane se tronque avant lui. Le compteur de slides disparaît sous 480 px pour laisser la place. Rappel de la langue en bas du menu latéral.</p>
+    <div class="phones">
+      <div class="phone"><div class="shell" data-static="fr" data-mobile="1"></div></div>
+      <div class="phone drawer"><div class="shell" data-static="en" data-mobile="1" data-drawer="1"></div></div>
+    </div>
+  </section>
+
+  <!-- ===================== 5. Comportement ===================== -->
+  <section>
+    <h2><span class="n">5</span> Comportement</h2>
+    <div class="spec">
+      <div class="card"><h3>Langue au premier chargement</h3>
+        <ol>
+          <li>Paramètre d'URL <code>?lang=en</code> (lien partagé), s'il est valide.</li>
+          <li>Sinon la langue mémorisée (<code>localStorage</code>, clé du cours existante).</li>
+          <li>Sinon la langue du navigateur (<code>navigator.languages</code>) si elle commence par <code>fr</code> ou <code>en</code>.</li>
+          <li>Sinon <b>fr</b></li>
+        </ol>
+        <p style="margin:.6em 0 0;color:var(--muted)">Stockage indisponible (navigation privée, <code>file://</code> restrictif) : aucune erreur, la langue est simplement redemandée à la visite suivante.</p>
+      </div>
+      <div class="card"><h3>Au clic sur l'autre langue</h3>
+        <ol>
+          <li>Mémorise le choix ; met à jour <code>&lt;html lang&gt;</code>, le titre de l'onglet, l'URL (<code>?lang=</code>, sans recharger).</li>
+          <li>Reconstruit la liste des slides dans la nouvelle langue : les adresses <code>#mNN/i</code> sont identiques (parité imposée).</li>
+          <li>Réaffiche la même slide avec le même nombre de fragments révélés.</li>
+          <li>Annonce « Langue : français » / « Language: English » (bulle 1,5 s, lue par les lecteurs d'écran).</li>
+        </ol>
+      </div>
+      <div class="card"><h3>Clavier et accessibilité</h3>
+        <ul>
+          <li>Raccourci <kbd>l</kbd> : bascule fr ↔ en (ajouté à l'aide en bas de page).</li>
+          <li>Ordre de tabulation : ☰ → sélecteur → 🌓.</li>
+          <li>Chaque bouton porte <code>lang="fr"</code> / <code>lang="en"</code> pour la prononciation.</li>
+          <li>Aucun rechargement : pas de perte de position ni de focus.</li>
+        </ul>
+      </div>
+      <div class="card"><h3>Ce qui reste commun aux deux langues</h3>
+        <ul>
+          <li>Progression (slides vues), scores des quiz, dernière slide, thème.</li>
+          <li>Adresses des slides : un lien <code>#m07/5</code> pointe sur la même slide en fr et en en.</li>
+          <li>Site GitHub Pages et archive de release : une seule URL, un seul zip, les deux langues dedans.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 6. Alternatives ===================== -->
+  <section>
+    <h2><span class="n">6</span> Variantes écartées</h2>
+    <div class="alts">
+      <div class="alt"><h3>A. Interrupteur FR | EN dans la barre du haut</h3>
+        <div class="bar">☰ <span class="grow">01 K8s vs OCP › …</span><span class="lang"><button aria-pressed="true">FR</button><button>EN</button></span><span class="ic">🌓</span></div>
+        <p>Visible en permanence, un clic, les deux options lisibles d'un coup d'œil. Suffisant pour 2 langues.</p><p class="verdict ok">✔ Retenue</p></div>
+      <div class="alt"><h3>B. Globe + menu déroulant</h3>
+        <div class="bar">☰ <span class="grow">01 K8s vs OCP › …</span><span class="ic">🌐 FR ▾</span><span class="ic">🌓</span></div>
+        <div class="menu"><div class="on">Français</div><div>English</div></div>
+        <p>Pensé pour beaucoup de langues : deux clics, état caché. Surdimensionné pour fr/en.</p><p class="verdict ko">✘ Écartée (à reprendre si une 3ᵉ langue arrive)</p></div>
+      <div class="alt"><h3>C. Dans l'en-tête du sommaire</h3>
+        <div class="bar">🔴 OpenShift <span class="grow"></span><span class="lang"><button aria-pressed="true">FR</button><button>EN</button></span></div>
+        <p>Caché quand le sommaire est replié (touche <kbd>m</kbd>) et sur mobile tant que le menu n'est pas ouvert.</p><p class="verdict ko">✘ Écartée (gardée seulement en rappel dans le menu mobile)</p></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  /* Libellés de l'interface — préfigurent assets/i18n.js. */
+  const UI = {
+    fr: { tagline: 'du K8s à OCP', search: 'Rechercher ( / )', home: 'Accueil', m00: 'Environnement de lab', m05: 'Supervision & monitoring', m07: 'Réseau',
+      s1: 'OCP, c\'est quoi vraiment ?', s2: 'La philosophie : tout est un Operator', s3: 'Kubernetes vanilla vs OpenShift', s4: 'Comparatif détaillé',
+      prev: '← Précédent', next: 'Suivant →', hint: '← → naviguer · m sommaire · t thème · l langue · / recherche', copy: 'Copier', tip: 'Astuce',
+      toast: 'Langue : français', group: 'Langue', langRow: 'Langue du cours' },
+    en: { tagline: 'from K8s to OCP', search: 'Search ( / )', home: 'Home', m00: 'Lab environment', m05: 'Monitoring & observability', m07: 'Networking',
+      s1: 'What is OCP, really?', s2: 'The philosophy: everything is an Operator', s3: 'Vanilla Kubernetes vs OpenShift', s4: 'Detailed comparison',
+      prev: '← Previous', next: 'Next →', hint: '← → navigate · m contents · t theme · l language · / search', copy: 'Copy', tip: 'Tip',
+      toast: 'Language: English', group: 'Language', langRow: 'Course language' }
+  };
+  /* Contenu de la slide — dans le cours réel : modules/fr/m01-….js et modules/en/m01-….js (même structure). */
+  const SLIDE = {
+    fr: { text: 'Sur K8s vanilla, tu choisis et assembles CNI, ingress, monitoring, auth… Sur OCP, <b>chaque composant du cluster est piloté par un Cluster Operator</b>, lui-même orchestré par un opérateur maître.',
+      sub2: '≈ 30 : network, ingress, auth, monitoring…', sub3: 'Pods, DaemonSets, configs', n3: 'Composants',
+      cap: 'Le CVO réconcilie l\'état voulu par la release (image de release) vers chaque opérateur.',
+      code: ['# Santé de la plateforme en une commande', '$ oc get clusteroperators   # alias : oc get co', '$ oc get clusterversion', '# Chaque opérateur : Available / Progressing / Degraded'],
+      call: 'Réflexe n°1 de diagnostic : <code>oc get co</code>. Un opérateur <b>Degraded</b> te dit déjà dans quelle brique chercher.' },
+    en: { text: 'On vanilla K8s, you pick and assemble the CNI, ingress, monitoring, auth… On OCP, <b>every cluster component is driven by a Cluster Operator</b>, itself orchestrated by a master operator.',
+      sub2: '≈ 30: network, ingress, auth, monitoring…', sub3: 'Pods, DaemonSets, configs', n3: 'Components',
+      cap: 'The CVO reconciles the state required by the release (release image) towards each operator.',
+      code: ['# Platform health in one command', '$ oc get clusteroperators   # alias: oc get co', '$ oc get clusterversion', '# Each operator: Available / Progressing / Degraded'],
+      call: 'Diagnostic reflex #1: <code>oc get co</code>. A <b>Degraded</b> operator already tells you which component to look into.' }
+  };
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const codeHtml = lines => lines.map(l => /^#/.test(l) ? `<span class="c-cm">${esc(l)}</span>` : /^\$ /.test(l) ? `<span class="c-ps">$ </span>${esc(l.slice(2))}` : esc(l)).join('\n');
+
+  function slideHtml(lang, shown) {
+    const u = UI[lang], s = SLIDE[lang], f = i => (i < shown ? ' show' : '');
+    return `<h2 class="stitle">${u.s2}</h2><div class="blocks">
+      <div class="blk text"><p>${s.text}</p></div>
+      <div class="frag${f(0)}"><div class="flow"><div class="fnode hl"><b>CVO</b><small>Cluster Version Operator</small></div><span class="farrow">→</span>
+        <div class="fnode"><b>Cluster Operators</b><small>${s.sub2}</small></div><span class="farrow">→</span>
+        <div class="fnode"><b>${s.n3}</b><small>${s.sub3}</small></div></div><div class="flowcap">${s.cap}</div></div>
+      <div class="frag${f(1)}"><div class="codebox"><div class="codebar"><span class="dots"><i></i><i></i><i></i></span><span class="fn">terminal</span><button class="copy" type="button">${u.copy}</button></div><pre>${codeHtml(s.code)}</pre></div></div>
+      <div class="callout frag${f(2)}"><div class="ch">💡 ${u.tip}</div><p>${s.call}</p></div></div>`;
+  }
+
+  function fill(root, lang) {
+    root.querySelectorAll('[data-i]').forEach(el => { el.textContent = UI[lang][el.dataset.i]; });
+    root.querySelectorAll('.lang').forEach(g => {
+      g.setAttribute('aria-label', UI[lang].group);
+      g.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === lang)));
+    });
+  }
+
+  /* --- Démo interactive --- */
+  const demo = document.getElementById('demo');
+  let lang = 'fr', shown = 2, timer = null;
+  function render(announce) {
+    fill(demo, lang);
+    demo.querySelector('.slide-body').innerHTML = slideHtml(lang, shown);
+    if (announce) {
+      const t = demo.querySelector('.toast');
+      t.textContent = UI[lang].toast; t.classList.add('on');
+      clearTimeout(timer); timer = setTimeout(() => t.classList.remove('on'), 1500);
+    }
+  }
+  function setLang(l) { if (l === lang) return; lang = l; render(true); }
+  demo.addEventListener('click', e => {
+    const b = e.target.closest('.lang button'); if (b) { setLang(b.dataset.l); return; }
+    if (e.target.closest('[data-i="next"]') && shown < 3) { shown++; render(false); }
+    if (e.target.closest('[data-i="prev"]') && shown > 0) { shown--; render(false); }
+  });
+  demo.addEventListener('keydown', e => { if (e.key === 'l') { e.preventDefault(); setLang(lang === 'fr' ? 'en' : 'fr'); } });
+  render(false);
+
+  /* --- Planches statiques (section 3 et 4) --- */
+  const tpl = demo.cloneNode(true); tpl.removeAttribute('id'); tpl.removeAttribute('tabindex');
+  document.querySelectorAll('.shell[data-static]').forEach(sh => {
+    const l = sh.dataset.static, c = tpl.cloneNode(true);
+    sh.innerHTML = c.innerHTML;
+    fill(sh, l);
+    sh.querySelector('.slide-body').innerHTML = slideHtml(l, 3);
+    sh.querySelector('.toast').remove();
+    if (sh.dataset.mobile) {
+      const cr = sh.querySelector('.crumb'); cr.innerHTML = '⚖️ <b>01</b> › ' + UI[l].s2;
+      const side = sh.querySelector('.side');
+      const row = document.createElement('div'); row.className = 'lang-row';
+      row.innerHTML = `<span>${UI[l].langRow}</span><div class="lang"><button data-l="fr">FR</button><button data-l="en">EN</button></div>`;
+      side.querySelector('.navl').after(row); side.style.justifyContent = 'space-between';
+      fill(sh, l);
+    }
+  });
+})();
+</script>
+</body>
+</html>

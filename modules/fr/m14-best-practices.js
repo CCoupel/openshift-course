@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm14', num: 14, emoji: '✅',
+  id: 'm14', lang: 'fr', num: 14, emoji: '✅',
   title: 'Best practices',
   tagline: 'Une check-list de mise en production, transverse et réutilisable en mission : chaque point renvoie au module qui le traite, rien n\'est répété ici.',
   duration: '≈ 30 min + lab 15 min',
@@ -23,7 +23,7 @@ COURSE.add({
           { label: 'Reprise', sub: 'DR testé', hl: true }
         ], caption: 'Les phases de la check-list de ce module. L\'installation proprement dite est regroupée avec « avant l\'installation ».' },
         { t: 'bullets', frag: true, items: [
-          'Chaque module du cours a déjà ses bonnes pratiques : <b>elles ne sont pas recopiées</b>. Ici, chaque ligne est une <b>action à vérifier</b> suivie du <b>module propriétaire</b> à ouvrir pour le détail.',
+          'Chaque module du cours a déjà ses bonnes pratiques : <b>elles ne sont pas recopiées</b>. Ici, chaque ligne est une <b>action à contrôler</b> suivie du <b>module propriétaire</b> à ouvrir pour le détail.',
           'Contenu propre à ce module : dimensionnement, nœuds d\'infra, multi-tenance, haute disponibilité des applications, multi-cluster, critères de go / no-go.',
           '<b>Format</b> : les six slides « check-list · à consulter » sont un livrable de référence, <b>hors exposé</b> ; les 30 minutes d\'exposé portent sur le reste (dimensionnement, nœuds d\'infra, multi-tenance, HA, écart cloud, ACM, anti-patterns, go / no-go).',
           'Usage en mission : une colonne « état » (vert, orange, rouge) et un responsable par ligne ; un rouge sur un point <b>bloquant</b> (slide go / no-go) arrête la mise en production.'
@@ -148,7 +148,7 @@ COURSE.add({
       title: 'Check-list 1 : avant et pendant l\'installation',
       tag: 'check-list · à consulter',
       blocks: [
-        { t: 'table', head: ['Phase', 'Point à vérifier', 'Module'], rows: [
+        { t: 'table', head: ['Phase', 'Point à contrôler', 'Module'], rows: [
           ['Avant', 'Méthode d\'installation et plateforme choisies (IPI, Agent, UPI, déconnecté)', 'module 03'],
           ['Avant', 'DNS (<code>api</code>, <code>api-int</code>, <code>*.apps</code>) et load balancers ou VIP prêts', 'module 03 (flux : module 02)'],
           ['Avant', 'NTP, adressage, CIDR sans chevauchement, pull secret', 'module 03'],
@@ -167,7 +167,7 @@ COURSE.add({
       tag: 'check-list · à consulter',
       blocks: [
         { t: 'text', html: 'La liste détaillée de la configuration post-installation est dans le <b>module 04</b> (slide « Check-list de configuration post-installation »). Ici, seulement les points qui engagent d\'autres domaines.' },
-        { t: 'table', head: ['Point à vérifier', 'Module'], rows: [
+        { t: 'table', head: ['Point à contrôler', 'Module'], rows: [
           ['Installation validée : <code>oc get co</code>, nœuds, pools, CSR', 'module 03'],
           ['IdP en place, <code>kubeadmin</code> supprimé, kubeconfig admin au coffre', 'module 06'],
           ['Certificats Ingress et API, proxy et CA d\'entreprise, NTP des nœuds', 'module 04'],
@@ -185,7 +185,7 @@ COURSE.add({
       title: 'Check-list 3 : avant la production',
       tag: 'check-list · à consulter',
       blocks: [
-        { t: 'table', head: ['Domaine', 'Point à vérifier', 'Module'], rows: [
+        { t: 'table', head: ['Domaine', 'Point à contrôler', 'Module'], rows: [
           ['Supervision', 'Alertes routées vers un récepteur ; <code>Watchdog</code> reçu régulièrement', 'module 05'],
           ['Supervision', 'PVC du monitoring, rétention choisie ; monitoring utilisateur si besoin', 'module 05'],
           ['Sécurité', 'Images compatibles <code>restricted-v2</code> ; pas de SCC large accordée « pour que ça marche »', 'module 09'],
@@ -203,7 +203,7 @@ COURSE.add({
       title: 'Check-list 4 : en exploitation',
       tag: 'check-list · à consulter',
       blocks: [
-        { t: 'table', head: ['Point à vérifier', 'Module'], rows: [
+        { t: 'table', head: ['Point à contrôler', 'Module'], rows: [
           ['Alertes triées, silences datés et commentés', 'module 05'],
           ['Capacité : requests, quotas, control plane sous 60 %', 'module 12, ce module'],
           ['CSR des nœuds approuvés après vérification du demandeur', 'module 12'],
@@ -218,7 +218,7 @@ COURSE.add({
       title: 'Check-list 5 : avant chaque mise à jour',
       tag: 'check-list · à consulter',
       blocks: [
-        { t: 'table', head: ['Point à vérifier', 'Module'], rows: [
+        { t: 'table', head: ['Point à contrôler', 'Module'], rows: [
           ['Sauvegarde etcd toute fraîche, hors du cluster', 'module 11'],
           ['Opérateurs sains, condition <code>Upgradeable</code>, <code>admin-acks</code> lus (jamais acquittés à l\'aveugle)', 'module 12'],
           ['APIs retirées : alertes <code>APIRemoved…</code> traitées', 'module 12'],
@@ -235,7 +235,7 @@ COURSE.add({
       title: 'Check-list 6 : reprise après sinistre',
       tag: 'check-list · à consulter',
       blocks: [
-        { t: 'table', head: ['Point à vérifier', 'Module'], rows: [
+        { t: 'table', head: ['Point à contrôler', 'Module'], rows: [
           ['Procédure de reprise choisie selon la situation (quorum perdu, retour arrière, membre défaillant)', 'module 11'],
           ['RPO et RTO fixés, modèle de DR choisi (reconstruire, passif, étendu)', 'module 11'],
           ['Ce qui n\'est dans aucune sauvegarde (DNS, LB, certificats d\'entreprise, secrets externes) documenté ailleurs', 'module 11'],
@@ -343,7 +343,7 @@ COURSE.add({
           'Accès et supervision : <code>oc get secret kubeadmin -n kube-system</code> (existe-t-il encore ?), <code>oc get oauth cluster -o jsonpath=\'{.spec.identityProviders[*].name}{"\\n"}\'</code>, <code>oc get pvc -n openshift-monitoring</code>, <code>oc get apiserver cluster -o jsonpath=\'{.spec.audit.profile}{"\\n"}\'</code>.',
           'Synthèse : note chaque ligne des check-lists 2 et 3 (vert, orange, rouge), puis liste les trois rouges les plus bloquants avec le module à relire. Quel est ton go / no-go ?',
           '(bonus, sans cluster : cluster fictif, sur papier) Cluster fictif : 3 masters de 4 vCPU et 16 Go sur un datastore partagé, 120 workers, <code>kubeadmin</code> actif, monitoring sans PVC, aucune sauvegarde etcd, Operators en mise à jour automatique. Donne le go / no-go en cinq minutes et les trois premières actions, avec le module à ouvrir.',
-          '(bonus, E1, lecture seule) <code>oc get subscriptions.operators.coreos.com -A -o custom-columns=NS:.metadata.namespace,NOM:.metadata.name,APPROBATION:.spec.installPlanApproval</code> : quels Operators sont en approbation automatique, et lesquels devraient passer en manuelle (module 04) ?'
+          '(bonus, E1, lecture seule) <code>oc get subscriptions.operators.coreos.com -A -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,APPROVAL:.spec.installPlanApproval</code> : quels Operators sont en approbation automatique, et lesquels devraient passer en manuelle (module 04) ?'
         ] }
       ]
     }

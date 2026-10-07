@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm13', num: 13, emoji: '🖥️',
+  id: 'm13', lang: 'fr', num: 13, emoji: '🖥️',
   title: 'Virtualisation & Serverless',
   tagline: 'Deux façons de ne plus penser « serveur » : des VM comme des pods avec OpenShift Virtualization, et des services qui dorment à zéro avec OpenShift Serverless.',
   duration: '≈ 60 min + lab 25 min',
@@ -340,7 +340,7 @@ spec:
     {
       title: 'B5 — Révisions et répartition du trafic',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'trafic.yaml', code: `apiVersion: serving.knative.dev/v1
+        { t: 'code', lang: 'yaml', file: 'traffic.yaml', code: `apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: showcase
@@ -404,13 +404,13 @@ metadata:
 apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
-  name: vers-showcase
+  name: to-showcase
   namespace: serverless-demo
 spec:
   broker: default
   filter:
     attributes:
-      type: demo.commande
+      type: demo.order
   subscriber:
     ref:
       apiVersion: serving.knative.dev/v1

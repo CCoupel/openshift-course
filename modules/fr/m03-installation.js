@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm03', num: 3, emoji: '🚀',
+  id: 'm03', lang: 'fr', num: 3, emoji: '🚀',
   title: 'Installation',
   tagline: 'Du DNS au premier <code>oc get co</code> : choisir sa méthode, préparer l\'infra, installer, y compris en réseau déconnecté.',
   duration: '≈ 75 min + lab 20 min',
@@ -147,7 +147,7 @@ sshKey: 'ssh-ed25519 AAAA...'` },
     vcenters:
     - server: vcenter.example.com
       user: svc-ocp@vsphere.local
-      password: mot-de-passe-a-definir
+      password: change-me
       datacenters:
       - DC1
     failureDomains:
@@ -185,7 +185,7 @@ sshKey: 'ssh-ed25519 AAAA...'` },
       bmc:
         address: redfish-virtualmedia://10.0.0.11/redfish/v1/Systems/1
         username: admin
-        password: mot-de-passe-a-definir
+        password: change-me
       bootMACAddress: 52:54:00:aa:bb:01
       rootDeviceHints:
         deviceName: /dev/sda` },

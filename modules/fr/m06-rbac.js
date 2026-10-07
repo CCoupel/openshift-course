@@ -1,5 +1,5 @@
 COURSE.add({
-  id: 'm06', num: 6, emoji: '🔐',
+  id: 'm06', lang: 'fr', num: 6, emoji: '🔐',
   title: 'HBAC / RBAC',
   tagline: 'Qui es-tu, que peux-tu faire, sur quoi, et depuis où ? Authentification, RBAC, groupes, projets, accès aux nœuds et audit.',
   duration: '≈ 60 min + lab 20 min',
@@ -135,7 +135,7 @@ COURSE.add({
           ['oc auth can-i create deployments -n team-a', 'Puis-je faire ça ? (moi-même)'],
           ['oc auth can-i --list -n team-a --as alice', 'Tout ce qu\'Alice peut faire (impersonation : exige le droit <code>impersonate</code>)'],
           ['oc adm policy scc-subject-review -f pod.yaml', 'Quels SCC admettraient ce pod pour moi ?'],
-          ['oc adm policy scc-subject-review -z mon-sa -f pod.yaml', 'Idem pour un ServiceAccount donné']
+          ['oc adm policy scc-subject-review -z my-sa -f pod.yaml', 'Idem pour un ServiceAccount donné']
         ] },
         { t: 'callout', kind: 'tip', html: '<code>--as</code> et <code>--as-group</code> sont ton meilleur outil de débogage RBAC : « pourquoi Alice ne peut pas ? » se teste sans connaître son mot de passe.' }
       ]
@@ -357,7 +357,7 @@ COURSE.add({
           '  verbs: ["use"]'
         ].join('\n') },
         { t: 'cmds', items: [
-          ['oc adm policy add-scc-to-user nonroot-v2 -z mon-sa -n team-a', 'Autorise ce ServiceAccount à utiliser le SCC'],
+          ['oc adm policy add-scc-to-user nonroot-v2 -z my-sa -n team-a', 'Autorise ce ServiceAccount à utiliser le SCC'],
           ['oc adm policy who-can use scc privileged', 'Audit : qui peut créer des pods privilégiés ?'],
           ['oc adm policy scc-subject-review -f pod.yaml', 'Diagnostic avant déploiement']
         ] },
@@ -417,7 +417,7 @@ COURSE.add({
         ], answer: 1, explain: 'Un RoleBinding vers un ClusterRole applique les droits dans ce seul namespace.' },
         { t: 'quiz', q: 'Tu retires <code>self-provisioner</code> de <code>system:authenticated:oauth</code>, et le binding revient après un moment. Que manque-t-il ?', options: [
           'Un redémarrage du cluster',
-          'L\'annotation <code>rbac.authorization.k8s.io/autoupdate: "false"</code> sur le ClusterRoleBinding <code>self-provisioners</code>',
+          'L\'annotation <code>rbac.authorization.kubernetes.io/autoupdate: "false"</code> sur le ClusterRoleBinding <code>self-provisioners</code>',
           'Un quota',
           'Rien, c\'est normal'
         ], answer: 1, explain: 'Les bindings par défaut sont réconciliés à l\'auto-update ; désactive-le pour que ta modification persiste.' }

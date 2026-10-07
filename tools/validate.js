@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-/* Valide le schéma des modules. Usage : node tools/validate.js [fichier...]
+/* Valide le schéma des modules, fr et en. Usage : node tools/validate.js [--strict-i18n] [--root <dir>] [fichier...]
+   --strict-i18n : module en absent ou empreinte `source` périmée/absente = erreur (sinon avertissement).
+   --root <dir>  : arbre de type dépôt à contrôler (assets/, modules/fr|en/, index.html) ; défaut : ce dépôt.
+   Avec des fichiers en argument : contrôle de schéma seul (pas de parité ni de contrôles globaux).
 
    Champs HTML bruts : le moteur (assets/engine.js) n'échappe (esc) que les lignes de `code`, `cmds[i][0]`,
    `file`/`lang`, les titres de slide et `tag`. TOUS les autres champs sont injectés tels quels en HTML
@@ -11,6 +14,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { hashFile, SOURCE_RE } = require('./i18n-hash');
 
 // À garder synchronisé avec assets/engine.js (objet R) et le CSS des callouts.
 const BLOCKS = ['text', 'bullets', 'code', 'cmds', 'table', 'compare', 'callout', 'flow', 'layers', 'cards', 'quiz', 'reveal', 'lab', 'diagram'];
@@ -43,21 +47,36 @@ function rawHtmlFields(b) {
   return f;
 }
 
-const dir = path.join(__dirname, '..', 'modules');
-const files = process.argv.length > 2 ? process.argv.slice(2) : fs.readdirSync(dir).filter(f => /^m\d+.*\.js$/.test(f)).map(f => path.join(dir, f));
+const LANGS = ['fr', 'en'];
+const MARK = { fr: /à vérifier/gi, en: /to be verified/gi };
+const argv = process.argv.slice(2);
+const strict = argv.includes('--strict-i18n');
+const ri = argv.indexOf('--root');
+if (ri >= 0 && (!argv[ri + 1] || argv[ri + 1].startsWith('--'))) { console.error('Usage : node tools/validate.js [--strict-i18n] [--root <dir>] [fichier...]\n--root attend un répertoire.'); process.exit(2); }
+const ROOT = ri >= 0 ? path.resolve(argv[ri + 1]) : path.join(__dirname, '..');
+const fileArgs = argv.filter((a, i) => !a.startsWith("--") && !(ri >= 0 && i === ri + 1));
+const globalChecks = fileArgs.length === 0;
+
 let errors = 0, warns = 0;
-const loadedMods = {};
 const err = (f, m) => { errors++; console.error(`ERREUR  ${path.basename(f)} : ${m}`); };
 const warn = (f, m) => { warns++; console.warn(`warn    ${path.basename(f)} : ${m}`); };
 
-for (const file of files) {
+function loadModule(file) {
   let mod = null;
   const sandbox = { COURSE: { add(m) { mod = m; } } };
   try { vm.runInNewContext(fs.readFileSync(file, 'utf8'), sandbox, { filename: file }); }
-  catch (e) { err(file, 'ne s\'exécute pas : ' + e.message); continue; }
-  if (!mod) { err(file, 'aucun appel COURSE.add'); continue; }
+  catch (e) { err(file, 'ne s\'exécute pas : ' + e.message); return null; }
+  if (!mod) { err(file, 'aucun appel COURSE.add'); return null; }
+  return mod;
+}
 
-  loadedMods[mod.id] = mod;
+// Schéma d'un module (une langue). `folderLang` : dossier d'origine (fr/en) ou null pour un fichier passé en argument.
+function checkSchema(file, mod, folderLang) {
+  if (folderLang) {
+    if (!mod.lang) err(file, 'champ lang manquant (attendu : \'' + folderLang + '\')');
+    else if (!LANGS.includes(mod.lang)) err(file, `lang "${mod.lang}" inconnu (fr ou en)`);
+    else if (mod.lang !== folderLang) err(file, `lang "${mod.lang}" ≠ dossier modules/${folderLang}/`);
+  }
   const expected = /^m(\d+)/.exec(path.basename(file));
   if (expected && mod.id !== 'm' + expected[1]) err(file, `id "${mod.id}" ≠ nom de fichier`);
   if (expected && mod.num !== +expected[1]) err(file, `num ${mod.num} ≠ nom de fichier`);
@@ -65,7 +84,7 @@ for (const file of files) {
   if (/[<`]/.test(mod.title || '')) err(file, 'title ne doit pas contenir de HTML/backticks');
   if (!Array.isArray(mod.objectives) || mod.objectives.length < 3) err(file, 'objectives : 3 minimum');
   if (!Array.isArray(mod.takeaways) || mod.takeaways.length < 4) err(file, 'takeaways : 4 minimum');
-  if (!Array.isArray(mod.slides)) { err(file, 'slides manquant'); continue; }
+  if (!Array.isArray(mod.slides)) { err(file, 'slides manquant'); return null; }
   if (mod.num !== 15 && (mod.slides.length < 14 || mod.slides.length > 26)) warn(file, `${mod.slides.length} slides (cible 16-22)`);
 
   const checkHtml = (where, field, text) => {
@@ -106,26 +125,196 @@ for (const file of files) {
   });
   if (mod.num !== 15 && !quizzes) warn(file, 'aucun quiz');
   if (mod.num !== 15 && !labs) warn(file, 'aucun lab');
-  console.log(`${errors ? '…' : 'ok '}      ${path.basename(file)} : ${mod.slides.length} slides, ${quizzes} quiz, ${labs} lab`);
+  console.log(`${errors ? '…' : 'ok '}      ${folderLang ? folderLang + '/' : ''}${path.basename(file)} : ${mod.slides.length} slides, ${quizzes} quiz, ${labs} lab`);
+  return mod;
 }
-// Cohérence manifeste (assets/plan.js) ↔ modules ↔ index.html (contrôles globaux, seulement sans arguments).
-if (process.argv.length <= 2) {
-  const root = path.join(__dirname, '..');
-  let plan = null;
-  try { vm.runInNewContext(fs.readFileSync(path.join(root, 'assets', 'plan.js'), 'utf8'), { COURSE: { set plan(p) { plan = p; } } }, { filename: 'plan.js' }); }
-  catch (e) { err('plan.js', 'ne s\'exécute pas : ' + e.message); }
-  if (plan) {
-    const ids = new Set(plan.map(p => p.id));
-    if (ids.size !== plan.length) err('plan.js', 'id en doublon');
-    if (new Set(plan.map(p => p.num)).size !== plan.length) err('plan.js', 'num en doublon');
-    plan.forEach(p => { if (p.id !== 'm' + String(p.num).padStart(2, '0')) err('plan.js', `id "${p.id}" incohérent avec num ${p.num}`); });
-    for (const f of files) { const m = /^(m\d+)/.exec(path.basename(f)); if (m && !ids.has(m[1])) err(f, 'module absent du manifeste assets/plan.js'); }
-    plan.forEach(p => { const m = loadedMods[p.id]; if (m) { if (m.title !== p.title) err('plan.js', `${p.id} : title « ${p.title} » ≠ module « ${m.title} »`); if (m.emoji !== p.emoji) err('plan.js', `${p.id} : emoji ≠ module`); } });
-    plan.forEach(p => { if (!p.id || p.num === undefined || !p.emoji || !p.title) err('plan.js', `entrée incomplète : ${JSON.stringify(p)}`); });
-    const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-    for (const m of html.matchAll(/<script src="([^"]+)"/g)) if (!fs.existsSync(path.join(root, m[1]))) err('index.html', `script inexistant (404) : ${m[1]}`);
-    for (const f of files) if (!html.includes('modules/' + path.basename(f))) warn(f, 'module non chargé par index.html');
+
+/* ---------- Parité fr ↔ en (D1) ---------- */
+// Lignes de code comparées : sans lignes vides, sans lignes `#…` ni commentaires de fin de ligne (` #` précédé d'un blanc,
+// hors guillemets ; ils se traduisent). Limite : un guillemet ou une apostrophe non appariés avant le `#` (ex. `echo it's # x`)
+// masque le commentaire ; les commentaires `//`, `--`, `;` ne sont pas retirés.
+function stripTrailingComment(l) {
+  let q = null;
+  for (let i = 0; i < l.length; i++) {
+    const ch = l[i];
+    if (q) { if (ch === q) q = null; } else if (ch === '"' || ch === "'") q = ch;
+    else if (ch === '#' && i > 0 && /\s/.test(l[i - 1])) return l.slice(0, i);
+  }
+  return l;
+}
+// Commentaires `;` : retirés (ligne entière et fin de ligne ` ;`) UNIQUEMENT dans un bloc de zone DNS, c.-à-d. contenant au moins
+// une ligne d'enregistrement (`… IN A|AAAA|CNAME|MX|NS|PTR|SOA|SRV|TXT …`). Ailleurs (INI, shell…), `;` reste du code comparé.
+const ZONE_RE = /\sIN\s+(A|AAAA|CNAME|MX|NS|PTR|SOA|SRV|TXT)\s/;
+// Texte visible d'un YAML (message d'alerte, résumé, bandeau…) : traduisible. Pour une ligne `clé: valeur` dont la clé figure dans
+// cette liste blanche, la CLÉ reste comparée à l'identique et la VALEUR est libre. Toute autre clé garde la comparaison stricte
+// (identifiants, noms d'objets, commandes). Pas de désactivation globale : n'ajouter une clé qu'après décision explicite.
+const VISIBLE_TEXT_KEYS = new Set(['message', 'summary', 'text', 'description', 'displayName']);
+const normVisible = l => {
+  const m = /^(\s*(?:-\s+)?)([A-Za-z_][\w-]*)(:\s+)\S.*$/.exec(l);
+  return m && VISIBLE_TEXT_KEYS.has(m[2]) ? `${m[1]}${m[2]}${m[3]}<texte visible>` : l;
+};
+const codeLines = c => {
+  const lines = String(c || '').split('\n'), zone = lines.some(l => ZONE_RE.test(l));
+  return lines.map(l => {
+    l = stripTrailingComment(l);
+    if (zone) l = l.replace(/\s+;.*$/, '');
+    return l.replace(/\s+$/, '');
+  }).filter(l => l.trim() && !/^\s*#/.test(l) && !(zone && /^\s*;/.test(l)));
+};
+// `file` : on compare le nom de fichier ; le reste du libellé (précision entre parenthèses, description) se traduit.
+// - premier mot ressemblant à un nom de fichier (`dnsmasq.conf`, `x/y`) : seul ce mot est comparé ;
+// - valeur d'un seul mot (`terminal`) : comparée telle quelle ;
+// - libellé descriptif de plusieurs mots (« zone DNS (exemple BIND) ») : non comparé.
+const FILE_RE = /^[\w./-]+\.[A-Za-z0-9]+$/;
+const baseFile = f => {
+  if (f === undefined) return f;
+  const t = String(f).trim(), first = t.split(/\s+/)[0];
+  if (FILE_RE.test(first) || first.includes('/')) return first;
+  return /\s/.test(t) ? null : t;
+};
+const digits = d => (String(d === undefined ? '' : d).match(/\d+/g) || []).join(',');
+const len = x => (Array.isArray(x) ? x.length : undefined);
+
+function parity(file, fr, en) {
+  const e = m => err(file, 'parité fr/en : ' + m);
+  for (const k of ['id', 'num', 'emoji']) if (fr[k] !== en[k]) e(`champ ${k} différent (fr « ${fr[k]} », en « ${en[k]} »)`);
+  // duration : seuls les nombres comptent (« ≈ 60 min + lab 20 min » ↔ « ≈ 60 min + 20 min lab »).
+  if (digits(fr.duration) !== digits(en.duration)) e(`champ duration différent (fr « ${fr.duration} », en « ${en.duration} »)`);
+  for (const k of ['objectives', 'takeaways']) if (len(fr[k]) !== len(en[k])) e(`${k} : ${len(fr[k])} en fr, ${len(en[k])} en en`);
+  if (fr.slides.length !== en.slides.length) { e(`nombre de slides différent (fr ${fr.slides.length}, en ${en.slides.length})`); return; }
+  fr.slides.forEach((fs_, i) => {
+    const es = en.slides[i], at = `slide ${i + 1}`;
+    if (fs_.layout !== es.layout) e(`${at} : layout différent (fr « ${fs_.layout} », en « ${es.layout} »)`);
+    if (!fs_.tag !== !es.tag) e(`${at} : tag présent dans une seule langue`);
+    const fb = fs_.blocks || [], eb = es.blocks || [];
+    if (fb.length !== eb.length) { e(`${at} : nombre de blocs différent (fr ${fb.length}, en ${eb.length})`); return; }
+    fb.forEach((b, j) => {
+      const c = eb[j], bt = `${at} bloc ${j + 1}`;
+      if (b.t !== c.t) { e(`${bt} : type de bloc différent (fr ${b.t}, en ${c.t})`); return; }
+      const w = `${bt} (${b.t})`;
+      for (const k of ['frag', 'wide']) if (!b[k] !== !c[k]) e(`${w} : ${k} différent`);
+      for (const k of ['caption', 'verdict', 'goal', 'explain', 'label', 'title']) if (!b[k] !== !c[k]) e(`${w} : champ ${k} présent dans une seule langue`);
+      if (b.t === 'compare') for (const side of ['left', 'right']) if (!(b[side] || {}).title !== !(c[side] || {}).title) e(`${w} : compare.${side}.title présent dans une seule langue`);
+      if (['flow', 'layers'].includes(b.t) && len(b.items || b.nodes) === len(c.items || c.nodes)) (b.items || b.nodes || []).forEach((x, k) => {
+        const y = (c.items || c.nodes)[k];
+        for (const f of ['hl', 'base']) if (!(x && x[f]) !== !(y && y[f])) e(`${w} : ${b.t}, élément ${k + 1}, ${f} différent`);
+      });
+      if (b.kind !== c.kind) e(`${w} : kind différent (fr « ${b.kind} », en « ${c.kind} »)`);
+      for (const [k, label] of [['items', 'items'], ['options', 'options'], ['steps', 'steps'], ['nodes', 'nodes']]) if (len(b[k]) !== len(c[k])) e(`${w} : nombre d'${label} différent (fr ${len(b[k])}, en ${len(c[k])})`);
+      if (b.t === 'table') {
+        if (len(b.head) !== len(c.head)) e(`${w} : table, nombre de colonnes (head) différent (fr ${len(b.head)}, en ${len(c.head)})`);
+        if (len(b.rows) !== len(c.rows)) e(`${w} : table, nombre de lignes (rows) différent (fr ${len(b.rows)}, en ${len(c.rows)})`);
+      }
+      if (b.t === 'compare') for (const side of ['left', 'right']) if (len((b[side] || {}).items) !== len((c[side] || {}).items)) e(`${w} : compare.${side}, nombre d'items différent`);
+      if (b.t === 'quiz' && b.answer !== c.answer) e(`${w} : answer différent (fr ${b.answer}, en ${c.answer})`);
+      if (b.t === 'cmds' && len(b.items) === len(c.items)) b.items.forEach((x, k) => { if (Array.isArray(x) && Array.isArray(c.items[k]) && x[0] !== c.items[k][0]) e(`${w} : cmds, commande ${k + 1} différente (fr « ${x[0]} », en « ${c.items[k][0]} »)`); });
+      if (b.t === 'code') {
+        if (baseFile(b.file) !== baseFile(c.file)) e(`${w} : code, file différent (fr « ${b.file} », en « ${c.file} »)`);
+        if (b.lang !== c.lang) e(`${w} : code, lang différent (fr « ${b.lang} », en « ${c.lang} »)`);
+        const fl = codeLines(b.code), cl = codeLines(c.code);
+        if (fl.length !== cl.length) e(`${w} : code, nombre de lignes non commentaires différent (fr ${fl.length}, en ${cl.length})`);
+        else fl.forEach((l, k) => { if (normVisible(l) !== normVisible(cl[k])) e(`${w} : code, ligne ou clé différente (fr « ${l} », en « ${cl[k]} ») ; seules les valeurs des clés ${[...VISIBLE_TEXT_KEYS].join('/')} peuvent être traduites`); });
+      }
+    });
+  });
+  // Marqueur d'incertitude : « à vérifier » (fr) ↔ « to be verified » (en), même nombre.
+  const count = (m, re) => (JSON.stringify(m).match(re) || []).length;
+  const nf = count(fr, MARK.fr), ne = count(en, MARK.en);
+  if (nf !== ne) e(`marqueurs d'incertitude : ${nf} « à vérifier » en fr, ${ne} « to be verified » en en ; rappel : « à vérifier » est réservé aux incertitudes factuelles (usage ordinaire → « à contrôler » ou « à confirmer » côté fr)`);
+  if (count(en, MARK.fr)) e('marqueur « à vérifier » non traduit dans le module en (écrire « to be verified »)');
+}
+
+/* ---------- Chargement des langues ---------- */
+const loaded = { fr: {}, en: {} }; // loaded[lang][nom de fichier] = module
+const paths = { fr: {}, en: {} };
+if (!globalChecks) {
+  for (const f of fileArgs) {
+    const mod = loadModule(f); if (!mod) continue;
+    const folder = path.basename(path.dirname(path.resolve(f)));
+    checkSchema(f, mod, LANGS.includes(folder) ? folder : null);
+  }
+  console.log(`\n${fileArgs.length} module(s), ${errors} erreur(s), ${warns} avertissement(s).`);
+  process.exit(errors ? 1 : 0);
+}
+
+for (const lang of LANGS) {
+  const dir = path.join(ROOT, 'modules', lang);
+  if (!fs.existsSync(dir)) continue;
+  for (const name of fs.readdirSync(dir).filter(f => /^m\d+.*\.js$/.test(f)).sort()) {
+    const file = path.join(dir, name);
+    paths[lang][name] = file;
+    const mod = loadModule(file); if (!mod) continue;
+    loaded[lang][name] = checkSchema(file, mod, lang) || null;
   }
 }
-console.log(`\n${files.length} module(s), ${errors} erreur(s), ${warns} avertissement(s).`);
+
+// Parité, module manquant, empreinte de source.
+const frNames = Object.keys(paths.fr), enNames = Object.keys(paths.en);
+for (const name of enNames) if (!paths.fr[name]) err(paths.en[name], 'module en sans équivalent fr (modules/fr/' + name + ' absent)');
+for (const name of frNames) {
+  if (!paths.en[name]) {
+    (strict ? err : warn)(paths.fr[name], `module en absent (modules/en/${name}) — non traduit`);
+    continue;
+  }
+  const fr = loaded.fr[name], en = loaded.en[name];
+  if (fr && en && Array.isArray(fr.slides) && Array.isArray(en.slides)) parity(paths.en[name], fr, en);
+  const m = SOURCE_RE.exec(fs.readFileSync(paths.en[name], 'utf8')), expected = hashFile(paths.fr[name]);
+  const hint = `lancer node tools/i18n-hash.js --write ${/^m\d+/.exec(name)[0]} après avoir mis l'en à jour`;
+  if (!m) (strict ? err : warn)(paths.en[name], `empreinte source absente (attendu ${expected}) — ${hint}`);
+  else if (m[2] !== expected) (strict ? err : warn)(paths.en[name], `empreinte source périmée (trouvé ${m[2]}, attendu ${expected}) : le fr a changé — ${hint}`);
+}
+
+/* ---------- Contrôles globaux : i18n.js, plan.js, index.html ---------- */
+const sbx = (file, key) => {
+  let out = null;
+  const COURSE = {}; Object.defineProperty(COURSE, key, { set(v) { out = v; }, get() { return out; } });
+  try { vm.runInNewContext(fs.readFileSync(file, 'utf8'), { COURSE }, { filename: file }); }
+  catch (e) { err(file, 'ne s\'exécute pas : ' + e.message); }
+  return out;
+};
+const i18nFile = path.join(ROOT, 'assets', 'i18n.js');
+if (fs.existsSync(i18nFile)) {
+  const tr = sbx(i18nFile, 'i18n');
+  if (!tr || typeof tr !== 'object') err(i18nFile, 'COURSE.i18n absent');
+  else {
+    for (const lang of LANGS) if (!tr[lang] || typeof tr[lang] !== 'object') err(i18nFile, `i18n.js : langue ${lang} absente`);
+    if (tr.fr && tr.en) {
+      const ph = v => (String(v).match(/\{\w+\}/g) || []).sort().join(',');
+      for (const k of Object.keys(tr.fr)) { if (!(k in tr.en)) err(i18nFile, `i18n.js : clé "${k}" manquante en en`); else if (ph(tr.fr[k]) !== ph(tr.en[k])) err(i18nFile, `i18n.js : clé "${k}", paramètres {…} différents entre fr et en`); }
+      for (const k of Object.keys(tr.en)) if (!(k in tr.fr)) err(i18nFile, `i18n.js : clé "${k}" manquante en fr`);
+    }
+  }
+} else err(i18nFile, 'assets/i18n.js absent');
+
+const planFile = path.join(ROOT, 'assets', 'plan.js');
+const plan = sbx(planFile, 'plan');
+if (plan) {
+  const ids = new Set(plan.map(p => p.id));
+  if (ids.size !== plan.length) err('plan.js', 'id en doublon');
+  if (new Set(plan.map(p => p.num)).size !== plan.length) err('plan.js', 'num en doublon');
+  plan.forEach(p => { if (p.id !== 'm' + String(p.num).padStart(2, '0')) err('plan.js', `id "${p.id}" incohérent avec num ${p.num}`); });
+  plan.forEach(p => { if (!p.id || p.num === undefined || !p.emoji || !p.title) err('plan.js', `entrée incomplète : ${JSON.stringify(p)}`); });
+  plan.forEach(p => {
+    const t = p.title;
+    if (!t || typeof t !== 'object') { err('plan.js', `${p.id} : title doit être { fr, en }`); return; }
+    for (const lang of LANGS) {
+      if (typeof t[lang] !== 'string' || !t[lang]) { err('plan.js', `${p.id} : title.${lang} manquant`); continue; }
+      const name = Object.keys(paths[lang]).find(n => n.startsWith(p.id + '-'));
+      const m = name && loaded[lang][name];
+      if (m) {
+        if (m.title !== t[lang]) err('plan.js', `${p.id} : title ${lang} « ${t[lang]} » ≠ module « ${m.title} »`);
+        if (m.emoji !== p.emoji) err('plan.js', `${p.id} : emoji ≠ module ${lang}`);
+      }
+    }
+  });
+  for (const lang of LANGS) for (const name of Object.keys(paths[lang])) { const m = /^(m\d+)/.exec(name); if (m && !ids.has(m[1])) err(paths[lang][name], 'module absent du manifeste assets/plan.js'); }
+}
+const indexFile = path.join(ROOT, 'index.html');
+if (fs.existsSync(indexFile)) {
+  const html = fs.readFileSync(indexFile, 'utf8');
+  for (const m of html.matchAll(/<script src="([^"]+)"/g)) if (!fs.existsSync(path.join(ROOT, m[1]))) err('index.html', `script inexistant (404) : ${m[1]}`);
+  for (const lang of LANGS) for (const name of Object.keys(paths[lang])) if (!html.includes(`modules/${lang}/${name}`)) (strict ? err : warn)(paths[lang][name], `module non chargé par index.html (ajouter <script src="modules/${lang}/${name}"></script> : le moteur ne charge rien dynamiquement)`);
+}
+const total = frNames.length + enNames.length;
+console.log(`\n${total} module(s) (${frNames.length} fr, ${enNames.length} en), ${errors} erreur(s), ${warns} avertissement(s)${strict ? ' [--strict-i18n]' : ''}.`);
 process.exit(errors ? 1 : 0);

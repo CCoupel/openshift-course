@@ -8,48 +8,76 @@
 </head>
 <body>
 <div id="app">
-  <aside id="sidebar" aria-label="Sommaire">
+  <aside id="sidebar" aria-label="Sommaire" data-i18n-attr="aria-label:nav.sidebar">
     <div class="side-head">
-      <a href="#home" class="brand"><span class="logo">🔴</span> OpenShift<small>du K8s à OCP</small></a>
-      <input id="search" type="search" placeholder="Rechercher ( / )" aria-label="Rechercher dans le cours">
+      <a href="#home" class="brand"><span class="logo">🔴</span> OpenShift<small data-i18n="course.titleShort">du K8s à OCP</small></a>
+      <input id="search" type="search" placeholder="Rechercher ( / )" aria-label="Rechercher dans le cours" data-i18n-attr="placeholder:search.placeholder,aria-label:search.aria">
     </div>
     <nav id="navlist"></nav>
+    <div class="lang-row"><span data-i18n="lang.row">Langue du cours</span>
+      <div class="lang" role="group">
+          <button type="button" lang="fr" data-l="fr" aria-pressed="true">FR</button>
+          <button type="button" lang="en" data-l="en" aria-pressed="false">EN</button>
+        </div>
+    </div>
   </aside>
   <main id="main">
     <header id="topbar">
-      <button id="menu" title="Sommaire (m)" aria-label="Sommaire">☰</button>
+      <button id="menu" title="Sommaire (m)" aria-label="Sommaire" data-i18n-attr="title:nav.menu,aria-label:nav.sidebar">☰</button>
       <div id="crumb"></div>
       <span id="counter"></span>
-      <button id="theme" title="Thème (t)" aria-label="Changer de thème">🌓</button>
+      <div class="lang" role="group">
+        <button type="button" lang="fr" data-l="fr" aria-pressed="true">FR</button>
+        <button type="button" lang="en" data-l="en" aria-pressed="false">EN</button>
+      </div>
+      <button id="theme" title="Thème (t)" aria-label="Changer de thème" data-i18n-attr="title:nav.theme,aria-label:nav.themeAria">🌓</button>
     </header>
     <div id="progress"><i></i></div>
     <section id="slide" tabindex="-1" aria-live="polite"></section>
     <footer id="nav">
-      <button id="prev">← Précédent</button>
-      <span id="hint">← → pour naviguer · m sommaire · t thème · / recherche</span>
-      <button id="next">Suivant →</button>
+      <button id="prev" data-i18n="nav.prev">← Précédent</button>
+      <span id="hint" data-i18n="nav.hint">← → pour naviguer · m sommaire · t thème · l langue · / recherche</span>
+      <button id="next" data-i18n="nav.next">Suivant →</button>
     </footer>
   </main>
+  <div id="toast" role="status" aria-live="polite"></div>
 </div>
 
 <script src="assets/engine.js"></script>
+<script src="assets/i18n.js"></script>
 <script src="assets/plan.js"></script>
-<script src="modules/m00-environnement.js"></script>
-<script src="modules/m01-k8s-vs-ocp.js"></script>
-<script src="modules/m02-architecture.js"></script>
-<script src="modules/m03-installation.js"></script>
-<script src="modules/m04-configuration.js"></script>
-<script src="modules/m05-monitoring.js"></script>
-<script src="modules/m06-rbac.js"></script>
-<script src="modules/m07-reseau.js"></script>
-<script src="modules/m08-stockage.js"></script>
-<script src="modules/m09-securite.js"></script>
-<script src="modules/m10-cicd-gitops.js"></script>
-<script src="modules/m11-backup-dr.js"></script>
-<script src="modules/m12-jour2.js"></script>
-<script src="modules/m13-virt-serverless.js"></script>
-<script src="modules/m14-best-practices.js"></script>
-<script src="modules/m15-aide-memoire.js"></script>
+<script src="modules/fr/m00-environnement.js"></script>
+<script src="modules/fr/m01-k8s-vs-ocp.js"></script>
+<script src="modules/fr/m02-architecture.js"></script>
+<script src="modules/fr/m03-installation.js"></script>
+<script src="modules/fr/m04-configuration.js"></script>
+<script src="modules/fr/m05-monitoring.js"></script>
+<script src="modules/fr/m06-rbac.js"></script>
+<script src="modules/fr/m07-reseau.js"></script>
+<script src="modules/fr/m08-stockage.js"></script>
+<script src="modules/fr/m09-securite.js"></script>
+<script src="modules/fr/m10-cicd-gitops.js"></script>
+<script src="modules/fr/m11-backup-dr.js"></script>
+<script src="modules/fr/m12-jour2.js"></script>
+<script src="modules/fr/m13-virt-serverless.js"></script>
+<script src="modules/fr/m14-best-practices.js"></script>
+<script src="modules/fr/m15-aide-memoire.js"></script>
+<script src="modules/en/m00-environnement.js"></script>
+<script src="modules/en/m01-k8s-vs-ocp.js"></script>
+<script src="modules/en/m02-architecture.js"></script>
+<script src="modules/en/m03-installation.js"></script>
+<script src="modules/en/m04-configuration.js"></script>
+<script src="modules/en/m05-monitoring.js"></script>
+<script src="modules/en/m06-rbac.js"></script>
+<script src="modules/en/m07-reseau.js"></script>
+<script src="modules/en/m08-stockage.js"></script>
+<script src="modules/en/m09-securite.js"></script>
+<script src="modules/en/m10-cicd-gitops.js"></script>
+<script src="modules/en/m11-backup-dr.js"></script>
+<script src="modules/en/m12-jour2.js"></script>
+<script src="modules/en/m13-virt-serverless.js"></script>
+<script src="modules/en/m14-best-practices.js"></script>
+<script src="modules/en/m15-aide-memoire.js"></script>
 <script>COURSE.start();</script>
 </body>
 </html>

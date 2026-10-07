@@ -7,6 +7,40 @@ et ce projet adhère au [Versioning Sémantique](https://semver.org/spec/v2.0.0.
 
 ---
 
+## Non publié
+
+### Ajouté
+
+- **Traduction anglaise complète** — 16 modules traduits en anglais, structure bilingue `modules/fr/` et `modules/en/`, parité structurelle fr/en contrôlée par `validate.js`
+- **Sélecteur de langue FR | EN** — dans la barre du haut, interrupteur segmenté entre le compteur et le bouton thème ; conserve la position de l'utilisateur et les fragments révélés lors du changement de langue ; raccourci clavier `l` pour basculer ; langue mémorisée en `localStorage` ; ordre de résolution : `?lang=`, localStorage, navigateur (fr/en), défaut français
+- **Localisation du moteur** — `assets/i18n.js` centralise les libellés du moteur et de l'export (callouts, boutons, aide clavier, etc.) ; titres du plan bilingues dans `assets/plan.js` ; moteur charge les deux langues (32 balises `<script>`)
+- **Validation de parité** — `tools/validate.js` : nouvel option `--strict-i18n` pour erreurs sur parité cassée (en PR vers main et release) ; `--root <dir>` pour valider un sous-arbre ; détecte : nombre de slides/blocs/options identique, cardinalités, champs optionnels `caption`/`verdict`/`explain`/etc., marqueurs « à vérifier » / « to be verified » (même nombre), `lang` = dossier, clés `i18n.js` présentes
+- **Synchronisation empreinte** — `tools/i18n-hash.js --write <mNN>` recalcule l'empreinte SHA256 d'un module en après mise à jour ; `--check` liste les modules périmés
+- **Suite de tests i18n** — `tests/i18n/run.js` : 87 cas couvrant parité structurelle, champs optionnels, marqueurs, `lang`, empreinte, `i18n.js`, titres `plan.js`, module en manquant ; procédure QA manuelle du sélecteur `QA-SELECTEUR.md`
+- **Glossaire et guide de style** — `docs/i18n/GLOSSARY.md` : termes du cours, terminologie Red Hat, ton, formes grammaticales, pièges de parité, règle d'identifiants neutres (fr+en : `my-sa`, `change-me`, `platform-team`, etc.)
+- **Export PowerPoint bilingue** — `tools/export-pptx.js --lang fr|en` produit deux fichiers `-fr.pptx` et `-en.pptx` ; libellés lus dans `assets/i18n.js` (couverture, pied « Module NN · titre », réponses de quiz, « À retenir » / « Key takeaways ») ; `check-pptx.js` valide les deux
+- **Workflow de release bilingue** — release.yml : `validate.js --strict-i18n`, export des deux PPTX, calcul SHA256 des trois fichiers (zip + 2 pptx), création Release avec tous les fichiers
+- **Licence MIT** — Voir fichier `LICENSE` ; `package.json` indique la licence
+
+### Modifié
+
+- **Chemins des modules** — `modules/` → `modules/fr/` (français) et nouveau `modules/en/` (anglais) ; même nom de fichier dans les deux dossiers (ex. `modules/fr/m05-monitoring.js` et `modules/en/m05-monitoring.js`)
+- **Identifiants et valeurs d'exemple** — Neutralisés en français et en anglais (ex. `user@example.com` au lieu de `mon-utilisateur@exemple.fr`) pour éviter traduction ; modifiés dans le même commit fr+en (empreinte recalculée)
+- **Corrections de contenu français (depuis 0.9.1)** — m06 : annotation `autoupdate` ; reformulations « à vérifier » en « à contrôler » (usage ordinaire, non marqueur i18n) ; identifiants neutres en m02, m04, m05, m07
+- **Contrôles CI** — `validate.js` (push sur branches feature) : avertissements i18n ; pull request vers main : `validate.js --strict-i18n` (erreurs bloquantes pour parité, empreintes)
+
+### [BREAKING]
+
+- **Nom du fichier PowerPoint** — `openshift-course-X.Y.Z.pptx` (unique) → `openshift-course-X.Y.Z-fr.pptx` et `openshift-course-X.Y.Z-en.pptx` (deux fichiers, un par langue). Les releases d'après doivent fournir les deux fichiers ; les anciens liens pointant vers `.pptx` sans suffixe se cassent.
+- **Chemin des modules** — `modules/` (racine) → `modules/fr/` (français) et `modules/en/` (anglais). Les importateurs et les scripts pointant vers `modules/mNN-*.js` directement doivent passer à `modules/fr/mNN-*.js` ou déterminer la langue dynamiquement.
+
+### Notes
+
+- **Relecture technique reportée** — Les faits techniques (contre la doc Red Hat 4.20) n'ont pas été relus dans les deux langues (phase 4 reportée après fusion). Les marqueurs « à vérifier » / « to be verified » restent dans les modules pour tracer les points à vérifier.
+- **Version non encore définie** — La version finale attend la fusion de la branche `feature/i18n` et le GATE utilisateur. Cette section « Non publié » sera transformée en section de version datée à la release.
+
+---
+
 ## [0.9.1] - 2026-10-07
 
 ### Modifié

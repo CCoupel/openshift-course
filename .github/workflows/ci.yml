@@ -16,9 +16,17 @@ jobs:
           node-version: 'lts/*'
       - run: node --check assets/engine.js
       - run: node --check assets/plan.js
-      - run: node tools/validate.js
-      - name: Export PowerPoint (controle)
+      - run: node --check assets/i18n.js
+      - name: Validation (avertissements i18n tolérés sur feature/** et bugfix/**)
+        if: github.event_name != 'pull_request'
+        run: node tools/validate.js
+      - name: Validation stricte i18n (PR vers main)
+        if: github.event_name == 'pull_request'
+        run: node tools/validate.js --strict-i18n
+      - name: Export PowerPoint fr et en (controle)
+        env:
+          STRICT: ${{ github.event_name == 'pull_request' && '--strict-i18n' || '' }}
         run: |
           npm ci --ignore-scripts
           node tools/check-pptx.js --selftest
-          node tools/check-pptx.js
+          node tools/check-pptx.js $STRICT
