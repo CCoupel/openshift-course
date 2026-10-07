@@ -306,7 +306,7 @@ spec:
           ['<b>Un Argo CD central</b>', 'Une instance enregistre plusieurs clusters et pousse', 'Simple ; l\'instance devient un point critique et a des droits sur tous'],
           ['<b>ApplicationSet (générateur de clusters)</b>', 'Une Application par cluster enregistré', 'Même base, overlays par cluster'],
           ['<b>Argo CD Agent</b>', 'Architecture <b>pull</b> : l\'agent du cluster récupère sa config', 'GA en OpenShift GitOps 1.19 (doc)'],
-          ['<b>ACM + Argo CD (pull)</b>', 'Le hub ACM distribue ; l\'agent ACM tire l\'Application', 'Introduit en Technology Preview dans ACM 2.8 ; reste disponible en 2.14/2.15 (certaines fonctions, comme l\'ApplicationSet dans un namespace quelconque, encore en Technology Preview)']
+          ['<b>ACM + Argo CD (pull)</b>', 'Le hub ACM distribue ; l\'agent ACM tire l\'Application', 'Disponible depuis ACM 2.8 ; en 2.15, l\'ApplicationSet dans un namespace quelconque, l\'agent Argo CD et le déploiement progressif sont en Technology Preview (statut du modèle lui-même : à vérifier)']
         ] },
         { t: 'flow', nodes: [
           'Cluster perdu',

@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm10', lang: 'en', num: 10, emoji: '🔄',
   title: 'CI/CD & GitOps',
-  source: '92a47aa7333c',
+  source: '61e16483119e',
   tagline: 'Your cluster\'s configuration in Git, applied and watched by Argo CD: platform GitOps first, Pipelines and Builds as an overview.',
   duration: '≈ 45 min + lab 20 min',
   objectives: [
@@ -307,7 +307,7 @@ spec:
           ['<b>A central Argo CD</b>', 'One instance registers several clusters and pushes', 'Simple; the instance becomes a critical point and has rights on all'],
           ['<b>ApplicationSet (clusters generator)</b>', 'One Application per registered cluster', 'Same base, overlays per cluster'],
           ['<b>Argo CD Agent</b>', '<b>Pull</b> architecture: the cluster\'s agent fetches its config', 'GA in OpenShift GitOps 1.19 (docs)'],
-          ['<b>ACM + Argo CD (pull)</b>', 'The ACM hub distributes; the ACM agent pulls the Application', 'Introduced in Technology Preview in ACM 2.8; still available in 2.14/2.15 (some features, such as ApplicationSet in any namespace, still in Technology Preview)']
+          ['<b>ACM + Argo CD (pull)</b>', 'The ACM hub distributes; the ACM agent pulls the Application', 'Available since ACM 2.8; in 2.15, ApplicationSet in any namespace, the Argo CD agent and progressive rollout are in Technology Preview (status of the model itself: to be verified)']
         ] },
         { t: 'flow', nodes: [
           'Cluster lost',
