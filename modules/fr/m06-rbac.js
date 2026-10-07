@@ -135,7 +135,7 @@ COURSE.add({
           ['oc auth can-i create deployments -n team-a', 'Puis-je faire ça ? (moi-même)'],
           ['oc auth can-i --list -n team-a --as alice', 'Tout ce qu\'Alice peut faire (impersonation : exige le droit <code>impersonate</code>)'],
           ['oc adm policy scc-subject-review -f pod.yaml', 'Quels SCC admettraient ce pod pour moi ?'],
-          ['oc adm policy scc-subject-review -z mon-sa -f pod.yaml', 'Idem pour un ServiceAccount donné']
+          ['oc adm policy scc-subject-review -z my-sa -f pod.yaml', 'Idem pour un ServiceAccount donné']
         ] },
         { t: 'callout', kind: 'tip', html: '<code>--as</code> et <code>--as-group</code> sont ton meilleur outil de débogage RBAC : « pourquoi Alice ne peut pas ? » se teste sans connaître son mot de passe.' }
       ]
@@ -357,7 +357,7 @@ COURSE.add({
           '  verbs: ["use"]'
         ].join('\n') },
         { t: 'cmds', items: [
-          ['oc adm policy add-scc-to-user nonroot-v2 -z mon-sa -n team-a', 'Autorise ce ServiceAccount à utiliser le SCC'],
+          ['oc adm policy add-scc-to-user nonroot-v2 -z my-sa -n team-a', 'Autorise ce ServiceAccount à utiliser le SCC'],
           ['oc adm policy who-can use scc privileged', 'Audit : qui peut créer des pods privilégiés ?'],
           ['oc adm policy scc-subject-review -f pod.yaml', 'Diagnostic avant déploiement']
         ] },

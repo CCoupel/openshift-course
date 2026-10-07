@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm06', lang: 'en', num: 6, emoji: '🔐',
   title: 'HBAC / RBAC',
-  source: '7ee47ad60221',
+  source: '85323ffa7d10',
   tagline: 'Who are you, what can you do, on what, and from where? Authentication, RBAC, groups, projects, node access and audit.',
   duration: '≈ 60 min + lab 20 min',
   objectives: [
@@ -136,7 +136,7 @@ COURSE.add({
           ['oc auth can-i create deployments -n team-a', 'Can I do this? (myself)'],
           ['oc auth can-i --list -n team-a --as alice', 'Everything Alice can do (impersonation: requires the <code>impersonate</code> right)'],
           ['oc adm policy scc-subject-review -f pod.yaml', 'Which SCCs would admit this pod for me?'],
-          ['oc adm policy scc-subject-review -z mon-sa -f pod.yaml', 'Same for a given ServiceAccount']
+          ['oc adm policy scc-subject-review -z my-sa -f pod.yaml', 'Same for a given ServiceAccount']
         ] },
         { t: 'callout', kind: 'tip', html: '<code>--as</code> and <code>--as-group</code> are your best RBAC debugging tool: “why can\'t Alice?” can be tested without knowing her password.' }
       ]
@@ -358,7 +358,7 @@ COURSE.add({
           '  verbs: ["use"]'
         ].join('\n') },
         { t: 'cmds', items: [
-          ['oc adm policy add-scc-to-user nonroot-v2 -z mon-sa -n team-a', 'Allows this ServiceAccount to use the SCC'],
+          ['oc adm policy add-scc-to-user nonroot-v2 -z my-sa -n team-a', 'Allows this ServiceAccount to use the SCC'],
           ['oc adm policy who-can use scc privileged', 'Audit: who can create privileged pods?'],
           ['oc adm policy scc-subject-review -f pod.yaml', 'Diagnosis before deployment']
         ] },
