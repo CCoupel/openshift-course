@@ -7,8 +7,11 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
@@ -25,7 +28,7 @@ jobs:
         run: |
           npm ci --ignore-scripts
           node tools/export-pptx.js
-          sha256sum "dist/openshift-course-${VERSION}.pptx" > "dist/openshift-course-${VERSION}.pptx.sha256"
+          (cd dist && sha256sum "openshift-course-${VERSION}.pptx" > "openshift-course-${VERSION}.pptx.sha256")
       - name: Livrable (archive du cours + somme de controle)
         run: |
           zip -r "openshift-course-${VERSION}.zip" index.html assets modules VERSION
@@ -38,4 +41,13 @@ jobs:
             awk -v v="$VERSION" '$0 ~ "^## \\[?"v {f=1; next} f && /^## / {exit} f' CHANGELOG.md > notes.md
           fi
           if [ -s notes.md ]; then NOTES=(--notes-file notes.md); else NOTES=(--generate-notes); fi
-          gh release create "$GITHUB_REF_NAME" "openshift-course-${VERSION}.zip" "openshift-course-${VERSION}.zip.sha256" "dist/openshift-course-${VERSION}.pptx" "dist/openshift-course-${VERSION}.pptx.sha256" --title "v${VERSION}" "${NOTES[@]}"
+          PRE=()
+          case "$VERSION" in 0.*|*-*) PRE=(--prerelease) ;; esac
+          gh release create "$GITHUB_REF_NAME" "openshift-course-${VERSION}.zip" "openshift-course-${VERSION}.zip.sha256" "dist/openshift-course-${VERSION}.pptx" "dist/openshift-course-${VERSION}.pptx.sha256" --title "v${VERSION}" "${NOTES[@]}" "${PRE[@]}"
+  pages:
+    needs: release
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
