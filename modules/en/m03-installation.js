@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm03', lang: 'en', num: 3, emoji: '🚀',
   title: 'Installation',
-  source: '4621885a7080',
+  source: '8ddfca90021d',
   tagline: 'From DNS to the first <code>oc get co</code>: choosing your method, preparing the infrastructure, installing, including on a disconnected network.',
   duration: '≈ 75 min + lab 20 min',
   objectives: [
@@ -43,7 +43,7 @@ COURSE.add({
           ['<code>baremetal</code>', 'Physical servers (or VMs without hypervisor integration) with VIPs', 'API/Ingress VIPs via keepalived; Machine API via Metal3 in IPI'],
           ['<code>vsphere</code>', 'Cluster on vCenter', 'vSphere CSI, managed VIPs (IPI), Machine API (IPI), failure domains'],
           ['<code>none</code>', 'Any infrastructure without integration (UPI, SNO, edge)', 'No VIPs, no Machine API; LB and DNS entirely on you'],
-          ['<i>others</i>', 'Nutanix, OpenStack, cloud…', 'Out of scope for this course (to be verified for your context)']
+          ['<i>others</i>', 'Nutanix, OpenStack, cloud…', 'Out of scope for this course (to be confirmed for your context)']
         ] },
         { t: 'callout', kind: 'warn', html: "The supported method × platform combinations depend on the version (for example Agent-based on each platform): <b>to be verified in the 4.20 release notes</b> and the support matrix before you lock in your design." },
         { t: 'callout', kind: 'tip', html: "The <code>platform</code> choice is <b>structural</b>: it determines the Machine API, the default storage (module 08) and the VIPs. It cannot be changed afterwards." }
@@ -60,9 +60,9 @@ COURSE.add({
           ['SNO', '8', '16 GB', '120 GB']
         ] },
         { t: 'bullets', items: [
-          '<b>Minimums</b> from the 4.20 docs for control plane, worker and SNO; bootstrap row: to be verified. Size generously (monitoring, logging, virtualization).',
+          '<b>Minimums</b> from the 4.20 docs for bootstrap, control plane, worker and SNO. Size generously (monitoring, logging, virtualization).',
           'Control plane disk: <b>fast</b> (etcd latency, see module 08).',
-          '<b>Architecture and firmware</b>: x86_64 (other architectures: out of scope); UEFI <b>required</b> in bare metal IPI when the provisioning network is IPv6; other cases: to be verified in the 4.20 docs.',
+          '<b>Architecture and firmware</b>: x86_64 (other architectures: out of scope); UEFI <b>required</b> in bare metal IPI when the provisioning network is IPv6 (without a provisioning network, no requirement).',
           'Installation workstation with access to the nodes and to the Internet (or the mirror).'
         ] },
         { t: 'cmds', wide: true, items: [
@@ -82,7 +82,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           '<b>UPI / platform none</b>: two L4 LBs of your own (API 6443 + MCS 22623; Ingress 80 + 443), with health checks.',
           '<b>IPI / Agent with VIPs</b>: two free VIPs in the nodes\' subnet (<code>apiVIPs</code>, <code>ingressVIPs</code>); DNS points to them.',
-          '<b>Reverse</b> resolution of the nodes is required depending on the method: to be verified in the 4.20 docs.'
+          '<b>Reverse</b> resolution is required in UPI (API, bootstrap, control plane, compute); when absent, <code>oc adm node-image monitor</code> skips the CSR checks.'
         ] },
         { t: 'callout', kind: 'trap', html: "A forgotten <code>*.apps</code> wildcard is the #1 failure: the installation <b>seems to progress</b>, then <code>install-complete</code> never finishes (console and OAuth unreachable)." }
       ]
@@ -164,7 +164,7 @@ sshKey: 'ssh-ed25519 AAAA...'` },
         - VM Network` },
         { t: 'bullets', items: [
           '<b>Failure domains</b> describe where to place the VMs (cluster, datastore, network): the basis for HA across clusters or datacenters.',
-          'The vCenter account must have the documented <b>privileges</b> (VM, folders, datastore): to be verified in the 4.20 docs.',
+          'The vCenter account must have the documented <b>privileges</b> (VM, folders, datastore): see the “Required vCenter account privileges” section of the 4.20 docs.',
           'Optional topology fields: <code>resourcePool</code>, <code>folder</code>, <code>tagIDs</code>.'
         ] },
         { t: 'callout', kind: 'onprem', html: "Reserve both VIPs in the IPAM <b>beforehand</b>: a VIP already in use causes intermittent errors that are very hard to link back to the installation." }
@@ -201,7 +201,7 @@ sshKey: 'ssh-ed25519 AAAA...'` },
     {
       title: 'Agent-based: agent-config.yaml',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'agent-config.yaml (SNO)', code: `apiVersion: v1beta1              # v1beta1 per the 4.22 docs; 4.20 presumed identical: to be verified
+        { t: 'code', lang: 'yaml', file: 'agent-config.yaml (SNO)', code: `apiVersion: v1beta1              # v1beta1 (4.20 docs)
 kind: AgentConfig
 metadata:
   name: ocp4
@@ -233,7 +233,7 @@ hosts:
         next-hop-address: 192.168.10.1
         next-hop-interface: eno1` },
         { t: 'callout', kind: 'tip', html: "<code>agent-config.yaml</code> complements <code>install-config.yaml</code> (cluster, pull secret, global network) with what is <b>specific to the hosts</b>: static IPs, interfaces, role. Node network details (NMState): module 07." },
-        { t: 'callout', kind: 'warn', html: "<code>apiVersion: v1beta1</code> as documented in 4.22 (cross-check against the 4.20 docs); available fields: to be verified in the 4.20 release notes." }
+        { t: 'callout', kind: 'warn', html: "<code>apiVersion: v1beta1</code> as documented in 4.20; available fields: to be verified in the 4.20 release notes." }
       ]
     },
     {
@@ -426,7 +426,7 @@ mirror:
           'Re-read the generated manifests: where do you find your pull secret, your SSH key and your network? Which file describes the host?',
           'Check your fictional DNS: write the three records (<code>api</code>, <code>api-int</code>, <code>*.apps</code>) for your SNO and explain why they all point to the same IP.',
           '(bonus) On the module 00 cluster: <code>oc get clusterversion -o yaml</code>; find the version history and the conditions.',
-          '(bonus) Write a minimal <code>ImageSetConfiguration</code> (one release, one operator package) and run <code>oc-mirror</code> as a simulation (<code>--dry-run</code>, to be verified); estimate the volume to transfer. Prerequisites: network access to registry.redhat.io and quay.io from the workstation, and a <b>real Red Hat pull secret</b> (module 00).'
+          '(bonus) Write a minimal <code>ImageSetConfiguration</code> (one release, one operator package) and run <code>oc-mirror</code> as a simulation (<code>--dry-run --v2</code>); estimate the volume to transfer. Prerequisites: network access to registry.redhat.io and quay.io from the workstation, and a <b>real Red Hat pull secret</b> (module 00).'
         ] }
       ]
     }

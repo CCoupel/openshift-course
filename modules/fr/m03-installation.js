@@ -42,7 +42,7 @@ COURSE.add({
           ['<code>baremetal</code>', 'Serveurs physiques (ou VM sans intégration hyperviseur) avec VIP', 'API/Ingress VIP via keepalived ; Machine API via Metal3 en IPI'],
           ['<code>vsphere</code>', 'Cluster sur vCenter', 'CSI vSphere, VIP gérées (IPI), Machine API (IPI), failure domains'],
           ['<code>none</code>', 'Toute infra sans intégration (UPI, SNO, edge)', 'Pas de VIP, pas de Machine API ; LB et DNS entièrement à toi'],
-          ['<i>autres</i>', 'Nutanix, OpenStack, cloud…', 'Hors périmètre de ce cours (à vérifier selon ton contexte)']
+          ['<i>autres</i>', 'Nutanix, OpenStack, cloud…', 'Hors périmètre de ce cours (à confirmer selon ton contexte)']
         ] },
         { t: 'callout', kind: 'warn', html: "Les combinaisons méthode × plateforme supportées dépendent de la version (par exemple l'Agent-based sur chaque plateforme) : <b>à vérifier dans les release notes de 4.20</b> et la matrice de support avant de figer ta conception." },
         { t: 'callout', kind: 'tip', html: "Le choix <code>platform</code> est <b>structurant</b> : il détermine la Machine API, le stockage par défaut (module 08) et les VIP. Il ne se change pas après coup." }
@@ -59,9 +59,9 @@ COURSE.add({
           ['SNO', '8', '16 Go', '120 Go']
         ] },
         { t: 'bullets', items: [
-          '<b>Minimums</b> de la doc 4.20 pour control plane, worker et SNO ; ligne bootstrap : à vérifier. Dimensionne plus large (monitoring, logging, virtualisation).',
+          '<b>Minimums</b> de la doc 4.20 pour bootstrap, control plane, worker et SNO. Dimensionne plus large (monitoring, logging, virtualisation).',
           'Disque control plane : <b>rapide</b> (latence etcd, voir module 08).',
-          '<b>Architecture et firmware</b> : x86_64 (autres archi : hors périmètre) ; UEFI <b>requis</b> en IPI bare metal quand le réseau de provisioning est en IPv6 ; autres cas : à vérifier dans la doc 4.20.',
+          '<b>Architecture et firmware</b> : x86_64 (autres archi : hors périmètre) ; UEFI <b>requis</b> en IPI bare metal quand le réseau de provisioning est en IPv6 (sans réseau de provisioning, pas d\'exigence).',
           'Poste d\'installation avec accès aux nœuds et à Internet (ou au miroir).'
         ] },
         { t: 'cmds', wide: true, items: [
@@ -81,7 +81,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           '<b>UPI / platform none</b> : deux LB L4 à toi (API 6443 + MCS 22623 ; Ingress 80 + 443), avec health checks.',
           '<b>IPI / Agent avec VIP</b> : deux VIP libres dans le sous-réseau des nœuds (<code>apiVIPs</code>, <code>ingressVIPs</code>) ; le DNS pointe dessus.',
-          'La résolution <b>inverse</b> des nœuds est exigée selon la méthode : à vérifier dans la doc 4.20.'
+          'La résolution <b>inverse</b> est exigée en UPI (API, bootstrap, control plane, compute) ; absente, <code>oc adm node-image monitor</code> ne contrôle pas les CSR.'
         ] },
         { t: 'callout', kind: 'trap', html: "Le wildcard <code>*.apps</code> oublié est la panne n°1 : l'installation <b>semble avancer</b>, puis <code>install-complete</code> n'aboutit jamais (console et OAuth injoignables)." }
       ]
@@ -163,7 +163,7 @@ sshKey: 'ssh-ed25519 AAAA...'` },
         - VM Network` },
         { t: 'bullets', items: [
           'Les <b>failure domains</b> décrivent où placer les VM (cluster, datastore, réseau) : base pour la HA entre clusters ou datacenters.',
-          'Le compte vCenter doit avoir les <b>privilèges</b> documentés (VM, dossiers, datastore) : à vérifier dans la doc 4.20.',
+          'Le compte vCenter doit avoir les <b>privilèges</b> documentés (VM, dossiers, datastore) : voir la section « Required vCenter account privileges » de la doc 4.20.',
           'Champs optionnels de la topologie : <code>resourcePool</code>, <code>folder</code>, <code>tagIDs</code>.'
         ] },
         { t: 'callout', kind: 'onprem', html: "Réserve les deux VIP dans l'IPAM <b>avant</b> : une VIP déjà utilisée provoque des erreurs intermittentes très difficiles à relier à l'installation." }
@@ -200,7 +200,7 @@ sshKey: 'ssh-ed25519 AAAA...'` },
     {
       title: 'Agent-based : agent-config.yaml',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'agent-config.yaml (SNO)', code: `apiVersion: v1beta1              # v1beta1 d'après la doc 4.22 ; 4.20 présumé identique : à vérifier
+        { t: 'code', lang: 'yaml', file: 'agent-config.yaml (SNO)', code: `apiVersion: v1beta1              # v1beta1 (doc 4.20)
 kind: AgentConfig
 metadata:
   name: ocp4
@@ -232,7 +232,7 @@ hosts:
         next-hop-address: 192.168.10.1
         next-hop-interface: eno1` },
         { t: 'callout', kind: 'tip', html: "<code>agent-config.yaml</code> complète <code>install-config.yaml</code> (cluster, pull secret, réseau global) avec ce qui est <b>propre aux hôtes</b> : IP statiques, interfaces, rôle. Détail réseau des nœuds (NMState) : module 07." },
-        { t: 'callout', kind: 'warn', html: "<code>apiVersion: v1beta1</code> tel que documenté en 4.22 (à recouper sur la doc 4.20) ; champs disponibles : à vérifier dans les release notes de 4.20." }
+        { t: 'callout', kind: 'warn', html: "<code>apiVersion: v1beta1</code> tel que documenté en 4.20 ; champs disponibles : à vérifier dans les release notes de 4.20." }
       ]
     },
     {
@@ -425,7 +425,7 @@ mirror:
           'Relis les manifests générés : où retrouves-tu ton pull secret, ta clé SSH et ton réseau ? Quel fichier décrit l\'hôte ?',
           'Vérifie ton DNS fictif : écris les trois enregistrements (<code>api</code>, <code>api-int</code>, <code>*.apps</code>) pour ton SNO et explique pourquoi ils pointent tous vers la même IP.',
           '(bonus) Sur le cluster du module 00 : <code>oc get clusterversion -o yaml</code> ; retrouve l\'historique des versions et les conditions.',
-          '(bonus) Rédige un <code>ImageSetConfiguration</code> minimal (une release, un paquet d\'opérateur) et lance <code>oc-mirror</code> en simulation (<code>--dry-run</code>, à vérifier) ; estime le volume à transférer. Prérequis : accès réseau à registry.redhat.io et à quay.io depuis le poste, et un <b>pull secret Red Hat réel</b> (module 00).'
+          '(bonus) Rédige un <code>ImageSetConfiguration</code> minimal (une release, un paquet d\'opérateur) et lance <code>oc-mirror</code> en simulation (<code>--dry-run --v2</code>) ; estime le volume à transférer. Prérequis : accès réseau à registry.redhat.io et à quay.io depuis le poste, et un <b>pull secret Red Hat réel</b> (module 00).'
         ] }
       ]
     }
