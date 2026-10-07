@@ -3,7 +3,7 @@
  * Usage : node tools/export-pptx.js [--lang fr|en] [--out dist/fichier.pptx] [--strict-i18n]
  *   sans --lang : un .pptx par langue (dist/openshift-course-X.Y.Z-fr.pptx et -en.pptx) ; --out n'est accepté qu'avec --lang.
  *   Modules lus dans modules/<lang>/ ; module absent en `en` → repli sur le module fr (signalé, erreur sous --strict-i18n).
- *   Libellés de l'export lus dans assets/i18n.js (clés pptx.* et callout.*), repli sur LABELS_DEFAULT ci-dessous.
+ *   Libellés de l'export lus dans assets/i18n.js (clés export.*, cover.*, recap.*, callout.*, course.title) ; clé absente = erreur.
  * Dépendance de dev : pptxgenjs (jamais utilisée par le cours HTML).
  * Les modules sont lus, jamais modifiés. Tout fichier non évaluable ou sans slides est ignoré. */
 'use strict';
@@ -14,46 +14,21 @@ const vm = require('vm');
 const ROOT = path.join(__dirname, '..');
 const LANGS = ['fr', 'en'];
 
-/* ---------- Libellés (source : assets/i18n.js, même que le site ; défauts ici si clé/fichier absent) ---------- */
-const LABELS_DEFAULT = {
-  fr: {
-    'callout.tip': 'Astuce', 'callout.warn': 'Attention', 'callout.trap': 'Piège', 'callout.cloud': 'Écart cloud', 'callout.onprem': 'On-prem', 'callout.k8s': 'Côté K8s', 'callout.ocp': 'Côté OCP',
-    'course.title': 'OpenShift, du K8s à OCP', 'export.deckSubtitle': 'Support de cours · on-premise · pour qui maîtrise déjà Kubernetes',
-    'export.deckInfo': '{n} module(s)', 'export.deckNotes': 'Version PowerPoint du cours : le HTML interactif (quiz, cartes, labs à cocher) reste la source de vérité.',
-    'export.subject': 'Support de cours OpenShift on-premise',
-    'cover.module': 'Module', 'export.footer': 'OpenShift — Module {nn} · {title}', 'cover.objectives': 'À la fin de ce module', 'cover.slides': '{n} slides', 'cover.quiz': '{n} quiz',
-    'recap.title': 'À retenir', 'export.recapQuiz': '🎯 {n} quiz dans ce module', 'export.cont': 'suite',
-    'export.term': 'Terme', 'export.definition': 'Définition', 'export.quiz': 'QUIZ', 'export.quizAnswer': 'QUIZ — réponse : {letter}. {answer}', 'export.answer': 'RÉPONSE',
-    'export.reveal': 'Réfléchis, puis réponds à voix haute', 'export.diagramPlaceholder': '📐 Schéma disponible dans la version HTML du cours', 'export.diagramNotes': 'SCHÉMA (texte extrait)'
-  },
-  en: {
-    'callout.tip': 'Tip', 'callout.warn': 'Warning', 'callout.trap': 'Pitfall', 'callout.cloud': 'Cloud gap', 'callout.onprem': 'On-prem', 'callout.k8s': 'K8s side', 'callout.ocp': 'OCP side',
-    'course.title': 'OpenShift, from K8s to OCP', 'export.deckSubtitle': 'Course material · on-premises · for those who already know Kubernetes',
-    'export.deckInfo': '{n} module(s)', 'export.deckNotes': 'PowerPoint version of the course: the interactive HTML (quizzes, cards, checkable labs) remains the source of truth.',
-    'export.subject': 'OpenShift on-premises course material',
-    'cover.module': 'Module', 'export.footer': 'OpenShift — Module {nn} · {title}', 'cover.objectives': 'By the end of this module', 'cover.slides': '{n} slides', 'cover.quiz': '{n} quiz',
-    'recap.title': 'Key takeaways', 'export.recapQuiz': '🎯 {n} quiz in this module', 'export.cont': 'cont.',
-    'export.term': 'Term', 'export.definition': 'Definition', 'export.quiz': 'QUIZ', 'export.quizAnswer': 'QUIZ — answer: {letter}. {answer}', 'export.answer': 'ANSWER',
-    'export.reveal': 'Think, then answer out loud', 'export.diagramPlaceholder': '📐 Diagram available in the HTML version of the course', 'export.diagramNotes': 'DIAGRAM (extracted text)'
-  }
-};
-/* Charge assets/i18n.js (comme plan.js : vm, COURSE factice). Retourne {labels, missing, source}. */
+/* ---------- Libellés (source unique : assets/i18n.js, la même que le site ; pas de défaut ici) ---------- */
+/* Charge assets/i18n.js comme plan.js (vm, COURSE factice). Erreur claire si fichier, langue ou clé manquent. */
 function loadLabels(lang, i18nFile = path.join(ROOT, 'assets', 'i18n.js')) {
-  const base = LABELS_DEFAULT[lang] || LABELS_DEFAULT.fr;
-  let site = null, source = 'défauts export';
-  if (fs.existsSync(i18nFile)) {
-    try {
-      const COURSE = {};
-      vm.runInNewContext(fs.readFileSync(i18nFile, 'utf8'), { COURSE }, { filename: 'i18n.js', timeout: 2000 });
-      if (COURSE.i18n && COURSE.i18n[lang]) { site = COURSE.i18n[lang]; source = 'assets/i18n.js'; }
-    } catch (e) { source = 'défauts export (i18n.js non évaluable : ' + e.message + ')'; }
-  }
-  const labels = { ...base, ...(site || {}) };
-  const missing = site ? Object.keys(base).filter(k => !(k in site)) : Object.keys(base);
-  return { labels, missing, source };
+  if (!fs.existsSync(i18nFile)) throw new Error(`libellés introuvables : ${path.relative(ROOT, i18nFile)}`);
+  const COURSE = {};
+  try { vm.runInNewContext(fs.readFileSync(i18nFile, 'utf8'), { COURSE }, { filename: 'i18n.js', timeout: 2000 }); }
+  catch (e) { throw new Error(`assets/i18n.js non évaluable : ${e.message}`); }
+  if (!COURSE.i18n || !COURSE.i18n[lang]) throw new Error(`assets/i18n.js : langue '${lang}' absente`);
+  return { labels: COURSE.i18n[lang], source: 'assets/i18n.js' };
 }
-let L = LABELS_DEFAULT.fr; // libellés de la langue en cours de construction (buildDeck, synchrone)
-const T = (k, vars = {}) => String(L[k] !== undefined ? L[k] : k).replace(/\{(\w+)\}/g, (m, v) => (v in vars ? vars[v] : m));
+let L = {}; // libellés de la langue en cours de construction (buildDeck, synchrone)
+const T = (k, vars = {}) => {
+  if (L[k] === undefined) throw new Error(`clé de libellé absente d'assets/i18n.js : ${k}`);
+  return String(L[k]).replace(/\{(\w+)\}/g, (m, v) => (v in vars ? vars[v] : m));
+};
 
 function readVersion() {
   const f = path.join(ROOT, 'VERSION');
@@ -565,12 +540,12 @@ async function exportLang(lang, out, version, strict) {
   }
   if (!modules.length) { console.error(`ERREUR  [${lang}] aucun module exportable.`); return false; }
   const lb = loadLabels(lang);
-  console.log(`info    [${lang}] libellés : ${lb.source}${lb.missing.length && lb.source === 'assets/i18n.js' ? ` (${lb.missing.length} clé(s) absente(s), défauts export : ${lb.missing.join(', ')})` : ''}`);
+  console.log(`info    [${lang}] libellés : ${lb.source}`);
   const { pptx, manifest } = buildDeck(modules, { version, lang, labels: lb.labels });
   manifest.skipped = skipped;
   manifest.failed = failed;
   manifest.fallbacks = fallbacks;
-  manifest.labels = { source: lb.source, missing: lb.missing };
+  manifest.labels = { source: lb.source };
   fs.mkdirSync(path.dirname(out), { recursive: true });
   await pptx.writeFile({ fileName: out });
   fs.writeFileSync(out.replace(/\.pptx$/, '.manifest.json'), JSON.stringify(manifest, null, 2));

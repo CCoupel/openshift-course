@@ -118,7 +118,23 @@ async function check(file, opts = {}) {
     if (bad.length) ko(`${m.id} : ${bad.length} commande(s)/ligne(s) de code absente(s) du PPTX : ${bad.slice(0, 3).join(' | ')}`);
     cursor += m.exported;
   }
+
+  // Non-régression des emojis de l'export (🎯 N quiz au récap, 📐 schéma) : valeurs lues dans assets/i18n.js de la langue
+  const esc = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const hasBlock = t => modules.some(m => m.slides.some(s => (s.blocks || []).some(b => b.t === t)));
+  const hasQuizModule = modules.some(m => m.takeaways && m.takeaways.length && hasQuizIn(m));
+  const all = texts.join('\n');
+  if (hasQuizModule) {
+    const re = new RegExp(esc(LB['export.recapQuiz']).replace('\\{n\\}', '\\d+'));
+    if (!re.test(all)) ko(`[${lang}] aucune slide ne contient « ${LB['export.recapQuiz']} » (🎯 N quiz) : emoji/libellé perdu`);
+    else ok(`[${lang}] « 🎯 N quiz » présent`);
+  }
+  if (hasBlock('diagram')) {
+    if (!all.includes(LB['export.diagramPlaceholder'])) ko(`[${lang}] aucune slide ne contient « ${LB['export.diagramPlaceholder']} » (📐) : emoji/libellé perdu`);
+    else ok(`[${lang}] « 📐 » présent`);
+  }
 }
+const hasQuizIn = m => m.slides.some(s => (s.blocks || []).some(b => b.t === 'quiz'));
 
 /* Auto-test : module 00, module vide, module à venir, fichier non évaluable. */
 async function selftest() {
@@ -136,7 +152,7 @@ async function selftest() {
 async function selftestIn(dir) {
   const mk = (n, extra) => `COURSE.add(${JSON.stringify({ id: 'm' + n, num: +n, emoji: '🧪', title: 'Module ' + n, tagline: 'x', duration: '≈ 60 min + lab 20 min',
     objectives: ['a', 'b', 'c'], takeaways: ['1', '2', '3', '4'], ...extra })});`;
-  const slides = [{ title: 'S1', blocks: [{ t: 'text', html: 'Bonjour <b>monde</b>' }, { t: 'quiz', q: 'Q ?', options: ['a', 'b'], answer: 1, explain: 'e' }] }];
+  const slides = [{ title: 'S1', blocks: [{ t: 'text', html: 'Bonjour <b>monde</b>' }, { t: 'quiz', q: 'Q ?', options: ['a', 'b'], answer: 1, explain: 'e' }, { t: 'diagram', html: '<svg><text>x</text></svg>' }] }];
   fs.writeFileSync(path.join(dir, 'm00-env.js'), mk('00', { slides }));
   fs.writeFileSync(path.join(dir, 'm03-vide.js'), mk('03', { slides: [] }));
   fs.writeFileSync(path.join(dir, 'm04-avenir.js'), "COURSE.add({ id: 'm04', num: 4, title: 'À venir' });");
@@ -188,6 +204,25 @@ async function selftestIn(dir) {
   if (!lostDetected) ko('selftest : une perte de <...> n\'a pas été détectée');
   else ok('selftest : perte de <...> détectée');
   await selftestLang(dir, mk, slides);
+  // 5) emojis : un .pptx sans « 🎯 N quiz » / « 📐 » doit échouer, avec libellés fr et en
+  for (const lg of LANGS) {
+    const lb = loadLabels(lg).labels;
+    const one = path.join(dir, 'emoji'); fs.mkdirSync(one, { recursive: true }); fs.copyFileSync(path.join(dir, 'm00-env.js'), path.join(one, 'm00-env.js'));
+    const mods = loadModules(one).modules;
+    const bare = { ...lb, 'export.recapQuiz': 'x', 'export.diagramPlaceholder': 'y' }; // libellés sans emoji dans le fichier
+    const deck = buildDeck(mods, { version: 'test', lang: lg, labels: bare });
+    const o = path.join(dir, `selftest-emoji-${lg}.pptx`);
+    await deck.pptx.writeFile({ fileName: o });
+    fs.writeFileSync(o.replace(/\.pptx$/, '.manifest.json'), JSON.stringify({ ...deck.manifest, skipped: [], failed: [], fallbacks: [] }));
+    const b = errors; await check(o, { lang: lg, dir: one }); const d = errors - b; errors = b;
+    if (d < 2) ko(`selftest emojis [${lg}] : perte de « 🎯 N quiz » / « 📐 » non détectée (${d} erreur(s), 2 attendues)`);
+    else ok(`selftest : perte des emojis détectée [${lg}]`);
+    const deck2 = buildDeck(mods, { version: 'test', lang: lg, labels: lb });
+    await deck2.pptx.writeFile({ fileName: o });
+    fs.writeFileSync(o.replace(/\.pptx$/, '.manifest.json'), JSON.stringify({ ...deck2.manifest, skipped: [], failed: [], fallbacks: [] }));
+    const b2 = errors; await check(o, { lang: lg, dir: one }); const d2 = errors - b2; errors = b2;
+    if (d2) ko(`selftest emojis [${lg}] : un export correct est refusé`); else ok(`selftest : emojis présents acceptés [${lg}]`);
+  }
 }
 
 /* 4) langues : module en absent → repli fr déclaré (ok), non déclaré (erreur), strict (erreur) ; libellés en dans le .pptx en. */
