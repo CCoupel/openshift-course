@@ -52,6 +52,7 @@ const MARK = { fr: /à vérifier/gi, en: /to be verified/gi };
 const argv = process.argv.slice(2);
 const strict = argv.includes('--strict-i18n');
 const ri = argv.indexOf('--root');
+if (ri >= 0 && (!argv[ri + 1] || argv[ri + 1].startsWith('--'))) { console.error('Usage : node tools/validate.js [--strict-i18n] [--root <dir>] [fichier...]\n--root attend un répertoire.'); process.exit(2); }
 const ROOT = ri >= 0 ? path.resolve(argv[ri + 1]) : path.join(__dirname, '..');
 const fileArgs = argv.filter((a, i) => !a.startsWith("--") && !(ri >= 0 && i === ri + 1));
 const globalChecks = fileArgs.length === 0;
@@ -129,13 +130,27 @@ function checkSchema(file, mod, folderLang) {
 }
 
 /* ---------- Parité fr ↔ en (D1) ---------- */
-// Lignes de code comparées : sans lignes vides, sans lignes `#…` ni commentaires de fin de ligne ` # …` (ils se traduisent).
-const codeLines = c => String(c || '').split('\n').map(l => l.replace(/\s+#\s.*$/, '').replace(/\s+$/, '')).filter(l => l.trim() && !/^\s*#/.test(l));
+// Lignes de code comparées : sans lignes vides, sans lignes `#…` ni commentaires de fin de ligne (` #` précédé d'un blanc,
+// hors guillemets ; ils se traduisent). Limite : un guillemet ou une apostrophe non appariés avant le `#` (ex. `echo it's # x`)
+// masque le commentaire ; les commentaires `//`, `--`, `;` ne sont pas retirés.
+function stripTrailingComment(l) {
+  let q = null;
+  for (let i = 0; i < l.length; i++) {
+    const ch = l[i];
+    if (q) { if (ch === q) q = null; } else if (ch === '"' || ch === "'") q = ch;
+    else if (ch === '#' && i > 0 && /\s/.test(l[i - 1])) return l.slice(0, i);
+  }
+  return l;
+}
+const codeLines = c => String(c || '').split('\n').map(l => stripTrailingComment(l).replace(/\s+$/, '')).filter(l => l.trim() && !/^\s*#/.test(l));
+const digits = d => (String(d === undefined ? '' : d).match(/\d+/g) || []).join(',');
 const len = x => (Array.isArray(x) ? x.length : undefined);
 
 function parity(file, fr, en) {
   const e = m => err(file, 'parité fr/en : ' + m);
-  for (const k of ['id', 'num', 'emoji', 'duration']) if (fr[k] !== en[k]) e(`champ ${k} différent (fr « ${fr[k]} », en « ${en[k]} »)`);
+  for (const k of ['id', 'num', 'emoji']) if (fr[k] !== en[k]) e(`champ ${k} différent (fr « ${fr[k]} », en « ${en[k]} »)`);
+  // duration : seuls les nombres comptent (« ≈ 60 min + lab 20 min » ↔ « ≈ 60 min + 20 min lab »).
+  if (digits(fr.duration) !== digits(en.duration)) e(`champ duration différent (fr « ${fr.duration} », en « ${en.duration} »)`);
   for (const k of ['objectives', 'takeaways']) if (len(fr[k]) !== len(en[k])) e(`${k} : ${len(fr[k])} en fr, ${len(en[k])} en en`);
   if (fr.slides.length !== en.slides.length) { e(`nombre de slides différent (fr ${fr.slides.length}, en ${en.slides.length})`); return; }
   fr.slides.forEach((fs_, i) => {
@@ -149,6 +164,12 @@ function parity(file, fr, en) {
       if (b.t !== c.t) { e(`${bt} : type de bloc différent (fr ${b.t}, en ${c.t})`); return; }
       const w = `${bt} (${b.t})`;
       for (const k of ['frag', 'wide']) if (!b[k] !== !c[k]) e(`${w} : ${k} différent`);
+      for (const k of ['caption', 'verdict', 'goal', 'explain', 'label', 'title']) if (!b[k] !== !c[k]) e(`${w} : champ ${k} présent dans une seule langue`);
+      if (b.t === 'compare') for (const side of ['left', 'right']) if (!(b[side] || {}).title !== !(c[side] || {}).title) e(`${w} : compare.${side}.title présent dans une seule langue`);
+      if (['flow', 'layers'].includes(b.t) && len(b.items || b.nodes) === len(c.items || c.nodes)) (b.items || b.nodes || []).forEach((x, k) => {
+        const y = (c.items || c.nodes)[k];
+        for (const f of ['hl', 'base']) if (!(x && x[f]) !== !(y && y[f])) e(`${w} : ${b.t}, élément ${k + 1}, ${f} différent`);
+      });
       if (b.kind !== c.kind) e(`${w} : kind différent (fr « ${b.kind} », en « ${c.kind} »)`);
       for (const [k, label] of [['items', 'items'], ['options', 'options'], ['steps', 'steps'], ['nodes', 'nodes']]) if (len(b[k]) !== len(c[k])) e(`${w} : nombre d'${label} différent (fr ${len(b[k])}, en ${len(c[k])})`);
       if (b.t === 'table') {

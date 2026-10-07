@@ -41,6 +41,7 @@ module.exports = { hashOf, hashFile, pairs, status, write, SOURCE_RE };
 if (require.main === module) {
   const argv = process.argv.slice(2);
   const ri = argv.indexOf('--root');
+  if (ri >= 0 && (!argv[ri + 1] || argv[ri + 1].startsWith('--'))) { console.error('Usage : node tools/i18n-hash.js --check | --write [<mNN>|all] [--root <dir>]\n--root attend un répertoire.'); process.exit(2); }
   const root = ri >= 0 ? path.resolve(argv[ri + 1]) : path.join(__dirname, '..');
   const rest = argv.filter((a, i) => !(i === ri || i === ri + 1));
   const list = pairs(root).filter(p => p.hasEn);
