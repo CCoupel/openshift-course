@@ -2,7 +2,7 @@
 
 Support **personnel**, en **français**, pour un lecteur qui maîtrise déjà Kubernetes (ne PAS réexpliquer Pod/Deployment/Service…).
 Contexte : **on-premise** (bare metal, vSphere). Chaque fois qu'un point diffère fortement en cloud managé (ROSA/ARO/OSD) ou en IaaS cloud, ajouter un callout `cloud`. Les points propres à l'on-prem (LB, DNS, stockage, air-gap, firmware…) utilisent un callout `onprem`.
-Ton : direct, pédagogique, un peu ludique (emojis avec parcimonie, quiz, jeux de cartes), jamais condescendant. Référence de style : `modules/m01-k8s-vs-ocp.js`.
+Ton : direct, pédagogique, un peu ludique (emojis avec parcimonie, quiz, jeux de cartes), jamais condescendant. Référence de style : `modules/fr/m01-k8s-vs-ocp.js`.
 Référence de **périmètre** (frontières entre modules, durées, labs, renvois) : `docs/PLAN.md`. Ce fichier-ci reste la référence de **forme** (schéma des modules et des blocs).
 
 ## Fichiers
@@ -131,7 +131,7 @@ COURSE.add({
 });
 ```
 
-Contrôle : `node tools/validate.js` veille à ce que `lang` = dossier ; défaut = `'fr'`.
+Contrôle : `node tools/validate.js` **exige** le champ `lang` (erreur s'il manque) et veille à ce que `lang` = dossier parent. Le défaut `'fr'` n'existe qu'au niveau du moteur (`COURSE.add` dans le code du module).
 
 ### Règle : index.html et chargement des modules en
 
@@ -176,7 +176,7 @@ Les deux versions d'un même module doivent être **structurellement identiques*
 - Format et valeurs de `duration` (ex. `'≈ 45 min + lab 15 min'`)
 - Lignes de code — structure, commandes, variables, identifiants
   - **Sauf commentaires** : un `#` précédé d'un espace en fin de ligne peut être traduit (ex. `echo hello  # ceci se traduit`)
-  - **Sauf texte visible des YAML** : dans un bloc `code` contenant du YAML, les **valeurs** des clés `message`, `summary`, `text`, `description`, `displayName` sont **traduites** (fr en français, en en anglais) ; la **clé reste identique**. Tout le reste (noms d'objets, identifiants, placeholders comme `change-me`, commandes) reste **neutre et anglais dans les deux langues**, modifié dans le **même commit fr + en** si neutralisé pour la première fois (ex. `mot-de-passe-a-definir` → `change-me` en fr et en). L'identifiant neutralisé l'est **dans tous les modules** qui le citent.
+  - **Sauf texte visible des YAML** : dans un bloc `code` (YAML, y compris dans un heredoc d'un autre langage comme `bash`), les **valeurs sur une seule ligne** des clés `message`, `summary`, `text`, `description`, `displayName` sont **traduites** (fr en français, en en anglais) ; la **clé reste identique**. Valeurs multilignes (`message: |…`) : seule la ligne `message: |` est libre, le contenu multi-ligne reste comparé strictement. Toute autre clé garde la comparaison stricte (identifiants, noms d'objets, commandes). Les valeurs libres restent **neutres et anglais dans les deux langues**, modifiées dans le **même commit fr + en** si neutralisées pour la première fois (ex. `mot-de-passe-a-definir` → `change-me` en fr et en) ; l'identifiant neutralisé l'est **dans tous les modules** qui le citent.
   - **Sauf commentaires `;`** (zones DNS) : supprimés UNIQUEMENT dans un bloc contenant une ligne d'enregistrement DNS (ligne avec `… IN A|AAAA|CNAME|MX|NS|PTR|SOA|SRV|TXT …`) ; ailleurs (INI, shell, etc.), `;` reste du code comparé.
 - **Champ `file` des blocs `code`** : comparé partiellement selon sa forme
   - Si le champ commence par un mot ressemblant à un nom de fichier (regex `^[\w./-]+\.[A-Za-z0-9]+$` ou contient `/`) : seul ce premier mot est comparé ; le reste (description, précision entre parenthèses) se traduit
@@ -228,31 +228,31 @@ Les libellés du moteur et de l'interface utilisateur sont centralisés dans `as
 ```js
 COURSE.i18n = {
   fr: {
-    'course.title': 'OpenShift, maîtrisez la plateforme',
-    'callout.tip': '💡 Astuces',
-    'callout.warn': '⚠️ Attention',
-    'callout.trap': '🪤 Piège',
-    'callout.cloud': '☁️ Écart cloud',
-    'callout.onprem': '🏢 On-prem',
-    'callout.k8s': '☸️ Kubernetes',
-    'callout.ocp': '🔴 OpenShift',
+    'course.title': 'OpenShift, du K8s à OCP',
+    'callout.tip': 'Astuce',  // emoji ajouté par le moteur
+    'callout.warn': 'Attention',
+    'callout.trap': 'Piège',
+    'callout.cloud': 'Écart cloud',
+    'callout.onprem': 'On-prem',
+    'callout.k8s': 'Kubernetes',
+    'callout.ocp': 'OpenShift',
     'export.footer': 'OpenShift — Module {nn} · {title}',
-    'export.quizAnswer': 'QUIZ — réponse : {letter}. {answer}',
+    'export.quizAnswer': '🎯 QUIZ — réponse : {letter}. {answer}',  // emoji en clé
     'export.term': 'Terme',
     'export.definition': 'Définition',
     // … autres clés
   },
   en: {
-    'course.title': 'OpenShift, master the platform',
-    'callout.tip': '💡 Tips',
-    'callout.warn': '⚠️ Caution',
-    'callout.trap': '🪤 Pitfall',
-    'callout.cloud': '☁️ Cloud gap',
-    'callout.onprem': '🏢 On-premises',
-    'callout.k8s': '☸️ Kubernetes',
-    'callout.ocp': '🔴 OpenShift',
+    'course.title': 'OpenShift, from K8s to OCP',
+    'callout.tip': 'Tip',
+    'callout.warn': 'Warning',
+    'callout.trap': 'Pitfall',
+    'callout.cloud': 'Cloud gap',
+    'callout.onprem': 'On-prem',
+    'callout.k8s': 'Kubernetes',
+    'callout.ocp': 'OpenShift',
     'export.footer': 'OpenShift — Module {nn} · {title}',
-    'export.quizAnswer': 'QUIZ — Answer: {letter}. {answer}',
+    'export.quizAnswer': '🎯 QUIZ — Answer: {letter}. {answer}',
     'export.term': 'Term',
     'export.definition': 'Definition',
     // … autres clés
@@ -264,9 +264,9 @@ COURSE.i18n = {
 - Clés en **notation pointée** (ex. `'callout.tip'`, `'export.footer'`).
 - **Mêmes clés** dans `fr` et `en` — jamais de clé qui manquerait dans une langue.
 - **Paramètres** entre accolades (`{nn}`, `{title}`, `{letter}`, `{answer}`) : mêmes noms dans les deux langues.
-- Les **emojis** sont inclus dans le libellé (ex. `'💡 Astuces'`), non ajoutés par le moteur.
+- Les **emojis** de callouts sont **ajoutés par le moteur** (`engine.js`), **non inclus** dans la valeur i18n.js (sauf pour certaines clés `export.*` comme `export.quizAnswer` qui portent un emoji préfixe).
 
-Validation : `validate.js` contrôle que les clés utilisées dans les modules existent dans `i18n.js` des deux langues et que les paramètres correspondent.
+Validation : `validate.js` contrôle la **parité des clés** (mêmes clés fr/en) et la correspondance des **paramètres** entre les deux langues (mêmes noms de `{…}`). Il ne contrôle pas l'usage des clés dans les modules (ce contrôle se ferait à l'exécution).
 
 ### Titres bilingues (`assets/plan.js`)
 
@@ -275,12 +275,12 @@ Le manifeste `assets/plan.js` contient les titres du plan, un par module. Depuis
 ```js
 COURSE.plan = [
   { id: 'm00', num: 0, emoji: '🔧', title: { fr: 'Environnement de lab', en: 'Lab environment' } },
-  { id: 'm01', num: 1, emoji: '🆚', title: { fr: 'K8s vs OCP', en: 'Kubernetes vs OpenShift' } },
+  { id: 'm01', num: 1, emoji: '⚖️', title: { fr: 'K8s vs OCP', en: 'K8s vs OCP' } },
   // … 16 modules
 ];
 ```
 
-Contrôle : `validate.js` vérifie que chaque titre dans `plan.js` correspond au titre du module pour les deux langues.
+Contrôle : `validate.js` vérifie que chaque titre **et emoji** dans `plan.js` correspond exactement au titre **et emoji** du module pour les deux langues. L'emoji et le titre français doivent correspondre au module fr (`id` et `num`), et le titre anglais au module en ; l'emoji est unique (identique fr/en).
 
 ### Empreinte de source (`source`) et synchronisation
 
@@ -321,7 +321,7 @@ git add modules/en/m05-monitoring.js  # le champ `source` a changé
 git commit -m "fix(content): alert thresholds in module 05 (per Red Hat 4.20 release notes)"
 ```
 
-Si la correction ne s'applique qu'au français (ex. amélioration de tournure, pas une correction de fait), elle peut être commitée seule. Mais les faits doivent être **identiques** dans les deux langues.
+Même une retouche de tournure du français (amélioration sans changement de fait) rend l'empreinte du module en **périmée** : `validate.js --strict-i18n` échouera tant que `node tools/i18n-hash.js --write mNN` n'est pas relancé. Reformuler et recalculer dans le **même commit** (vérifier que l'en reste fidèle). Les faits doivent être **identiques** dans les deux langues.
 
 ### Options de validation
 
@@ -378,12 +378,12 @@ Les libellés de l'export (couverture, pied de page, réponses de quiz, « À re
 
 ### Sélecteur de langue
 
-L'interface utilisateur affiche un **sélecteur segmenté FR | EN** dans la barre du haut, juste avant le bouton thème. Le changement de langue :
+L'interface utilisateur affiche un **sélecteur segmenté FR | EN** dans la barre du haut, juste avant le bouton thème. Tous les modules (fr et en, 32 balises `<script>`) sont **chargés d'emblée** par `index.html` ; le changement de langue sélectionne simplement l'ensemble à afficher. Le changement de langue :
 - Mémorise le choix (clé `ocp-course-v1` du `localStorage`)
-- Charge les modules de la langue sélectionnée
+- Sélectionne le rendu de la langue choisie dans `COURSE.byLang[lang]`
 - Garde l'utilisateur sur la même slide et le même nombre de fragments révélés
 - Bascule le titre de la page et les libellés du moteur via `COURSE.setLang(lang)`
 
 **Raccourci clavier** : `l` bascule entre fr et en.
 
-**Repli** : pendant le développement sur `feature/i18n` (avant la fusion unique), si un module n'existe pas en anglais, le moteur affiche le module français + un bandeau « Not translated yet — showing French ». Ce repli disparaît à la release (tous les modules doivent être traduits).
+**Repli** : pendant le développement sur `feature/i18n` (avant la fusion unique), si un module n'existe pas en anglais, le moteur affiche le module français + un bandeau « Not translated yet — showing French ». **Le code de repli reste dans le moteur** (filet de sécurité pour un module futur non traduit) ; seul le bandeau disparaît à la release quand tous les modules sont traduits.
