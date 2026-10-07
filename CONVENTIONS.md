@@ -133,28 +133,50 @@ COURSE.add({
 
 Contrôle : `node tools/validate.js` veille à ce que `lang` = dossier ; défaut = `'fr'`.
 
+### Règle : index.html et chargement des modules en
+
+Chaque module crée (qu'il soit en français ou en anglais) **doit être référencé** dans `index.html` par une balise `<script>` :
+
+```html
+<!-- français -->
+<script src="modules/fr/m05-monitoring.js"></script>
+<!-- anglais -->
+<script src="modules/en/m05-monitoring.js"></script>
+```
+
+**Validation** :
+- `node tools/validate.js` : module fr ou en non référencé par `<script>` → **avertissement** (exit 0).
+- `node tools/validate.js --strict-i18n` : module en non référencé → **erreur** (exit 1, rejet en PR et release).
+
+Le message d'erreur indique exactement quelle balise ajouter. En phase de traduction sur `feature/i18n`, tant que tous les modules en ne sont pas traduits, le avertissement est normal (la balise attend le fichier).
+
 ### Parité structurelle (contrat D1)
 
 Les deux versions d'un même module doivent être **structurellement identiques**. `node tools/validate.js --strict-i18n` (ou simplement `validate` sur un dépôt complet) contrôle :
 
 **Invariants (identiques fr/en)** :
-- `id`, `num`, `emoji`, `duration` (format du budget en heures/minutes, NE SE TRADUIT PAS)
+- `id`, `num`, `emoji`
+- `duration` (format du budget en heures/minutes, NE SE TRADUIT PAS) — **normalisée aux chiffres** : « ≈ 60 min + lab 20 min » et « ≈ 60 min + 20 min lab » sont considérés comme identiques (l'ordre des termes et les espaces variables sont acceptés)
 - Nombre et ordre des `objectives`, `takeaways`, `slides`
 - Pour chaque slide : `layout`, présence de `tag`, nombre et type de `blocks`, ordre des blocs
 - Pour chaque bloc : `frag`, `wide`, `kind`
 - Cardinalités : nombre d'`items`, de `rows`, de `head`, d'`options`, de `steps`, de `nodes`, de cartes, de couches
-- Contenu structurel : `answer` (index du quiz, l'ordre des options ne change pas), `cmds[i][0]` (commande elle-même), `file` et `lang` des blocs `code`
+- Champs optionnels : si un bloc a `caption`, `verdict`, `goal`, `explain`, `label`, `title`, ou `compare.*title` en français, il doit aussi les avoir en anglais (avec le contenu traduit, mais la structure doit être identique)
+- Contenus structurels : `answer` (index du quiz, l'ordre des options ne change pas), `cmds[i][0]` (commande elle-même), `file` et `lang` des blocs `code`
+- Propriétés de graphes : `hl` (highlight) et `base` des `flow` et `layers` doivent être aux mêmes positions
 - Marqueurs d'incertitude : nombre de « à vérifier » (fr) et « to be verified » (en), même nombre dans les deux fichiers
 
 **Se traduit** :
 - `title`, `tagline`, `objectives`, `takeaways`
 - Tous les textes : titres de slide, HTML des blocs `text`, `bullets`, `table`, `compare`, `callout`, `flow`, `layers`, `cards`, `quiz`, `reveal`, `lab`, libellés SVG des `diagram`
-- Commentaires `# …` des blocs `code` (pas les commandes)
+- Commentaires `# …` des blocs `code` (un `#` précédé d'un espace : `cmd  # commentaire`) — voir limite ci-dessous
 
 **NE se traduit PAS** :
 - Noms de commandes, YAML (sauf commentaires), noms d'objets/CRD/opérateurs OpenShift
 - Format et valeurs de `duration` (ex. `'≈ 45 min + lab 15 min'`)
-- Lignes de code (les commentaires seuls se traduisent)
+- Lignes de code — **sauf commentaires** : un `#` précédé d'un espace peut être traduit (ex. `echo hello  # ceci se traduit`)
+
+**Limite de comparaison des commentaires de code** : `validate.js` accepte qu'une ligne de commande soit modifiée **uniquement** si le changement est un commentaire `# …` en fin de ligne (espace suivi d'un `#`). Exceptions non gérées : guillemets non appairés (ex. `echo "a # b"` sera mal parsé), commentaires de langage spécifique (`//` en C/Go, `--` en SQL, `;` en batch), `#` dans une chaîne entre guillemets doubles. En cas de doute, laisser la ligne intacte.
 
 Exemple de parité cassée : ajouter une diapositive à l'une seulement, retirer une option d'un quiz, changer un label `kind` de callout → `validate.js` rejet.
 
