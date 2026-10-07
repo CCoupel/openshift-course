@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm05', lang: 'en', num: 5, emoji: '📈',
   title: 'Monitoring & observability',
-  source: '71b90b057c35',
+  source: '3bfc86958dd7',
   tagline: 'Metrics, alerts, logs: the built-in monitoring stack, opening it to teams, alert routing and Logging 6 with Loki.',
   duration: '≈ 70 min + lab 20 min',
   objectives: [
@@ -193,7 +193,7 @@ spec:
       labels:
         severity: warning
       annotations:
-        summary: "L'application web ne répond plus"` },
+        summary: "The web application is no longer responding"` },
         { t: 'bullets', items: [
           '<b>ServiceMonitor</b>: scrapes the Services that carry a label; <b>PodMonitor</b>: scrapes pods directly.',
           '<b>PrometheusRule</b>: alerting and recording rules evaluated by the Thanos Ruler.',
@@ -254,11 +254,11 @@ route:
   - matchers:
     - severity=critical
     - openshift_io_alert_source="platform"
-    receiver: equipe-plateforme
+    receiver: platform-team
 receivers:
 - name: default
 - name: watchdog
-- name: equipe-plateforme
+- name: platform-team
   webhook_configs:
   - url: https://alerting.example.com/hook` },
         { t: 'bullets', items: [
@@ -391,7 +391,7 @@ spec:
       url: tls://siem.example.com:6514
       rfc: RFC5424
   pipelines:
-  - name: audit-vers-siem
+  - name: audit-to-siem
     inputRefs:
     - audit
     outputRefs:
