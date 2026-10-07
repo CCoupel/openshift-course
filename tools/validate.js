@@ -143,6 +143,8 @@ function stripTrailingComment(l) {
   return l;
 }
 const codeLines = c => String(c || '').split('\n').map(l => stripTrailingComment(l).replace(/\s+$/, '')).filter(l => l.trim() && !/^\s*#/.test(l));
+// `file` : le nom de fichier est identique ; une précision entre parenthèses en fin (« dnsmasq.conf (exemple de lab) ») se traduit.
+const baseFile = f => (f === undefined ? f : String(f).replace(/\s*\([^)]*\)\s*$/, ''));
 const digits = d => (String(d === undefined ? '' : d).match(/\d+/g) || []).join(',');
 const len = x => (Array.isArray(x) ? x.length : undefined);
 
@@ -180,7 +182,7 @@ function parity(file, fr, en) {
       if (b.t === 'quiz' && b.answer !== c.answer) e(`${w} : answer différent (fr ${b.answer}, en ${c.answer})`);
       if (b.t === 'cmds' && len(b.items) === len(c.items)) b.items.forEach((x, k) => { if (Array.isArray(x) && Array.isArray(c.items[k]) && x[0] !== c.items[k][0]) e(`${w} : cmds, commande ${k + 1} différente (fr « ${x[0]} », en « ${c.items[k][0]} »)`); });
       if (b.t === 'code') {
-        if (b.file !== c.file) e(`${w} : code, file différent (fr « ${b.file} », en « ${c.file} »)`);
+        if (baseFile(b.file) !== baseFile(c.file)) e(`${w} : code, file différent (fr « ${b.file} », en « ${c.file} »)`);
         if (b.lang !== c.lang) e(`${w} : code, lang différent (fr « ${b.lang} », en « ${c.lang} »)`);
         const fl = codeLines(b.code), cl = codeLines(c.code);
         if (fl.length !== cl.length) e(`${w} : code, nombre de lignes non commentaires différent (fr ${fl.length}, en ${cl.length})`);
