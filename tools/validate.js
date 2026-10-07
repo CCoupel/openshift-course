@@ -120,7 +120,7 @@ if (process.argv.length <= 2) {
     if (new Set(plan.map(p => p.num)).size !== plan.length) err('plan.js', 'num en doublon');
     plan.forEach(p => { if (p.id !== 'm' + String(p.num).padStart(2, '0')) err('plan.js', `id "${p.id}" incohérent avec num ${p.num}`); });
     for (const f of files) { const m = /^(m\d+)/.exec(path.basename(f)); if (m && !ids.has(m[1])) err(f, 'module absent du manifeste assets/plan.js'); }
-    plan.forEach(p => { const m = loadedMods[p.id]; if (m) { if (m.title !== p.title) err('plan.js', `${p.id} : title « ${p.title} » ≠ module « ${m.title} »`); if (m.emoji !== p.emoji) err('plan.js', `${p.id} : emoji ≠ module`); } });
+    plan.forEach(p => { const m = loadedMods[p.id]; if (m) { const pt = p.title && p.title.fr !== undefined ? p.title.fr : p.title; if (m.title !== pt) err('plan.js', `${p.id} : title « ${pt} » ≠ module « ${m.title} »`); if (m.emoji !== p.emoji) err('plan.js', `${p.id} : emoji ≠ module`); } });
     plan.forEach(p => { if (!p.id || p.num === undefined || !p.emoji || !p.title) err('plan.js', `entrée incomplète : ${JSON.stringify(p)}`); });
     const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
     for (const m of html.matchAll(/<script src="([^"]+)"/g)) if (!fs.existsSync(path.join(root, m[1]))) err('index.html', `script inexistant (404) : ${m[1]}`);
