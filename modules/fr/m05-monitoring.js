@@ -42,7 +42,7 @@ COURSE.add({
           ['<b>monitoring-plugin</b>', 'Pages « Observe » de la console web'],
           ['<b>Telemeter Client</b>', 'Envoie un sous-ensemble de données à Red Hat (santé à distance)']
         ] },
-        { t: 'callout', kind: 'onprem', html: "Telemeter envoie des données vers Red Hat : en réseau isolé ou sous contrainte de confidentialité, vérifie son statut avec ta sécurité (option de désactivation et conséquences : à vérifier dans la doc 4.20)." }
+        { t: 'callout', kind: 'onprem', html: "Telemeter envoie des données vers Red Hat : en réseau isolé ou sous contrainte de confidentialité, vérifie son statut avec ta sécurité (désactivation : retirer l\'entrée <code>cloud.openshift.com</code> du pull secret global ; cela coupe aussi l\'Insights Operator)." }
       ]
     },
     {
@@ -52,7 +52,7 @@ COURSE.add({
         { t: 'bullets', items: [
           '<b>Observe → Alerting</b> : alertes actives, règles, silences.',
           '<b>Observe → Metrics</b> : requêtes PromQL (via Thanos Querier).',
-          '<b>Observe → Dashboards</b> : tableaux de bord prêts à l\'emploi (pas de Grafana dédié à administrer ; historique de son retrait : à vérifier).',
+          '<b>Observe → Dashboards</b> : tableaux de bord prêts à l\'emploi (pas de Grafana dédié à administrer ; Grafana retiré de la stack en 4.11).',
           '<b>Observe → Targets</b> : cibles scrapées et leur état.'
         ] },
         { t: 'code', lang: 'bash', file: 'terminal', code: "# Les composants et leurs pods\n$ oc get pods -n openshift-monitoring\n\n# Interroger les métriques de plateforme en ligne de commande (route du Thanos Querier)\n$ oc get route thanos-querier -n openshift-monitoring\n$ oc get cm cluster-monitoring-config -n openshift-monitoring   # absent par défaut" },
@@ -408,7 +408,7 @@ spec:
       title: 'Observabilité réseau et traces : survol',
       blocks: [
         { t: 'table', head: ['Outil', 'Rôle', 'Statut'], rows: [
-          ['<b>Cluster Observability Operator</b>', 'Déploie des stacks d\'observabilité (<code>MonitoringStack</code>, <code>monitoring.rhobs</code>) et des plugins de console (logs, traces, monitoring)', 'Plugin « monitoring » en Technology Preview d\'après la doc : à vérifier en 4.20'],
+          ['<b>Cluster Observability Operator</b>', 'Déploie des stacks d\'observabilité (<code>MonitoringStack</code>, <code>monitoring.rhobs</code>) et des plugins de console (logs, traces, monitoring)', 'COO 1.3 : détection d\'incidents et panneau de dépannage GA (OCP 4.19+) ; dashboard APM en Developer Preview'],
           ['<b>Network Observability Operator</b>', 'Flux réseau du cluster (qui parle à qui), tableaux de bord dédiés', 'Détails et versions : à vérifier (module 07)'],
           ['<b>OpenTelemetry / Tempo</b>', 'Traces distribuées applicatives', 'Hors périmètre de ce cours']
         ] },
