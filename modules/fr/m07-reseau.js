@@ -108,13 +108,13 @@ COURSE.add({
     {
       title: 'IngressController : domaine, placement, sharding',
       blocks: [
-        { t: 'code', lang: 'yaml', file: 'ingresscontroller-partenaires.yaml', code: `apiVersion: operator.openshift.io/v1
+        { t: 'code', lang: 'yaml', file: 'ingresscontroller-partners.yaml', code: `apiVersion: operator.openshift.io/v1
 kind: IngressController
 metadata:
-  name: partenaires
+  name: partners
   namespace: openshift-ingress-operator
 spec:
-  domain: partenaires.apps.ocp4.example.com
+  domain: partners.apps.ocp4.example.com
   replicas: 2
   nodePlacement:
     nodeSelector:
@@ -122,7 +122,7 @@ spec:
         node-role.kubernetes.io/infra: ""
   routeSelector:
     matchLabels:
-      zone: partenaires
+      zone: partners
   endpointPublishingStrategy:
     type: HostNetwork` },
         { t: 'bullets', items: [
@@ -214,10 +214,10 @@ spec:
           left: { title: '👮 AdminNetworkPolicy (ANP)', items: ['Objet <b>cluster</b>, évalué <b>avant</b> les NetworkPolicy', 'Actions : <code>Allow</code>, <code>Deny</code>, <code>Pass</code>', '<code>priority</code> de 0 à 99 (« 100 ANP au plus » : à vérifier ; plus la valeur est basse, plus la priorité est haute ; la doc conseille 30-70)', 'Les équipes ne peuvent pas la contourner'] },
           right: { title: '🛟 BaselineAdminNetworkPolicy (BANP)', items: ['<b>Un seul</b> objet par cluster', 'Garde-fou <b>par défaut</b> si aucune NetworkPolicy ne correspond', 'Les NetworkPolicy des équipes peuvent la <b>surcharger</b>'] },
           verdict: 'ANP = ce que personne ne peut ouvrir ; BANP = le défaut que les équipes peuvent assouplir ; NetworkPolicy = règles des projets.' },
-        { t: 'code', lang: 'yaml', file: 'anp-exemple.yaml', code: `apiVersion: policy.networking.k8s.io/v1alpha1
+        { t: 'code', lang: 'yaml', file: 'anp-example.yaml', code: `apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
-  name: bloque-vers-admin
+  name: block-to-admin
 spec:
   priority: 40
   subject:
@@ -400,7 +400,7 @@ spec:
           { label: 'Route / routeur', sub: 'oc get route, logs HAProxy' },
           { label: 'Policy', sub: 'NetworkPolicy, ANP, EgressFirewall', hl: true }
         ], caption: 'Va du <b>plus simple au plus profond</b> : nom, Service, exposition, politiques, puis OVN.' },
-        { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc get endpoints web\n$ oc exec deploy/web -- curl -sI http://autre-svc:8080\n$ oc get networkpolicy,adminnetworkpolicy -A\n\n# Sur un nœud (jamais en production sans raison)\n$ oc debug node/worker-0\nsh-5.1# chroot /host\nsh-5.1# ip a ; ss -lntp | head" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc get endpoints web\n$ oc exec deploy/web -- curl -sI http://other-svc:8080\n$ oc get networkpolicy,adminnetworkpolicy -A\n\n# Sur un nœud (jamais en production sans raison)\n$ oc debug node/worker-0\nsh-5.1# chroot /host\nsh-5.1# ip a ; ss -lntp | head" },
         { t: 'bullets', items: [
           '<b>ovnkube-trace</b> : trace des paquets simulés TCP/UDP entre deux points d\'un cluster OVN-Kubernetes (ovn-trace + ovs-appctl + ovn-detrace) ; disponible dans la doc 4.20.',
           '<b>must-gather</b> : l\'option <code>--gather_network_logs</code> ne s\'utilise que sur demande du support.'
