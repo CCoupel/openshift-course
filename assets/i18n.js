@@ -67,7 +67,17 @@ COURSE.i18n = {
     'export.definition': 'Définition',
     'export.quiz': 'QUIZ',
     'export.quizAnswer': 'QUIZ — réponse : {letter}. {answer}',
-    'export.footer': 'OpenShift — Module {nn} · {title}'
+    'export.footer': 'OpenShift — Module {nn} · {title}',
+    'export.deckSubtitle': 'Support de cours · on-premise · pour qui maîtrise déjà Kubernetes',
+    'export.deckInfo': '{n} module(s)',
+    'export.deckNotes': 'Version PowerPoint du cours : le HTML interactif (quiz, cartes, labs à cocher) reste la source de vérité.',
+    'export.subject': 'Support de cours OpenShift on-premise',
+    'export.recapQuiz': '{n} quiz dans ce module',
+    'export.cont': 'suite',
+    'export.answer': 'RÉPONSE',
+    'export.reveal': 'Réfléchis, puis réponds à voix haute',
+    'export.diagramPlaceholder': 'Schéma disponible dans la version HTML du cours',
+    'export.diagramNotes': 'SCHÉMA (texte extrait)'
   },
   en: {
     'course.title': 'OpenShift, from K8s to OCP',
@@ -126,6 +136,16 @@ COURSE.i18n = {
     'export.definition': 'Definition',
     'export.quiz': 'QUIZ',
     'export.quizAnswer': 'QUIZ — answer: {letter}. {answer}',
-    'export.footer': 'OpenShift — Module {nn} · {title}'
+    'export.footer': 'OpenShift — Module {nn} · {title}',
+    'export.deckSubtitle': 'Course material · on-premises · for those who already know Kubernetes',
+    'export.deckInfo': '{n} module(s)',
+    'export.deckNotes': 'PowerPoint version of the course: the interactive HTML (quizzes, cards, checkable labs) remains the source of truth.',
+    'export.subject': 'OpenShift on-premises course material',
+    'export.recapQuiz': '{n} quiz in this module',
+    'export.cont': 'cont.',
+    'export.answer': 'ANSWER',
+    'export.reveal': 'Think, then answer out loud',
+    'export.diagramPlaceholder': 'Diagram available in the HTML version of the course',
+    'export.diagramNotes': 'DIAGRAM (extracted text)'
   }
 };
