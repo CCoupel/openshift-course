@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm08', lang: 'en', num: 8, emoji: '💾',
   title: 'Storage',
-  source: 'b78c5c600bc6',
+  source: 'd37bdc660be9',
   tagline: "On on-prem OpenShift, persistent storage is not provided: you choose the backend, and that is where projects go off the rails.",
   duration: '≈ 60 min + lab 20 min',
   objectives: [

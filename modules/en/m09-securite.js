@@ -241,9 +241,9 @@ groups: []` },
     {
       title: 'Secrets: beyond the K8s Secret',
       blocks: [
-        { t: 'text', html: "<p>A K8s <code>Secret</code> is <b>encoding</b>, not encryption: anyone who can read the object (RBAC) reads it in clear. Three complementary levers.</p>" },
+        { t: 'text', html: "<p>A K8s <code>Secret</code> is <b>encoding</b>, not encryption: anyone who can read the object (RBAC) reads it in plain text. Three complementary levers.</p>" },
         { t: 'compare', wide: true,
-          left: { title: '🔐 Protect Secrets inside the cluster', items: ['<b>etcd encryption</b>: data at rest in etcd (enabling: module 04)', 'Strict RBAC on <code>secrets</code> (module 06)', 'Don\'t put them in Git in clear'] },
+          left: { title: '🔐 Protect Secrets inside the cluster', items: ['<b>etcd encryption</b>: data at rest in etcd (enabling: module 04)', 'Strict RBAC on <code>secrets</code> (module 06)', 'Don\'t put them in Git in plain text'] },
           right: { title: '🏦 Keep the secret elsewhere', items: ['<b>External Secrets Operator</b>: synchronizes a vault (Vault, cloud managers, CyberArk Conjur…) into K8s Secrets', '<b>Secrets Store CSI Driver</b>: mounts the secret into the pod via a volume, no K8s Secret required', 'Rotation and audit on the vault side'] },
           verdict: 'ESO: simple for apps that read Secrets. CSI: the secret only exists in the pod. Both assume a vault.' },
         { t: 'callout', kind: 'ocp', html: "<b>External Secrets Operator for Red Hat OpenShift</b> is GA as of 4.20 (Operator from the Red Hat catalog, <code>ExternalSecretsConfig</code> resource to enable it; <code>SecretStore</code>, <code>ClusterSecretStore</code>, <code>ExternalSecret</code> objects). <code>ExternalSecretsConfig</code> is in <code>operator.openshift.io/v1alpha1</code> according to the docs and guides (medium confidence); <code>apiVersion</code> of the <code>ExternalSecret</code>s and status of the <b>Secrets Store CSI Driver</b> in 4.20: to be verified in the release notes." },

@@ -286,7 +286,7 @@ COURSE.add({
           ['Operators on automatic update everywhere', 'Unplanned change on storage, network', 'module 04'],
           ['Update without reading the <code>admin-acks</code>, PDBs ignored', 'Update blocked or removed API used', 'module 12'],
           ['Monitoring with no PVC nor alert routing', 'Metrics lost, nobody is warned', 'module 05'],
-          ['Secrets in clear in Git', 'Secret to revoke, history compromised', 'module 10'],
+          ['Secrets in plain text in Git', 'Secret to revoke, history compromised', 'module 10'],
           ['<code>anyuid</code> or <code>privileged</code> SCCs granted broadly', 'Guardrails removed', 'module 09'],
           ['Masters on a shared, saturated datastore', 'Unstable etcd, Degraded operators', 'module 08']
         ] }

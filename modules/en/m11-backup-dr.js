@@ -272,7 +272,7 @@ spec:
     },
     {
       title: 'Testing: no exercise, no backup',
-      tag: 'to plan',
+      tag: 'to schedule',
       blocks: [
         { t: 'cards', items: [
           { front: 'Restore a namespace', back: '<b>Monthly</b>: delete a test project and restore it with OADP; check data and volumes.' },

@@ -1,14 +1,14 @@
 COURSE.add({
   id: 'm10', lang: 'en', num: 10, emoji: '🔄',
   title: 'CI/CD & GitOps',
-  source: '77daf21531f8',
+  source: 'd9be8ac18973',
   tagline: 'Your cluster\'s configuration in Git, applied and watched by Argo CD: platform GitOps first, Pipelines and Builds as an overview.',
   duration: '≈ 45 min + lab 20 min',
   objectives: [
     'Install OpenShift GitOps and understand the default Argo CD instance and its permission limits',
     'Describe a cluster configuration with <code>Application</code>, <code>AppProject</code> and <code>ApplicationSet</code>',
     'Master the sync policies (prune, selfHeal), sync waves and hooks',
-    'Organize the Git repository, manage secrets without putting them in clear and place multi-cluster',
+    'Organize the Git repository, manage secrets without putting them in plain text and place multi-cluster',
     'Place OpenShift Pipelines (Tekton) and Builds without getting into application development'
   ],
   slides: [
@@ -176,9 +176,9 @@ stringData:
   type: git
   url: https://git.example.com/platform/cluster-config.git
   username: argocd
-  password: DO_NOT_PUT_THE_TOKEN_IN_CLEAR_IN_GIT` },
+  password: change-me` },
         { t: 'bullets', items: [
-          '<b>Private repo</b>: credentials are declared in a <b>Secret</b> carrying the label <code>argocd.argoproj.io/secret-type: repository</code>, with <code>type: git</code>, <code>url</code> and <code>username</code>/<code>password</code> (HTTPS) or <code>sshPrivateKey</code> (SSH), in the <b>instance\'s namespace</b> (Argo CD docs); this Secret is <b>not</b> put in clear in Git (secrets slide).',
+          '<b>Private repo</b>: credentials are declared in a <b>Secret</b> carrying the label <code>argocd.argoproj.io/secret-type: repository</code>, with <code>type: git</code>, <code>url</code> and <code>username</code>/<code>password</code> (HTTPS) or <code>sshPrivateKey</code> (SSH), in the <b>instance\'s namespace</b> (Argo CD docs); this Secret is <b>not</b> put in plain text in Git (secrets slide).',
           '<code>destination.server: https://kubernetes.default.svc</code>: the <b>cluster where Argo CD runs</b>.',
           '<b>Namespace</b>: <code>gitops-lab</code> already exists with the label <code>argocd.argoproj.io/managed-by=openshift-gitops</code> (step 3 of the lab); <code>CreateNamespace=true</code> would not be enough on its own if the instance has no right to create a namespace.',
           '<code>automated</code> + <code>prune</code> + <code>selfHeal</code>: automatic synchronization, deletion of resources removed from Git, drift correction.',
@@ -288,11 +288,11 @@ spec:
       ]
     },
     {
-      title: 'Secrets: never in clear in Git',
+      title: 'Secrets: never in plain text in Git',
       layout: 'two',
       blocks: [
         { t: 'bullets', items: [
-          'A K8s <code>Secret</code> is just encoding: <b>never</b> in clear in Git (even a private repo).',
+          'A K8s <code>Secret</code> is just encoding: <b>never</b> in plain text in Git (even a private repo).',
           '<b>External Secrets Operator</b>: Git only contains the <b>reference</b> to a vault (Vault…); the secret is built inside the cluster (module 09).',
           '<b>Encryption in Git</b> (community tools such as Sealed Secrets or SOPS): possible, but not provided by OpenShift GitOps: support status to be verified with your vendor.',
           'etcd encryption (module 04) protects the secret <b>inside the cluster</b>, not in Git.'
@@ -386,7 +386,7 @@ data:
     'OpenShift GitOps: <code>latest</code> channel, <code>openshift-gitops-operator</code> namespace, default instance in <code>openshift-gitops</code>; versions 1.18 and 1.19 compatible with 4.20.',
     'The default instance does <b>not have cluster-admin</b>: admin in its namespace and read access to the cluster; rights widened by a minimal ClusterRole; <code>argocd.argoproj.io/managed-by</code> label for managed namespaces.',
     'Application, AppProject, ApplicationSet; <code>automated</code>, <code>prune</code>, <code>selfHeal</code>; sync waves and hooks for ordering; app-of-apps for structure.',
-    'Never a secret in clear in Git (External Secrets, module 09); don\'t fight the operators (<code>ignoreDifferences</code>, intended CRs).',
+    'Never a secret in plain text in Git (External Secrets, module 09); don\'t fight the operators (<code>ignoreDifferences</code>, intended CRs).',
     'Pipelines (Tekton, ClusterTask removed in 1.17) and Builds (Shipwright): overview; the admin installs and monitors them, application development stays out of scope.'
   ]
 });

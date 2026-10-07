@@ -175,7 +175,7 @@ stringData:
   type: git
   url: https://git.example.com/platform/cluster-config.git
   username: argocd
-  password: DO_NOT_PUT_THE_TOKEN_IN_CLEAR_IN_GIT` },
+  password: change-me` },
         { t: 'bullets', items: [
           '<b>Dépôt privé</b> : les identifiants se déclarent dans un <b>Secret</b> portant le label <code>argocd.argoproj.io/secret-type: repository</code>, avec <code>type: git</code>, <code>url</code> et <code>username</code>/<code>password</code> (HTTPS) ou <code>sshPrivateKey</code> (SSH), dans le <b>namespace de l\'instance</b> (doc Argo CD) ; ce Secret ne se met <b>pas</b> en clair dans Git (slide secrets).',
           '<code>destination.server: https://kubernetes.default.svc</code> : le <b>cluster où tourne Argo CD</b>.',
