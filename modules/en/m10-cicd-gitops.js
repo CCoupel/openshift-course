@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm10', lang: 'en', num: 10, emoji: '🔄',
   title: 'CI/CD & GitOps',
-  source: 'd9be8ac18973',
+  source: '797128e8e11d',
   tagline: 'Your cluster\'s configuration in Git, applied and watched by Argo CD: platform GitOps first, Pipelines and Builds as an overview.',
   duration: '≈ 45 min + lab 20 min',
   objectives: [

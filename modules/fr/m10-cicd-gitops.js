@@ -359,7 +359,7 @@ metadata:
   name: banner
   namespace: gitops-lab
 data:
-  message: "Managed by GitOps: do not edit by hand"` },
+  message: "Géré par GitOps : ne pas modifier à la main"` },
         { t: 'callout', kind: 'tip', html: "Dépose ces deux fichiers dans le dossier <code>lab/</code> d'un <b>dépôt Git à toi</b> (GitHub, GitLab, Gitea interne… joignable depuis le cluster). Le lab ne référence aucun dépôt fourni : crée le tien. Le namespace <code>gitops-lab</code> est créé <b>à la main</b> (étape 3) avec le label de gestion." }
       ]
     },

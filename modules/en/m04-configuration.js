@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm04', lang: 'en', num: 4, emoji: '⚙️',
   title: 'Configuration',
-  source: '3f86ec5c74d6',
+  source: 'ed1abdd4960f',
   tagline: 'The cluster is installed: proxy, registries, certificates, chrony, Operators. “Day-1” configuration, declarative, without touching the nodes by hand.',
   duration: '≈ 60 min + lab 20 min',
   objectives: [

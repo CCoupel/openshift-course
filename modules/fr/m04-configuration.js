@@ -335,7 +335,7 @@ metadata:
 spec:
   sourceType: grpc
   image: registry.example.com:8443/redhat/redhat-operator-index:v4.20
-  displayName: Red Hat Operators (mirror)
+  displayName: Red Hat Operators (miroir)
   publisher: infra
   updateStrategy:
     registryPoll:
@@ -374,7 +374,7 @@ spec:
     {
       title: 'Console : plugins et personnalisation',
       blocks: [
-        { t: 'code', lang: 'bash', file: 'terminal', code: "# Plugins de la console (fournis par certains Operators)\n# Attention : cette commande REMPLACE la liste existante ; pour ajouter à une liste\n# déjà présente, utilise path /spec/plugins/- avec value \"plugin-name\"\n$ oc get consoleplugin\n$ oc patch console.operator.openshift.io cluster --type=json \\\n    -p '[{\"op\":\"add\",\"path\":\"/spec/plugins\",\"value\":[\"plugin-name\"]}]'\n\n# Bandeau d'information visible de tous\n$ cat <<'EOF' | oc apply -f -\napiVersion: console.openshift.io/v1\nkind: ConsoleNotification\nmetadata:\n  name: maintenance\nspec:\n  text: Scheduled maintenance on Saturday at 10 pm\n  location: BannerTop\nEOF" },
+        { t: 'code', lang: 'bash', file: 'terminal', code: "# Plugins de la console (fournis par certains Operators)\n# Attention : cette commande REMPLACE la liste existante ; pour ajouter à une liste\n# déjà présente, utilise path /spec/plugins/- avec value \"plugin-name\"\n$ oc get consoleplugin\n$ oc patch console.operator.openshift.io cluster --type=json \\\n    -p '[{\"op\":\"add\",\"path\":\"/spec/plugins\",\"value\":[\"plugin-name\"]}]'\n\n# Bandeau d'information visible de tous\n$ cat <<'EOF' | oc apply -f -\napiVersion: console.openshift.io/v1\nkind: ConsoleNotification\nmetadata:\n  name: maintenance\nspec:\n  text: Maintenance prévue samedi 22h\n  location: BannerTop\nEOF" },
         { t: 'bullets', items: [
           'Les <b>plugins</b> (ex. GitOps, virtualisation) apparaissent après installation de l\'Operator <b>et</b> activation dans la CR <code>Console</code>.',
           '<code>ConsoleLink</code>, <code>ConsoleNotification</code>, <code>ConsoleCLIDownload</code> : liens, bandeaux et téléchargements de CLI personnalisés.',

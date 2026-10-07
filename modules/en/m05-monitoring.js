@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm05', lang: 'en', num: 5, emoji: '📈',
   title: 'Monitoring & observability',
-  source: '3bfc86958dd7',
+  source: '42ee4ac22350',
   tagline: 'Metrics, alerts, logs: the built-in monitoring stack, opening it to teams, alert routing and Logging 6 with Loki.',
   duration: '≈ 70 min + lab 20 min',
   objectives: [
