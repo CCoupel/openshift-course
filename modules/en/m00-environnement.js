@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm00', lang: 'en', num: 0, emoji: '🧪',
   title: 'Lab environment',
-  source: '690d7e7e5285',
+  source: 'e8483f8d9222',
   tagline: 'Before day 1: a solid cluster, the right tools, and the certainty of knowing which lab needs what.',
   duration: '≈ 30 min',
   objectives: [
@@ -28,7 +28,7 @@ COURSE.add({
       title: 'Four environment levels',
       blocks: [
         { t: 'table', head: ['Level', 'Environment', 'What it allows', 'Limits'], rows: [
-          ['<b>E0</b>', 'Workstation only, or <b>OpenShift Local</b>, or any cluster as <code>cluster-admin</code>', '<code>oc</code>, RBAC, htpasswd IdP, light Operators, GitOps', 'Single node, no Machine API, no updates; monitoring disabled by default (to be verified)'],
+          ['<b>E0</b>', 'Workstation only, or <b>OpenShift Local</b>, or any cluster as <code>cluster-admin</code>', '<code>oc</code>, RBAC, htpasswd IdP, light Operators, GitOps', 'Single node, Machine API not usable (<code>none</code> platform), no updates; monitoring disabled by default (to be verified)'],
           ['<b>E1</b>', '<b>SNO</b> (single node) on KVM, vSphere or bare metal', 'MachineConfig with reboot, LVMS, monitoring and logging, etcd backup, updates', 'No real etcd quorum, no ODF; official minimum 8 vCPU / 16 GB / 120 GB'],
           ['<b>E2</b>', '3-node <b>compact</b> (or 3 masters + 2 workers)', 'etcd quorum, MachineHealthCheck, ODF, MetalLB, EgressIP, rolling update', 'Uses a lot of resources'],
           ['<b>E3</b>', 'Bare metal or nested virtualization', 'OpenShift Virtualization (VMs, live migration)', 'Nested virtualization: acceptable in a lab, not in production (to be verified)']
@@ -74,7 +74,7 @@ COURSE.add({
         { t: 'bullets', items: [
           'The <code>crc setup</code> and <code>crc start</code> commands prepare the local hypervisor, then launch the cluster.',
           'You get two accounts: <code>kubeadmin</code> (temporary <code>cluster-admin</code>) and <code>developer</code>.',
-          'Monitoring is disabled by default (enabling option and associated resources: to be verified).'
+          'Monitoring is disabled by default (to enable it: <code>crc config set enable-cluster-monitoring true</code>, with at least 14 GiB of memory).'
         ] },
         { t: 'callout', kind: 'warn', wide: true, html: "The resources of the <code>openshift</code> preset (4 physical cores, 10.5 GB of free RAM, 35 GB) come from the current documentation; supported systems and <code>crc config</code> options: <b>to be verified in the OpenShift Local documentation</b> for your version." }
       ]
@@ -104,7 +104,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           'A <b>60-day trial</b> (self-support, a Red Hat account is enough) is offered via console.redhat.com; exact terms: to be verified when you subscribe.',
           'The <b>pull secret</b> (Red Hat account) is required to install and pull the platform images: download it from the console.',
-          'Mind the <b>expiry date</b>: after the trial, the cluster keeps running but is no longer under subscription (consequences: to be verified).'
+          'Mind the <b>expiry date</b>: after the trial, the cluster keeps running but is no longer supported and may stop receiving updates.'
         ] },
         { t: 'callout', kind: 'trap', html: "The pull secret is a <b>secret</b>: never <b>commit</b> it to Git (even a private repository), don't paste it into a ticket. Keep it <code>chmod 600</code> outside your lab repository." },
         { t: 'callout', kind: 'tip', html: "Keep the <b>subscription ID</b> and the trial end date somewhere: a forgotten lab cluster that loses its license is a classic." }
@@ -152,7 +152,7 @@ COURSE.add({
           ['podman --version', 'Containers and registry authentication']
         ] },
         { t: 'bullets', items: [
-          'Get <code>oc</code> and <code>openshift-install</code> from the Red Hat console or the official mirror (to be verified); take a version <b>close to 4.20</b> (the docs warn that an <code>oc</code> too different from the cluster may not access all of its features).',
+          'Get <code>oc</code> and <code>openshift-install</code> from the Red Hat console or the official mirror; take a version <b>close to 4.20</b> (the docs warn that an <code>oc</code> too different from the cluster may not access all of its features).',
           'System: Linux (or WSL) recommended; macOS possible for <code>oc</code>.',
           'Also add <code>openssl</code> for the certificate labs (module 04).'
         ] },
@@ -171,7 +171,7 @@ COURSE.add({
           ['oc whoami --show-console', 'Web console URL']
         ] },
         { t: 'bullets', frag: true, items: [
-          '<b>kubeadmin</b>: temporary account created at installation, <code>cluster-admin</code>; its password is in the installation folder (<code>auth/kubeadmin-password</code> with <code>openshift-install</code>; with OpenShift Local: <code>crc console --credentials</code>; with Assisted Installer: displayed at the end of the installation, to be verified). To be replaced by an IdP in module 06; in your lab, keep it until module 06 is done.',
+          '<b>kubeadmin</b>: temporary account created at installation, <code>cluster-admin</code>; its password is in the installation folder (<code>auth/kubeadmin-password</code> with <code>openshift-install</code>; with OpenShift Local: <code>crc console --credentials</code>; with Assisted Installer: displayed at the end of the installation). To be replaced by an IdP in module 06; in your lab, keep it until module 06 is done.',
           '<b>Break-glass</b>: the installer <code>kubeconfig</code> (<code>auth/kubeconfig</code>) gives admin access without going through OAuth: <b>keep it</b> outside your repository.',
           'A healthy cluster means <b>all operators Available</b> before starting a lab.'
         ] },
@@ -190,7 +190,7 @@ COURSE.add({
         ] },
         { t: 'bullets', items: [
           'Take a <b>snapshot right after a healthy installation</b> (“clean state”) and before any risky lab (MachineConfig, certificates).',
-          'A cluster stopped for a long time may have <b>expired certificates</b> at restart: to be verified in the docs; it is one of the reasons not to let a lab sleep for months (module 12).'
+          'A cluster stopped for a long time may have <b>expired certificates</b> at restart (up to a year after installation; first rotation at 24 h): approve the pending CSRs then; it is one of the reasons not to let a lab sleep for months (module 12).'
         ] },
         { t: 'callout', kind: 'tip', html: "Before a destructive lab (module 04: Ingress certificate, module 11: etcd restore), <b>go back</b> to your “clean” snapshot rather than chaining experiments on a weakened cluster." }
       ]
