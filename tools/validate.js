@@ -220,7 +220,7 @@ function parity(file, fr, en) {
   // Marqueur d'incertitude : « à vérifier » (fr) ↔ « to be verified » (en), même nombre.
   const count = (m, re) => (JSON.stringify(m).match(re) || []).length;
   const nf = count(fr, MARK.fr), ne = count(en, MARK.en);
-  if (nf !== ne) e(`marqueurs d'incertitude : ${nf} « à vérifier » en fr, ${ne} « to be verified » en en`);
+  if (nf !== ne) e(`marqueurs d'incertitude : ${nf} « à vérifier » en fr, ${ne} « to be verified » en en ; rappel : « à vérifier » est réservé aux incertitudes factuelles (usage ordinaire → « à contrôler » ou « à confirmer » côté fr)`);
   if (count(en, MARK.fr)) e('marqueur « à vérifier » non traduit dans le module en (écrire « to be verified »)');
 }
 
