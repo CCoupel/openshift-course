@@ -21,7 +21,7 @@ Format: Interactive HTML (standalone, no dependencies, opens with double-click) 
 ## Accès
 
 - **Vitrine en ligne** : https://ccoupel.github.io/openshift-course/
-- **Télécharger** : page [Releases](https://github.com/CCoupel/openshift-course/releases) → dernière version (pré-version 0.x)
+- **Télécharger** : page [Releases](https://github.com/CCoupel/openshift-course/releases) → version 1.0.0 (stable)
   - `openshift-course-X.Y.Z.zip` : cours HTML complet (bilingue fr/en)
   - `openshift-course-X.Y.Z-fr.pptx` : PowerPoint français
   - `openshift-course-X.Y.Z-en.pptx` : PowerPoint anglais
@@ -173,16 +173,16 @@ Le site reflète la dernière release : un push sur `main` ne le met pas à jour
 
 ### Versioning
 
-Format `X.Y.Z` (Semantic Versioning). Développement `0.x` marqué pré-release.
+Format `X.Y.Z` (Semantic Versioning).
 
 ---
 
 ## Limites
 
-- **Pré-version** : structure et cohérence vérifiées par des tests automatisés (schéma, syntaxe, renvois, parité fr/en) ; le contenu technique n'est pas garanti.
-- **Faits recoupés** : recoupés avec la documentation officielle Red Hat 4.20 de façon automatisée (confiance variable) ; relecture technique complète reportée après fusion de la branche i18n ; certains points restent à confirmer et sont marqués « à vérifier » / « to be verified » dans les modules (dans les deux langues, même nombre).
-- **Rendu** : validation fonctionnelle seule, pas de vérification visuelle en navigateur réel ou PowerPoint.
-- **Avant toute procédure sensible** : relire la documentation officielle Red Hat (restauration etcd, mises à jour de version, configurations critiques).
+- **Structure et cohérence** : vérifiées par des tests automatisés (schéma, syntaxe, renvois, parité fr/en).
+- **Relecture technique** : 8 faits OCP 4.20 relus et corrigés ; 66 marqueurs « à vérifier » / « to be verified » restent (relecture sur sources officielles Red Hat faite par agent automatisé, à compléter par une relecture humaine exhaustive). Avant toute procédure sensible (restauration etcd, mises à jour, configurations critiques), relire la documentation officielle Red Hat.
+- **Rendu** : validation fonctionnelle seule ; pas de vérification visuelle en navigateur réel ou PowerPoint.
+- **Versioning** : format `X.Y.Z` (Semantic Versioning). Version 1.0.0 est stable (pré-versions 0.x antérieures marquées `prerelease`).
 
 Les noms OpenShift® et Red Hat® sont des marques de Red Hat, Inc. ; ce projet n'est pas affilié à Red Hat.
 
