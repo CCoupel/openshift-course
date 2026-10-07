@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm10', lang: 'en', num: 10, emoji: '🔄',
   title: 'CI/CD & GitOps',
-  source: '797128e8e11d',
+  source: '61e16483119e',
   tagline: 'Your cluster\'s configuration in Git, applied and watched by Argo CD: platform GitOps first, Pipelines and Builds as an overview.',
   duration: '≈ 45 min + lab 20 min',
   objectives: [
@@ -227,7 +227,7 @@ metadata:
           'Full order: <b>phase</b> first, then <b>wave</b>, then resource type, then name. Delay between two waves: <b>2 s</b> (<code>ARGOCD_SYNC_WAVE_DELAY</code> variable).',
           'Hooks: <code>PreSync</code>, <code>Sync</code>, <code>PostSync</code>, <code>SyncFail</code>; deletion according to <code>HookSucceeded</code>, <code>HookFailed</code> or <code>BeforeHookCreation</code>.'
         ] },
-        { t: 'callout', kind: 'tip', html: "Typical platform case: <b>namespace → OLM Subscription → Operator CR</b> in this order (module 04). <b>Beware</b>: Argo CD doesn\'t wait for the <b>CRD</b> installed by OLM to exist; without precautions, synchronizing the CR fails at the <i>dry run</i> (unknown type). The <code>SkipDryRunOnMissingResource=true</code> option (<code>argocd.argoproj.io/sync-options</code> annotation on the resource, or in the Application\'s <code>syncOptions</code>) skips that dry run when the type is absent; it runs as soon as the CRD is present (Argo CD docs “Sync options”). A synchronization <b>retry</b> is the other safety net (to be verified for your version)." }
+        { t: 'callout', kind: 'tip', html: "Typical platform case: <b>namespace → OLM Subscription → Operator CR</b> in this order (module 04). <b>Beware</b>: Argo CD doesn\'t wait for the <b>CRD</b> installed by OLM to exist; without precautions, synchronizing the CR fails at the <i>dry run</i> (unknown type). The <code>SkipDryRunOnMissingResource=true</code> option (<code>argocd.argoproj.io/sync-options</code> annotation on the resource, or in the Application\'s <code>syncOptions</code>) skips that dry run when the type is absent; it runs as soon as the CRD is present (Argo CD docs “Sync options”). A synchronization <b>retry</b> (<code>syncPolicy.retry</code>: <code>limit</code>, <code>backoff</code>) is the other safety net." }
       ]
     },
     {
@@ -307,7 +307,7 @@ spec:
           ['<b>A central Argo CD</b>', 'One instance registers several clusters and pushes', 'Simple; the instance becomes a critical point and has rights on all'],
           ['<b>ApplicationSet (clusters generator)</b>', 'One Application per registered cluster', 'Same base, overlays per cluster'],
           ['<b>Argo CD Agent</b>', '<b>Pull</b> architecture: the cluster\'s agent fetches its config', 'GA in OpenShift GitOps 1.19 (docs)'],
-          ['<b>ACM + Argo CD (pull)</b>', 'The ACM hub distributes; the ACM agent pulls the Application', 'Introduced in Technology Preview in ACM 2.8; current status: to be verified']
+          ['<b>ACM + Argo CD (pull)</b>', 'The ACM hub distributes; the ACM agent pulls the Application', 'Available since ACM 2.8; in 2.15, ApplicationSet in any namespace, the Argo CD agent and progressive rollout are in Technology Preview (status of the model itself: to be verified)']
         ] },
         { t: 'flow', nodes: [
           'Cluster lost',
@@ -325,7 +325,7 @@ spec:
         { t: 'table', head: ['Tool', 'Role', 'To remember on the platform side'], rows: [
           ['<b>OpenShift Pipelines</b> (Tekton)', 'CI/CD as pipelines of tasks in pods', 'Operator via OLM; version 1.20: OCP 4.14 and 4.16 to 4.21; 1.21: console integration up to 4.20'],
           ['<b>ClusterTask</b>', 'Old cluster-scoped task', 'Deprecated, <b>removed in 1.17</b>: replaced by Tekton <b>resolvers</b> (GA since 1.11)'],
-          ['<b>Builds for OpenShift</b> (Shipwright)', 'Building images on the cluster', 'Builds 1.6 (Shipwright 0.17, GA) for 4.20; 1.7 for 4.16 to 4.21'],
+          ['<b>Builds for OpenShift</b> (Shipwright)', 'Building images on the cluster', 'Builds 1.7 (GA Feb 10, 2026) for OCP 4.16 to 4.21 (Builds 1.6: 4.16 to 4.19)'],
           ['<b>BuildConfig</b>', 'OCP\'s historical build mechanism', 'Still present; deprecation status in 4.20 not confirmed: to be verified']
         ] },
         { t: 'callout', kind: 'ocp', wide: true, html: "These tools belong to <b>application development</b> and the teams: the platform admin <b>installs, versions and monitors</b> them (Operators, rights, quotas of the build namespaces). The pipeline details are out of scope for this course." }

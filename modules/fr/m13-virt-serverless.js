@@ -94,7 +94,7 @@ spec: {}` },
           'Le canal <code>stable</code> installe la version <b>compatible avec ta version d\'OCP</b> (doc) ; le <code>HyperConverged</code> est la CR qui déploie tous les composants.',
           'Vérifications : <code>oc get csv -n openshift-cnv</code> et <code>oc get hco -n openshift-cnv kubevirt-hyperconverged -o json | jq .status.conditions</code>.'
         ] },
-        { t: 'callout', kind: 'warn', html: "OperatorGroup, Subscription et noms viennent de la procédure CLI de la doc (module de souscription 4.20) ; <code>apiVersion</code> exacte du <code>HyperConverged</code> et options (placement infra/workloads) : à vérifier dans « Installing OpenShift Virtualization »." }
+        { t: 'callout', kind: 'warn', html: "OperatorGroup, Subscription et noms viennent de la procédure CLI de la doc (module de souscription 4.20) ; <code>HyperConverged</code> en <code>hco.kubevirt.io/v1beta1</code> (doc 4.20) ; options de placement (infra/workloads) : à vérifier dans « Installing OpenShift Virtualization »." }
       ]
     },
     {
@@ -381,7 +381,7 @@ spec:
         ] },
         { t: 'bullets', items: [
           '<b>Scale-to-zero</b> économise des ressources mais ajoute une <b>latence de démarrage</b> : mets <code>min-scale: "1"</code> pour les services sensibles à la latence.',
-          'Les paramètres fins (grâce avant la mise à zéro, cible de concurrence) : doc de la version ; <b>à vérifier</b> pour les valeurs par défaut de 1.37.'
+          'Les paramètres fins (grâce avant la mise à zéro, cible de concurrence) : doc de la version ; grâce avant la mise à zéro : 30 s par défaut dans Knative amont ; défauts de la 1.37 : <b>à vérifier</b>.'
         ] },
         { t: 'callout', kind: 'trap', wide: true, html: "Un service à <code>max-scale</code> élevé et sans quota peut <b>absorber un pic</b> en consommant les workers d'autres équipes. Fixe un plafond par service et un <b>quota de projet</b> (module 06)." }
       ]

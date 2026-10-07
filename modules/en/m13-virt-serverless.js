@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm13', lang: 'en', num: 13, emoji: '🖥️',
   title: 'Virtualization & Serverless',
-  source: 'd66080dfedf0',
+  source: '78711d70baa6',
   tagline: 'Two ways to stop thinking “server”: VMs treated like pods with OpenShift Virtualization, and services that sleep at zero with OpenShift Serverless.',
   duration: '≈ 60 min + lab 25 min',
   objectives: [
@@ -95,7 +95,7 @@ spec: {}` },
           'The <code>stable</code> channel installs the version <b>compatible with your OCP version</b> (docs); <code>HyperConverged</code> is the CR that deploys all the components.',
           'Checks: <code>oc get csv -n openshift-cnv</code> and <code>oc get hco -n openshift-cnv kubevirt-hyperconverged -o json | jq .status.conditions</code>.'
         ] },
-        { t: 'callout', kind: 'warn', html: "OperatorGroup, Subscription and names come from the docs\' CLI procedure (4.20 subscription module); exact <code>apiVersion</code> of <code>HyperConverged</code> and options (infra/workloads placement): to be verified in “Installing OpenShift Virtualization”." }
+        { t: 'callout', kind: 'warn', html: "OperatorGroup, Subscription and names come from the docs\' CLI procedure (4.20 subscription module); <code>HyperConverged</code> in <code>hco.kubevirt.io/v1beta1</code> (4.20 docs); placement options (infra/workloads): to be verified in “Installing OpenShift Virtualization”." }
       ]
     },
     {
@@ -382,7 +382,7 @@ spec:
         ] },
         { t: 'bullets', items: [
           '<b>Scale-to-zero</b> saves resources but adds <b>startup latency</b>: set <code>min-scale: "1"</code> for latency-sensitive services.',
-          'Fine-grained parameters (grace period before scaling to zero, concurrency target): version docs; <b>to be verified</b> for the 1.37 defaults.'
+          'Fine-grained parameters (grace period before scaling to zero, concurrency target): version docs; scale-to-zero grace period: 30 s by default in upstream Knative; 1.37 defaults: <b>to be verified</b>.'
         ] },
         { t: 'callout', kind: 'trap', wide: true, html: "A service with a high <code>max-scale</code> and no quota can <b>absorb a spike</b> by consuming other teams\' workers. Set a cap per service and a <b>project quota</b> (module 06)." }
       ]

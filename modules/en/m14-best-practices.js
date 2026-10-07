@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm14', lang: 'en', num: 14, emoji: '✅',
   title: 'Best practices',
-  source: '202f3e36aa50',
+  source: '4eba87fb69dd',
   tagline: 'A cross-cutting go-live checklist, reusable on engagements: each item points to the module that covers it, nothing is repeated here.',
   duration: '≈ 30 min + lab 15 min',
   objectives: [
@@ -80,7 +80,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           '<b>Pods per node</b>: 250 by default (kubelet <code>maxPods</code> parameter). 2,500 is a tested maximum, which requires a <code>hostPrefix</code> of 20 and a <code>maxPods</code> of 2500: not a goal.',
           'Number of nodes = expected pods ÷ pods per node, then <b>check CPU, memory and disk</b> of the application.',
-          'System reservations (<code>system-reserved</code>): the docs cite <b>500m CPU and 1 Gi memory</b> by default, but state that defaults depend on OpenShift and MCO versions (to be verified, see module 12); automatic adjustment (<code>autoSizingReserved: true</code> in a <code>KubeletConfig</code>) is <b>disabled by default in 4.20</b> (automatic as of 4.21 according to the release notes, module 12).'
+          'System reservations (<code>system-reserved</code>): the docs cite <b>500m CPU and 1 Gi memory</b> by default, but state that defaults depend on OpenShift and MCO versions (see module 12); automatic adjustment (<code>autoSizingReserved: true</code> in a <code>KubeletConfig</code>) is <b>disabled by default in 4.20</b> (automatic as of 4.21 according to the release notes, module 12).'
         ] },
         { t: 'callout', kind: 'trap', html: 'Maximums are tested <b>one by one</b>: aiming for several maximums at once is not guaranteed. A cluster that exceeds these figures remains usable but goes beyond what Red Hat has validated. Quotas and day-to-day capacity: modules 06 and 12.' }
       ]
@@ -142,7 +142,7 @@ COURSE.add({
           ['<code>PodDisruptionBudget</code>', 'Minimum number of available pods during a <b>voluntary</b> eviction (drain, update)', '<code>minAvailable</code> at 100% or <code>maxUnavailable: 0</code> blocks the drain']
         ] },
         { t: 'code', lang: 'yaml', file: 'Deployment and PDB excerpt', code: '# In the pod template\ntopologySpreadConstraints:\n- maxSkew: 1\n  topologyKey: topology.kubernetes.io/zone\n  whenUnsatisfiable: DoNotSchedule\n  labelSelector:\n    matchLabels:\n      app: web\n---\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: web\nspec:\n  maxUnavailable: 1\n  selector:\n    matchLabels:\n      app: web' },
-        { t: 'callout', kind: 'onprem', html: 'A PDB is only honored for <b>voluntary evictions</b>, not for a node failure. Zones: on vSphere, <code>failureDomains</code> are declared in <code>install-config.yaml</code> (module 03); elsewhere, nodes must carry a zone label for the spread to work (to be verified depending on your platform). PDBs that block an update: module 12.' }
+        { t: 'callout', kind: 'onprem', html: 'A PDB is only honored for <b>voluntary evictions</b>, not for a node failure. Zones: on vSphere, <code>failureDomains</code> are declared in <code>install-config.yaml</code> (module 03); outside a cloud provider, label the nodes yourself (<code>topology.kubernetes.io/zone</code>) for the spread to work. PDBs that block an update: module 12.' }
       ]
     },
     {

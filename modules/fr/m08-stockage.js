@@ -188,7 +188,7 @@ COURSE.add({
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc patch pvc db-data -p '{\"spec\":{\"resources\":{\"requests\":{\"storage\":\"50Gi\"}}}}'\n$ oc get pvc db-data -w\n$ oc describe pvc db-data\n# Conditions : Resizing / FileSystemResizePending" },
         { t: 'bullets', items: [
           "On peut <b>agrandir</b>, jamais réduire.",
-          "L'expansion à chaud est supportée par la plupart des drivers CSI (à vérifier pour le tien).",
+          "L'expansion à chaud est stable depuis K8s 1.24 : elle dépend de la capacité <code>EXPAND_VOLUME</code> déclarée par le driver CSI (à contrôler pour le tien).",
           "Si la StorageClass ne l'autorise pas, tu peux éditer la SC (le champ est modifiable), puis recommencer."
         ] },
         { t: 'callout', kind: 'warn', html: "Avec LSO (PV statiques), l'expansion n'existe pas : le PV a la taille du disque." }

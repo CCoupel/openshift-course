@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm12', lang: 'en', num: 12, emoji: '🔧',
   title: 'Day-2 operations',
-  source: '705b7bba261c',
+  source: 'dd014c167d0b',
   tagline: 'Updating without nasty surprises, extending the cluster, diagnosing and keeping capacity: what keeps an OCP admin busy every day.',
   duration: '≈ 60 min + lab 20 min',
   objectives: [
@@ -96,8 +96,8 @@ COURSE.add({
       blocks: [
         { t: 'bullets', frag: true, items: [
           '<b>Upgradeable=False</b> can also come from an Operator declaring a maximum version (<code>olm.maxOpenShiftVersion</code>, module 04) or from a degraded component.',
-          '<b>Update to 4.21 and sigstore</b>: the 4.21 release notes state that if your 4.20 (or earlier) cluster already has a cluster image policy named <code>openshift</code>, the update marks it <b>not updatable</b> (<code>Upgradeable=False</code>) because of the default policy. <b>Likely remedy</b>: if this <code>openshift</code> policy was <b>created by hand</b>, delete or rename it before the update (to be confirmed in “Preparing to update to 4.21”).',
-          'The 4.20 sigstore docs list, for clusters with ImageContentSourcePolicy or ImageDigestMirrorSet, a prerequisite: <b>mirror the sigstore signatures</b> before the update; any <b>acknowledgement</b> in <code>admin-acks</code> and its key: to be verified in “Preparing to update to 4.21”.'
+          '<b>Update to 4.21 and sigstore</b>: the 4.21 release notes state that if your 4.20 (or earlier) cluster already has a cluster image policy named <code>openshift</code>, the update marks it <b>not updatable</b> (<code>Upgradeable=False</code>) because of the default policy. <b>Remedy</b> (4.21 release notes): remove the <b>hand-created</b> <code>openshift</code> policy before the update; no <code>admin-acks</code> acknowledgement is mentioned.',
+          'The 4.20 sigstore docs list, for clusters with ImageContentSourcePolicy or ImageDigestMirrorSet, a prerequisite: <b>mirror the sigstore signatures</b> before the update (to be verified in “Preparing to update to 4.21”).'
         ] },
         { t: 'callout', kind: 'warn', html: "The exact text, the remedy and any acknowledgement key for this case are <b>to be re-read in “Preparing to update to 4.21”</b> before your update (nothing precise was found in the 4.21 release notes read). It is one more example: <b>read the target version\'s notes</b> at every minor (module 09 for signed images)." }
       ]
@@ -239,7 +239,7 @@ COURSE.add({
         { t: 'bullets', items: [
           '<b>Requests / limits</b>: requests decide placement; watch <b>overcommit</b> (sum of limits &gt; capacity).',
           '<b>Per-project quotas</b>: <code>ResourceQuota</code>, <code>LimitRange</code>, <code>ClusterResourceQuota</code> via the project template (module 06).',
-          '<b>Node reservations</b>: <code>system-reserved</code> and kubelet; <code>autoSizingReserved</code> (<code>KubeletConfig</code>) computes the reservation from the node capacity; this option is <b>disabled by default in 4.20</b>; the 4.21 release notes state that the computation becomes automatic (updated clusters: deleting the <code>50-worker-auto-sizing-disabled</code> MachineConfig to enable it, with node reboot). The 4.20 docs cite <code>500m</code> CPU and <code>1Gi</code> memory as <code>system-reserved</code> defaults, but state elsewhere that defaults depend on OpenShift and MCO versions: to be verified in the <code>machine-config-operator</code> repository.',
+          '<b>Node reservations</b>: <code>system-reserved</code> and kubelet; <code>autoSizingReserved</code> (<code>KubeletConfig</code>) computes the reservation from the node capacity; this option is <b>disabled by default in 4.20</b>; the 4.21 release notes state that the computation becomes automatic (updated clusters: deleting the <code>50-worker-auto-sizing-disabled</code> MachineConfig to enable it, with node reboot). The 4.20 docs cite <code>500m</code> CPU and <code>1Gi</code> memory as <code>system-reserved</code> defaults; since 4.21, the reservation is computed automatically.',
           '<b>Infra nodes</b>: host routers, monitoring and logging on dedicated nodes (module 02).'
         ] },
         { t: 'code', lang: 'bash', file: 'terminal', code: "$ oc adm top nodes\n$ oc describe node worker-1 | grep -A8 'Allocated resources'\n$ oc get resourcequota,limitrange -A" },

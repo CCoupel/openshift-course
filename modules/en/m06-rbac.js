@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm06', lang: 'en', num: 6, emoji: '🔐',
   title: 'HBAC / RBAC',
-  source: '2c820551dd76',
+  source: '5440978e6ef2',
   tagline: 'Who are you, what can you do, on what, and from where? Authentication, RBAC, groups, projects, node access and audit.',
   duration: '≈ 60 min + lab 20 min',
   objectives: [
@@ -326,7 +326,7 @@ COURSE.add({
           '- name: PROJECT_NAME',
           '- name: PROJECT_ADMIN_USER'
         ].join('\n') },
-        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) caps the sum of resources of <b>several projects</b> selected by label or annotation (per team, per application). A bare <code>deny-all</code> also breaks the Route: plan the docs\' opening policies in the template: <code>allow-from-openshift-ingress</code> and, with HostNetwork routers, <code>allow-from-hostnetwork</code> (which one is enough depends on the publishing mode: to be verified; details, YAML and AdminNetworkPolicy: module 07).' }
+        { t: 'callout', kind: 'ocp', html: '<code>ClusterResourceQuota</code> (<code>quota.openshift.io</code>) caps the sum of resources of <b>several projects</b> selected by label or annotation (per team, per application). A bare <code>deny-all</code> also breaks the Route: plan the opening policies inspired by the 4.20 docs (About network policy, Configuring multitenant isolation) in the template: <code>allow-from-openshift-ingress</code> and, with HostNetwork routers, <code>allow-from-hostnetwork</code> (which one is enough depends on the publishing mode: to be verified; details, YAML and AdminNetworkPolicy: module 07).' }
       ]
     },
     {
@@ -338,8 +338,8 @@ COURSE.add({
           right: { title: '🧯 Break-glass: admin kubeconfig', items: ['The installer\'s <code>auth/kubeconfig</code>: <code>system:admin</code> client certificate', 'Member of <code>system:masters</code>: bypasses RBAC', 'Does not go through OAuth: works with IdP/auth down', 'Long-lived certificate', 'A single file = the keys to the kingdom'] },
           verdict: 'Delete kubeadmin, keep the admin kubeconfig… under lock and key.' },
         { t: 'code', lang: 'bash', file: 'terminal', code: '# After validating that an IdP group is cluster-admin\n$ oc adm policy add-cluster-role-to-group cluster-admin platform-admins\n$ oc delete secret kubeadmin -n kube-system\n\n# Break-glass (never for day-to-day use)\n$ export KUBECONFIG=/secure/vault/auth/kubeconfig\n$ oc whoami\nsystem:admin' },
-        { t: 'callout', kind: 'warn', wide: true, html: 'Deleting <code>kubeadmin</code> is <b>irreversible</b>. First check a real IdP cluster-admin login, and copy the admin kubeconfig to a vault (Vault, team KeePass) with traced access. On the control plane nodes, local kubeconfigs also exist for recovery (recovery procedures: to be verified in the docs for your version).' },
-        { t: 'callout', kind: 'cloud', wide: true, html: 'ROSA/ARO/OSD: no installation kubeconfig for you. On ROSA, the IdP is configured via <code>rosa create idp</code> or OpenShift Cluster Manager, and you are <code>dedicated-admin</code> (on ROSA classic, <code>rosa grant user</code> can also grant <code>cluster-admin</code>: to be verified depending on the offering); ARO provides a <code>kubeadmin</code> account via the Azure portal/CLI and integrates with <b>Entra ID</b>. Exact scope: to be verified depending on the offering.' }
+        { t: 'callout', kind: 'warn', wide: true, html: 'Deleting <code>kubeadmin</code> is <b>irreversible</b>. First check a real IdP cluster-admin login, and copy the admin kubeconfig to a vault (Vault, team KeePass) with traced access. On the control plane nodes, local kubeconfigs also exist for recovery (local recovery kubeconfig <code>localhost-recovery.kubeconfig</code>; “Recovering from expired control plane certificates” procedure).' },
+        { t: 'callout', kind: 'cloud', wide: true, html: 'ROSA/ARO/OSD: no installation kubeconfig for you. On ROSA, the IdP is configured via <code>rosa create idp</code> or OpenShift Cluster Manager, and you are <code>dedicated-admin</code> (on ROSA classic, <code>rosa grant user</code> can also grant <code>cluster-admin</code>); ARO provides a <code>kubeadmin</code> account via the Azure portal/CLI and integrates with <b>Entra ID</b>. Exact scope: to be verified depending on the offering.' }
       ]
     },
     {

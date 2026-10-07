@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm11', lang: 'en', num: 11, emoji: '🗄️',
   title: 'Backup & disaster recovery',
-  source: '6bc86eeafd35',
+  source: '4beb5d51b6e2',
   tagline: 'etcd, applications, volumes: what you back up, how you restore, and why a backup that has never been tested does not exist.',
   duration: '≈ 45 min + lab 20 min',
   objectives: [
@@ -166,10 +166,10 @@ $ oc adm wait-for-stable-cluster` },
           '<b>OADP</b> (OpenShift API for Data Protection) protects <b>applications, the cluster resources tied to them, persistent volumes and internal images</b>.',
           'API: <code>Backup</code>, <code>Restore</code>, <code>Schedule</code>, <code>BackupStorageLocation</code>, <code>VolumeSnapshotLocation</code>.',
           '<b>Essential limit</b>: “OADP is not a disaster recovery solution for <code>etcd</code> or OpenShift Operators”. The two backups are <b>complementary</b>.',
-          'Compatibility (4.20 docs matrix): <b>OADP 1.5</b> for OCP 4.19, 4.20 and 4.21 (GA on June 17, 2025, full support until 1.6 is released); <b>OADP 1.4</b> for 4.14 to 4.18. <b>OADP 1.6</b> targets <b>OCP 4.22 and later</b>, not 4.20 (4.22 docs matrix). The course settles on <b>OADP 1.5</b> for 4.20.'
+          'Compatibility (Red Hat “OpenShift Operator Life Cycles” page): <b>OADP 1.5</b> for OCP 4.19, 4.20 and 4.21 (GA on June 17, 2025; end of support listed on May 3, 2026); <b>OADP 1.4</b> for 4.14 to 4.18. <b>OADP 1.6</b> targets <b>OCP 4.22 and later</b>, not 4.20 (same page). The course settles on <b>OADP 1.5</b> for 4.20.'
         ] },
         { t: 'callout', kind: 'onprem', wide: true, html: "You need <b>S3 object storage</b> (ODF/NooBaa, MinIO, S3 array) <b>outside the protected cluster</b> to drop the backups into (module 08)." },
-        { t: 'callout', kind: 'ocp', wide: true, html: "Installation through OLM (module 04) in the <code>openshift-adp</code> namespace (OperatorGroup limited to that namespace, <code>stable</code> channel, <code>oadp-operator</code> package according to the OCP 4.15 docs): <b>package name and channel in 4.20</b> to be verified in “Installing the OADP Operator”." }
+        { t: 'callout', kind: 'ocp', wide: true, html: "Installation through OLM (module 04) in the <code>openshift-adp</code> namespace (OperatorGroup limited to that namespace, <code>redhat-operators</code> source; <code>redhat-oadp-operator</code> Subscription, <code>stable-1.5</code> channel for OADP 1.5): details <b>to be verified</b> in “Installing the OADP Operator”." }
       ]
     },
     {
@@ -237,7 +237,7 @@ spec:
         { t: 'bullets', items: [
           '<code>includedNamespaces</code>: what you back up; resource exclusions are possible.',
           '<b>Schedule</b>: same content as a Backup with a schedule (cron): this is what makes OADP <b>automatic</b>.',
-          'A <b>Restore</b> can also target <b>another cluster</b> pointing at the same bucket (disaster recovery: to be verified for your version) or another namespace (<code>namespaceMapping</code>).'
+          'A <b>Restore</b> can also target <b>another cluster</b> pointing at the same bucket (disaster recovery: same BSL names and paths; set the BSL to <code>ReadOnly</code> during recovery) or another namespace (<code>namespaceMapping</code>).'
         ] },
         { t: 'callout', kind: 'tip', wide: true, html: "Restore first into a <b>test namespace</b> to validate the content (resources, volumes, secrets) before relying on it in a real situation." }
       ]
@@ -303,7 +303,7 @@ spec:
           'Take a backup: <code>oc debug --as-root node/NODE</code>, <code>chroot /host</code>, then <code>/usr/local/bin/cluster-backup.sh /home/core/assets/backup</code>.',
           'Check the <b>two files</b> produced (<code>snapshot_*.db</code> and <code>static_kuberesources_*.tar.gz</code>), their size and note the cluster version (<code>oc get clusterversion</code>).',
           'Copy the archive <b>off the node</b> (<code>scp</code> or your site\'s method) then list the contents of the resources with <code>tar -tzf static_kuberesources_*.tar.gz | head</code>: what do you find?',
-          'Install the <b>OADP Operator</b> (OperatorHub, <code>openshift-adp</code> namespace, module 04) and describe your lab\'s backup plan: what, where (S3 bucket), how often, who restores. <b>Rollback</b> (the installation changes the cluster): delete any <code>DataProtectionApplication</code>, uninstall the Operator, then delete its CRDs (<code>velero.io</code>) as described in the OADP uninstall docs (exact command: to be verified for your version). <b>Warning</b>: deleting the <code>velero.io</code> CRDs <b>takes away the Backup, Restore and Schedule objects</b> of the cluster: export them first, or keep the <b>object storage</b> as the source of truth for backups, and only then uninstall.',
+          'Install the <b>OADP Operator</b> (OperatorHub, <code>openshift-adp</code> namespace, module 04) and describe your lab\'s backup plan: what, where (S3 bucket), how often, who restores. <b>Rollback</b> (the installation changes the cluster): delete any <code>DataProtectionApplication</code>, uninstall the Operator, then delete its CRDs (<code>velero.io</code>) as described in the OADP uninstall docs (command from the docs: <code>for CRD in $(oc get crds | grep velero | awk \'{print $1}\'); do oc delete crd $CRD; done</code>). <b>Warning</b>: deleting the <code>velero.io</code> CRDs <b>takes away the Backup, Restore and Schedule objects</b> of the cluster: export them first, or keep the <b>object storage</b> as the source of truth for backups, and only then uninstall.',
           '(bonus, E1 + S3) Create a MinIO bucket, the <code>cloud-credentials</code> Secret and a <code>DataProtectionApplication</code>; check the <code>BackupStorageLocation</code> (<code>Available</code>), back up a test namespace, <b>delete it</b>, then restore it with a <code>Restore</code>.',
           '(bonus, DISPOSABLE cluster only, disposable E1 or E2) <b>etcd restore</b> following the full official procedure, from your backup: <b>destructive</b> action, never on a cluster that matters; time your RTO. <b>On a SNO</b>: SNO variant (dedicated slide), the node is <b>interrupted</b> during the restore and the SNO must be truly disposable.'
         ] }

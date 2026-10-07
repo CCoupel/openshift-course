@@ -154,7 +154,7 @@ COURSE.add({
       blocks: [
         { t: 'cmds', items: [['dig +short test.apps.ocp4.example.com', 'le wildcard doit répondre']] },
         { t: 'callout', kind: 'trap', html: '<b>Piège OCP</b> : un deny-all coupe aussi les <b>routeurs</b> : prévois <code>allow-from-openshift-ingress</code> (label <code>policy-group.network.openshift.io/ingress</code>) et, avec des routeurs en <b>HostNetwork</b> (défaut on-prem), <code>allow-from-hostnetwork</code> (label <code>policy-group.network.openshift.io/host-network</code>).' },
-        { t: 'callout', kind: 'warn', html: 'Les deux YAML <code>allow-from-openshift-ingress</code> et <code>allow-from-hostnetwork</code> sont ceux de la doc 4.20. <b>Laquelle suffit selon le mode de publication</b> de l\'<code>IngressController</code> (HostNetwork ou LoadBalancerService/NodePort) n\'est pas énoncé explicitement dans les pages lues : <b>à vérifier</b> ; en pratique, applique les deux puis teste. Attention : un deny-all mal ouvert te coupe l\'accès à tes propres applications.' }
+        { t: 'callout', kind: 'warn', html: 'Les deux YAML <code>allow-from-openshift-ingress</code> et <code>allow-from-hostnetwork</code> s\'inspirent de la doc 4.20 (sections About network policy et Configuring multitenant isolation). <b>Laquelle suffit selon le mode de publication</b> de l\'<code>IngressController</code> (HostNetwork ou LoadBalancerService/NodePort) n\'est pas énoncé explicitement dans les pages lues : <b>à vérifier</b> ; en pratique, applique les deux puis teste. Attention : un deny-all mal ouvert te coupe l\'accès à tes propres applications.' }
       ]
     },
     {
@@ -357,7 +357,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['oc get revision -n serverless-demo', 'Révisions'],
           ['kn service list -n serverless-demo', 'Services, avec la CLI kn']
         ] },
-        { t: 'callout', kind: 'warn', html: 'apiVersion exacte du HyperConverged et options de placement : <b>à vérifier</b> dans « Installing OpenShift Virtualization » ; les types (instance types, CDI, boot sources) varient selon la version : contrôle avec <code>oc explain</code> (module 13).' }
+        { t: 'callout', kind: 'warn', html: '<code>HyperConverged</code> en <code>hco.kubevirt.io/v1beta1</code> (doc 4.20) ; options de placement : <b>à vérifier</b> dans « Installing OpenShift Virtualization » ; les types (instance types, CDI, boot sources) varient selon la version : contrôle avec <code>oc explain</code> (module 13).' }
       ]
     },
     {

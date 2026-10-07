@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm15', lang: 'en', num: 15, emoji: '📝',
   title: 'Cheat sheet & final quiz',
-  source: 'fac600c1a292',
+  source: '2dcda45c9aaa',
   tagline: 'The essential commands by topic, a K8s ↔ OpenShift dictionary, decision tables and a final quiz: everything is taken from modules 00 to 14, with a pointer for details.',
   duration: '≈ 30 min',
   objectives: [
@@ -155,7 +155,7 @@ COURSE.add({
       blocks: [
         { t: 'cmds', items: [['dig +short test.apps.ocp4.example.com', 'the wildcard must answer']] },
         { t: 'callout', kind: 'trap', html: '<b>OCP pitfall</b>: a deny-all also cuts off the <b>routers</b>: plan <code>allow-from-openshift-ingress</code> (label <code>policy-group.network.openshift.io/ingress</code>) and, with <b>HostNetwork</b> routers (on-prem default), <code>allow-from-hostnetwork</code> (label <code>policy-group.network.openshift.io/host-network</code>).' },
-        { t: 'callout', kind: 'warn', html: 'The two YAMLs <code>allow-from-openshift-ingress</code> and <code>allow-from-hostnetwork</code> are the ones from the 4.20 docs. <b>Which one is enough depending on the publishing mode</b> of the <code>IngressController</code> (HostNetwork or LoadBalancerService/NodePort) is not stated explicitly in the pages read: <b>to be verified</b>; in practice, apply both then test. Beware: a badly opened deny-all cuts you off from your own applications.' }
+        { t: 'callout', kind: 'warn', html: 'The two YAMLs <code>allow-from-openshift-ingress</code> and <code>allow-from-hostnetwork</code> are inspired by the 4.20 docs (About network policy and Configuring multitenant isolation sections). <b>Which one is enough depending on the publishing mode</b> of the <code>IngressController</code> (HostNetwork or LoadBalancerService/NodePort) is not stated explicitly in the pages read: <b>to be verified</b>; in practice, apply both then test. Beware: a badly opened deny-all cuts you off from your own applications.' }
       ]
     },
     {
@@ -358,7 +358,7 @@ sh-5.1# /usr/local/bin/cluster-backup.sh /home/core/assets/backup` },
           ['oc get revision -n serverless-demo', 'Revisions'],
           ['kn service list -n serverless-demo', 'Services, with the kn CLI']
         ] },
-        { t: 'callout', kind: 'warn', html: 'Exact apiVersion of HyperConverged and placement options: <b>to be verified</b> in “Installing OpenShift Virtualization”; the types (instance types, CDI, boot sources) vary by version: check with <code>oc explain</code> (module 13).' }
+        { t: 'callout', kind: 'warn', html: '<code>HyperConverged</code> in <code>hco.kubevirt.io/v1beta1</code> (4.20 docs); placement options: <b>to be verified</b> in “Installing OpenShift Virtualization”; the types (instance types, CDI, boot sources) vary by version: check with <code>oc explain</code> (module 13).' }
       ]
     },
     {

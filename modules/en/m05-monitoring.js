@@ -1,7 +1,7 @@
 COURSE.add({
   id: 'm05', lang: 'en', num: 5, emoji: '📈',
   title: 'Monitoring & observability',
-  source: '42ee4ac22350',
+  source: '72690f668a78',
   tagline: 'Metrics, alerts, logs: the built-in monitoring stack, opening it to teams, alert routing and Logging 6 with Loki.',
   duration: '≈ 70 min + lab 20 min',
   objectives: [
@@ -43,7 +43,7 @@ COURSE.add({
           ['<b>monitoring-plugin</b>', '“Observe” pages of the web console'],
           ['<b>Telemeter Client</b>', 'Sends a subset of data to Red Hat (remote health)']
         ] },
-        { t: 'callout', kind: 'onprem', html: "Telemeter sends data to Red Hat: on an isolated network or under confidentiality constraints, check its status with your security team (disabling option and consequences: to be verified in the 4.20 docs)." }
+        { t: 'callout', kind: 'onprem', html: "Telemeter sends data to Red Hat: on an isolated network or under confidentiality constraints, check its status with your security team (to opt out, remove the <code>cloud.openshift.com</code> entry from the global pull secret; this also stops the Insights Operator)." }
       ]
     },
     {
@@ -53,7 +53,7 @@ COURSE.add({
         { t: 'bullets', items: [
           '<b>Observe → Alerting</b>: active alerts, rules, silences.',
           '<b>Observe → Metrics</b>: PromQL queries (via Thanos Querier).',
-          '<b>Observe → Dashboards</b>: ready-made dashboards (no dedicated Grafana to administer; history of its removal: to be verified).',
+          '<b>Observe → Dashboards</b>: ready-made dashboards (no dedicated Grafana to administer; Grafana removed from the stack in 4.11).',
           '<b>Observe → Targets</b>: scraped targets and their state.'
         ] },
         { t: 'code', lang: 'bash', file: 'terminal', code: "# The components and their pods\n$ oc get pods -n openshift-monitoring\n\n# Query the platform metrics from the command line (Thanos Querier route)\n$ oc get route thanos-querier -n openshift-monitoring\n$ oc get cm cluster-monitoring-config -n openshift-monitoring   # absent by default" },
@@ -409,7 +409,7 @@ spec:
       title: 'Network observability and traces: overview',
       blocks: [
         { t: 'table', head: ['Tool', 'Role', 'Status'], rows: [
-          ['<b>Cluster Observability Operator</b>', 'Deploys observability stacks (<code>MonitoringStack</code>, <code>monitoring.rhobs</code>) and console plugins (logs, traces, monitoring)', '“Monitoring” plugin in Technology Preview according to the docs: to be verified in 4.20'],
+          ['<b>Cluster Observability Operator</b>', 'Deploys observability stacks (<code>MonitoringStack</code>, <code>monitoring.rhobs</code>) and console plugins (logs, traces, monitoring)', 'COO 1.3: incident detection and troubleshooting panel GA (OCP 4.19+); APM dashboard in Developer Preview'],
           ['<b>Network Observability Operator</b>', 'Cluster network flows (who talks to whom), dedicated dashboards', 'Details and versions: to be verified (module 07)'],
           ['<b>OpenTelemetry / Tempo</b>', 'Distributed application traces', 'Out of scope for this course']
         ] },

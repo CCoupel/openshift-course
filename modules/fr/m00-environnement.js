@@ -27,7 +27,7 @@ COURSE.add({
       title: 'Quatre niveaux d\'environnement',
       blocks: [
         { t: 'table', head: ['Niveau', 'Environnement', 'Ce qu\'il permet', 'Limites'], rows: [
-          ['<b>E0</b>', 'Poste de travail seul, ou <b>OpenShift Local</b>, ou tout cluster en <code>cluster-admin</code>', '<code>oc</code>, RBAC, IdP htpasswd, Operators légers, GitOps', 'Un seul nœud, pas de Machine API, pas de mise à jour ; monitoring désactivé par défaut (à vérifier)'],
+          ['<b>E0</b>', 'Poste de travail seul, ou <b>OpenShift Local</b>, ou tout cluster en <code>cluster-admin</code>', '<code>oc</code>, RBAC, IdP htpasswd, Operators légers, GitOps', 'Un seul nœud, Machine API non utilisable (plateforme <code>none</code>), pas de mise à jour ; monitoring désactivé par défaut (à vérifier)'],
           ['<b>E1</b>', '<b>SNO</b> (un nœud) sur KVM, vSphere ou bare metal', 'MachineConfig avec reboot, LVMS, monitoring et logging, sauvegarde etcd, mise à jour', 'Pas de quorum etcd réel, pas d\'ODF ; minimum officiel 8 vCPU / 16 Go / 120 Go'],
           ['<b>E2</b>', '<b>Compact</b> 3 nœuds (ou 3 masters + 2 workers)', 'Quorum etcd, MachineHealthCheck, ODF, MetalLB, EgressIP, mise à jour progressive', 'Consomme beaucoup de ressources'],
           ['<b>E3</b>', 'Bare metal ou virtualisation imbriquée', 'OpenShift Virtualization (VM, migration à chaud)', 'Virtualisation imbriquée : acceptable en lab, pas en production (à vérifier)']
@@ -60,9 +60,9 @@ COURSE.add({
           ['<b>SNO / compact sur bare metal</b>', 'Si tu as du matériel, E1 à E3', 'Le plus proche de la production', 'Matériel et réseau à ta charge'],
           ['<b>Compact 3 nœuds</b> (VM)', 'Étapes bonus E2', 'Quorum, MHC, ODF', 'RAM et disque ×3'],
           ['<b>OKD</b>', 'Alternative communautaire', 'Même socle OCP sans support Red Hat', 'Écarts de comportement possibles (base OS : CentOS Stream CoreOS depuis OKD 4.16)'],
-          ['<b>Developer Sandbox</b> ☁️', 'Découvrir la console', 'Console et <code>oc</code> en espace partagé', '<b>Pas de <code>cluster-admin</code></b> : inadapté à ce cours ; cluster partagé, quotas limités (≈ 3 cœurs / 14 Go / 40 Go, essai de 30 jours : chiffres datés, à recouper)']
+          ['<b>Developer Sandbox</b> ☁️', 'Découvrir la console', 'Console et <code>oc</code> en espace partagé', '<b>Pas d\'accès administrateur du cluster (à vérifier)</b> : inadapté à ce cours ; cluster partagé, quotas limités (≈ 3 cœurs / 14 Go / 40 Go, essai de 30 jours : chiffres datés, à recouper)']
         ] },
-        { t: 'callout', kind: 'cloud', html: "Le Developer Sandbox ne donne pas <code>cluster-admin</code>. Les offres managées (ROSA, ARO, OSD) <b>restreignent</b> certaines actions (nœuds, MachineConfig, OAuth, etcd : détail à vérifier selon l\'offre) et sortent du périmètre on-prem de ce cours. Pour les labs, choisis un environnement <b>à toi</b>." }
+        { t: 'callout', kind: 'cloud', html: "Le Developer Sandbox est un cluster partagé : pas d\'accès administrateur du cluster (à vérifier). Les offres managées (ROSA, ARO, OSD) donnent un accès <code>cluster-admin</code> ou <code>dedicated-admin</code> selon l\'offre, mais <b>bloquent ou délèguent</b> au fournisseur certaines actions (nœuds, MachineConfig, etcd : détail selon l\'offre) et sortent du périmètre on-prem de ce cours. Pour les labs, choisis un environnement <b>à toi</b>." }
       ]
     },
     {
@@ -73,7 +73,7 @@ COURSE.add({
         { t: 'bullets', items: [
           'Les commandes <code>crc setup</code> et <code>crc start</code> préparent l\'hyperviseur local puis lancent le cluster.',
           'Tu obtiens deux comptes : <code>kubeadmin</code> (<code>cluster-admin</code> temporaire) et <code>developer</code>.',
-          'Le monitoring est désactivé par défaut (option d\'activation et ressources associées : à vérifier).'
+          'Le monitoring est désactivé par défaut (activation : <code>crc config set enable-cluster-monitoring true</code>, avec au moins 14 Gio de mémoire).'
         ] },
         { t: 'callout', kind: 'warn', wide: true, html: "Les ressources du preset <code>openshift</code> (4 cœurs physiques, 10,5 Go de RAM libre, 35 Go) sont celles de la documentation actuelle ; systèmes supportés et options de <code>crc config</code> : <b>à vérifier dans la documentation d'OpenShift Local</b> pour ta version." }
       ]
@@ -103,7 +103,7 @@ COURSE.add({
         { t: 'bullets', frag: true, items: [
           'Un <b>essai de 60 jours</b> (auto-support, compte Red Hat suffisant) est proposé via console.redhat.com ; conditions précises : à vérifier au moment de la souscription.',
           'Le <b>pull secret</b> (compte Red Hat) est requis pour installer et tirer les images de la plateforme : télécharge-le depuis la console.',
-          'Pense à l\'<b>échéance</b> : passé l\'essai, le cluster continue de fonctionner mais n\'est plus sous souscription (conséquences : à vérifier).'
+          'Pense à l\'<b>échéance</b> : passé l\'essai, le cluster continue de fonctionner mais n\'est plus supporté et peut ne plus recevoir de mises à jour.'
         ] },
         { t: 'callout', kind: 'trap', html: "Le pull secret est un <b>secret</b> : ne le <b>commit</b> jamais dans Git (même un dépôt privé), ne le colle pas dans un ticket. Garde-le <code>chmod 600</code> hors de ton dépôt de lab." },
         { t: 'callout', kind: 'tip', html: "Garde l'<b>identifiant de souscription</b> et la date de fin de l'essai quelque part : un cluster de lab oublié qui perd sa licence est un classique." }
@@ -151,7 +151,7 @@ COURSE.add({
           ['podman --version', 'Conteneurs et authentification aux registres']
         ] },
         { t: 'bullets', items: [
-          'Récupère <code>oc</code> et <code>openshift-install</code> depuis la console Red Hat ou le miroir officiel (à vérifier) ; prends une version <b>proche de 4.20</b> (la doc avertit qu\'un <code>oc</code> trop différent du cluster peut ne pas accéder à toutes ses fonctionnalités).',
+          'Récupère <code>oc</code> et <code>openshift-install</code> depuis la console Red Hat ou le miroir officiel ; prends une version <b>proche de 4.20</b> (la doc avertit qu\'un <code>oc</code> trop différent du cluster peut ne pas accéder à toutes ses fonctionnalités).',
           'Système : Linux (ou WSL) recommandé ; macOS possible pour <code>oc</code>.',
           'Ajoute aussi <code>openssl</code> pour les labs sur les certificats (module 04).'
         ] },
@@ -170,7 +170,7 @@ COURSE.add({
           ['oc whoami --show-console', 'URL de la console web']
         ] },
         { t: 'bullets', frag: true, items: [
-          '<b>kubeadmin</b> : compte temporaire créé à l\'installation, <code>cluster-admin</code> ; son mot de passe est dans le dossier d\'installation (<code>auth/kubeadmin-password</code> avec <code>openshift-install</code> ; avec OpenShift Local : <code>crc console --credentials</code> ; avec Assisted Installer : affiché en fin d\'installation, à vérifier). À remplacer par un IdP au module 06 ; sur ton lab, garde-le tant que le module 06 n\'est pas fait.',
+          '<b>kubeadmin</b> : compte temporaire créé à l\'installation, <code>cluster-admin</code> ; son mot de passe est dans le dossier d\'installation (<code>auth/kubeadmin-password</code> avec <code>openshift-install</code> ; avec OpenShift Local : <code>crc console --credentials</code> ; avec Assisted Installer : affiché en fin d\'installation). À remplacer par un IdP au module 06 ; sur ton lab, garde-le tant que le module 06 n\'est pas fait.',
           '<b>Break-glass</b> : le <code>kubeconfig</code> de l\'installeur (<code>auth/kubeconfig</code>) donne un accès admin sans passer par OAuth : <b>garde-le</b> hors de ton dépôt.',
           'Un cluster sain, c\'est <b>tous les opérateurs Available</b> avant de commencer un lab.'
         ] },
@@ -189,7 +189,7 @@ COURSE.add({
         ] },
         { t: 'bullets', items: [
           'Fais un <b>snapshot juste après l\'installation saine</b> (« état propre ») et avant tout lab risqué (MachineConfig, certificats).',
-          'Un cluster arrêté longtemps peut avoir des <b>certificats expirés</b> au redémarrage : à vérifier dans la doc ; c\'est l\'une des raisons de ne pas laisser un lab dormir des mois (module 12).'
+          'Un cluster arrêté longtemps peut avoir des <b>certificats expirés</b> au redémarrage (jusqu\'à un an après l\'installation ; première rotation à 24 h) : approuver alors les CSR en attente ; c\'est l\'une des raisons de ne pas laisser un lab dormir des mois (module 12).'
         ] },
         { t: 'callout', kind: 'tip', html: "Avant un lab destructif (module 04 : certificat Ingress, module 11 : restauration etcd), <b>reviens</b> à ton snapshot « propre » plutôt que d'enchaîner les expériences sur un cluster fragilisé." }
       ]
@@ -201,7 +201,7 @@ COURSE.add({
         { t: 'cards', items: [
           { front: 'Lab « cassé » dès le début', back: '<b>RAM ou CPU insuffisants</b> : opérateurs Degraded, pods Pending.' },
           { front: 'Console injoignable', back: '<b>DNS wildcard</b> <code>*.apps</code> manquant (module 03).' },
-          { front: 'Je n\'ai pas cluster-admin', back: '<b>Sandbox</b> : pas de <code>cluster-admin</code>. Managé : actions restreintes (à vérifier selon l\'offre). Prends un environnement à toi.' },
+          { front: 'Je n\'ai pas cluster-admin', back: '<b>Sandbox</b> : cluster partagé, pas d\'accès administrateur du cluster (à vérifier). Managé : <code>cluster-admin</code> ou <code>dedicated-admin</code> selon l\'offre, certaines actions bloquées ou déléguées au fournisseur. Prends un environnement à toi.' },
           { front: 'Pull secret dans Git', back: 'Re-télécharge-le depuis la console Red Hat ; en cas de fuite, contacte le support Red Hat ; ne jamais le committer.' },
           { front: 'Lab dormant', back: 'Licence expirée ou <b>certificats</b> périmés : plan de maintenance.' },
           { front: 'Version décalée', back: '<code>oc</code> ou installeur d\'une autre version que le cluster : comportements surprenants.' }
@@ -237,7 +237,7 @@ COURSE.add({
   ],
   takeaways: [
     'Quatre niveaux : E0 (poste ou OpenShift Local), E1 (SNO), E2 (compact), E3 (bare metal / virtualisation) ; un SNO bien dimensionné couvre presque tout le cours.',
-    'Chaque lab annonce son niveau dans son premier step ; le Developer Sandbox n\'a pas <code>cluster-admin</code> et les offres managées restreignent des actions (à vérifier) : prends un environnement à toi.',
+    'Chaque lab annonce son niveau dans son premier step ; le Developer Sandbox est un cluster partagé sans accès administrateur du cluster (à vérifier) ; les offres managées donnent <code>cluster-admin</code> ou <code>dedicated-admin</code> selon l\'offre, mais délèguent certaines actions au fournisseur : prends un environnement à toi.',
     'Préparer avant le jour 1 : outils, pull secret (jamais dans Git), DNS <code>api</code> et <code>*.apps</code>, ressources suffisantes.',
     'Un lab sain commence par <code>oc get co</code> : tous Available, pas Degraded.',
     'Snapshot « état propre », <code>kubeadmin</code> et kubeconfig d\'installation conservés : le filet de sécurité de ton lab.'

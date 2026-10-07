@@ -226,7 +226,7 @@ metadata:
           'Ordre complet : <b>phase</b> d\'abord, puis <b>wave</b>, puis type de ressource, puis nom. Délai entre deux waves : <b>2 s</b> (variable <code>ARGOCD_SYNC_WAVE_DELAY</code>).',
           'Hooks : <code>PreSync</code>, <code>Sync</code>, <code>PostSync</code>, <code>SyncFail</code> ; suppression selon <code>HookSucceeded</code>, <code>HookFailed</code> ou <code>BeforeHookCreation</code>.'
         ] },
-        { t: 'callout', kind: 'tip', html: "Cas typique de plateforme : <b>namespace → Subscription OLM → CR de l'Operator</b> dans cet ordre (module 04). <b>Attention</b> : Argo CD n'attend pas que la <b>CRD</b> installée par OLM existe ; sans précaution, la synchronisation de la CR échoue au <i>dry run</i> (type inconnu). L'option <code>SkipDryRunOnMissingResource=true</code> (annotation <code>argocd.argoproj.io/sync-options</code> sur la ressource, ou dans <code>syncOptions</code> de l'Application) saute ce dry run quand le type est absent ; il est exécuté dès que la CRD est présente (doc Argo CD « Sync options »). Un <b>retry</b> de la synchronisation est l'autre filet (à vérifier pour ta version)." }
+        { t: 'callout', kind: 'tip', html: "Cas typique de plateforme : <b>namespace → Subscription OLM → CR de l'Operator</b> dans cet ordre (module 04). <b>Attention</b> : Argo CD n'attend pas que la <b>CRD</b> installée par OLM existe ; sans précaution, la synchronisation de la CR échoue au <i>dry run</i> (type inconnu). L'option <code>SkipDryRunOnMissingResource=true</code> (annotation <code>argocd.argoproj.io/sync-options</code> sur la ressource, ou dans <code>syncOptions</code> de l'Application) saute ce dry run quand le type est absent ; il est exécuté dès que la CRD est présente (doc Argo CD « Sync options »). Un <b>retry</b> de la synchronisation (<code>syncPolicy.retry</code> : <code>limit</code>, <code>backoff</code>) est l'autre filet." }
       ]
     },
     {
@@ -306,7 +306,7 @@ spec:
           ['<b>Un Argo CD central</b>', 'Une instance enregistre plusieurs clusters et pousse', 'Simple ; l\'instance devient un point critique et a des droits sur tous'],
           ['<b>ApplicationSet (générateur de clusters)</b>', 'Une Application par cluster enregistré', 'Même base, overlays par cluster'],
           ['<b>Argo CD Agent</b>', 'Architecture <b>pull</b> : l\'agent du cluster récupère sa config', 'GA en OpenShift GitOps 1.19 (doc)'],
-          ['<b>ACM + Argo CD (pull)</b>', 'Le hub ACM distribue ; l\'agent ACM tire l\'Application', 'Introduit en Technology Preview dans ACM 2.8 ; statut actuel : à vérifier']
+          ['<b>ACM + Argo CD (pull)</b>', 'Le hub ACM distribue ; l\'agent ACM tire l\'Application', 'Disponible depuis ACM 2.8 ; en 2.15, l\'ApplicationSet dans un namespace quelconque, l\'agent Argo CD et le déploiement progressif sont en Technology Preview (statut du modèle lui-même : à vérifier)']
         ] },
         { t: 'flow', nodes: [
           'Cluster perdu',
@@ -324,7 +324,7 @@ spec:
         { t: 'table', head: ['Outil', 'Rôle', 'À retenir côté plateforme'], rows: [
           ['<b>OpenShift Pipelines</b> (Tekton)', 'CI/CD en pipelines de tâches dans des pods', 'Operator via OLM ; version 1.20 : OCP 4.14 et 4.16 à 4.21 ; 1.21 : intégration console jusqu\'à 4.20'],
           ['<b>ClusterTask</b>', 'Ancienne tâche cluster-scoped', 'Dépréciée, <b>retirée en 1.17</b> : remplacée par les <b>résolveurs</b> Tekton (GA depuis 1.11)'],
-          ['<b>Builds for OpenShift</b> (Shipwright)', 'Construction d\'images sur le cluster', 'Builds 1.6 (Shipwright 0.17, GA) pour 4.20 ; 1.7 pour 4.16 à 4.21'],
+          ['<b>Builds for OpenShift</b> (Shipwright)', 'Construction d\'images sur le cluster', 'Builds 1.7 (GA 10/02/2026) pour OCP 4.16 à 4.21 (Builds 1.6 : 4.16 à 4.19)'],
           ['<b>BuildConfig</b>', 'Mécanisme de build historique d\'OCP', 'Toujours présent ; statut de dépréciation en 4.20 non confirmé : à vérifier']
         ] },
         { t: 'callout', kind: 'ocp', wide: true, html: "Ces outils relèvent du <b>développement applicatif</b> et des équipes : l'admin plateforme les <b>installe, versionne et supervise</b> (Operators, droits, quotas des namespaces de build). Le détail des pipelines est hors périmètre de ce cours." }
