@@ -145,6 +145,14 @@ function stripTrailingComment(l) {
 // Commentaires `;` : retirés (ligne entière et fin de ligne ` ;`) UNIQUEMENT dans un bloc de zone DNS, c.-à-d. contenant au moins
 // une ligne d'enregistrement (`… IN A|AAAA|CNAME|MX|NS|PTR|SOA|SRV|TXT …`). Ailleurs (INI, shell…), `;` reste du code comparé.
 const ZONE_RE = /\sIN\s+(A|AAAA|CNAME|MX|NS|PTR|SOA|SRV|TXT)\s/;
+// Texte visible d'un YAML (message d'alerte, résumé, bandeau…) : traduisible. Pour une ligne `clé: valeur` dont la clé figure dans
+// cette liste blanche, la CLÉ reste comparée à l'identique et la VALEUR est libre. Toute autre clé garde la comparaison stricte
+// (identifiants, noms d'objets, commandes). Pas de désactivation globale : n'ajouter une clé qu'après décision explicite.
+const VISIBLE_TEXT_KEYS = new Set(['message', 'summary', 'text', 'description', 'displayName']);
+const normVisible = l => {
+  const m = /^(\s*(?:-\s+)?)([A-Za-z_][\w-]*)(:\s+)\S.*$/.exec(l);
+  return m && VISIBLE_TEXT_KEYS.has(m[2]) ? `${m[1]}${m[2]}${m[3]}<texte visible>` : l;
+};
 const codeLines = c => {
   const lines = String(c || '').split('\n'), zone = lines.some(l => ZONE_RE.test(l));
   return lines.map(l => {
@@ -205,7 +213,7 @@ function parity(file, fr, en) {
         if (b.lang !== c.lang) e(`${w} : code, lang différent (fr « ${b.lang} », en « ${c.lang} »)`);
         const fl = codeLines(b.code), cl = codeLines(c.code);
         if (fl.length !== cl.length) e(`${w} : code, nombre de lignes non commentaires différent (fr ${fl.length}, en ${cl.length})`);
-        else fl.forEach((l, k) => { if (l !== cl[k]) e(`${w} : code, ligne différente (fr « ${l} », en « ${cl[k]} »)`); });
+        else fl.forEach((l, k) => { if (normVisible(l) !== normVisible(cl[k])) e(`${w} : code, ligne ou clé différente (fr « ${l} », en « ${cl[k]} ») ; seules les valeurs des clés ${[...VISIBLE_TEXT_KEYS].join('/')} peuvent être traduites`); });
       }
     });
   });
