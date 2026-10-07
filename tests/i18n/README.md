@@ -4,7 +4,7 @@ Fixtures et procédure QA de la feature « cours bilingue » (issue #3, mileston
 
 | Fichier | Rôle |
 |---|---|
-| `run.js` | Lance `tools/validate.js` et `tools/i18n-hash.js` sur 45 cas (1 paire valide, puis 1 paire cassée par règle). Sans dépendance. |
+| `run.js` | Lance `tools/validate.js` et `tools/i18n-hash.js` sur 64 cas (1 paire valide, puis 1 paire cassée par règle). Sans dépendance. |
 | `fixtures/base/` | Arbre minimal de type dépôt : `index.html`, `assets/{engine,i18n,plan}.js`, `modules/{fr,en}/m00-demo.js` + `m01-demo.js`. Valide tel quel. |
 | `QA-SELECTEUR.md` | Procédure manuelle du sélecteur FR \| EN (lots de ≤ 50 cas). |
 
@@ -36,5 +36,5 @@ Chaque cas copie `fixtures/base/` dans `_work/tmp/i18n-fixtures/<id>/`, applique
 
 ## Table des cas
 
-`V` valide · `P` parité structurelle · `M` marqueur · `L` champ `lang` · `I` `i18n.js` · `T` titres `plan.js` · `S` module manquant · `H` empreinte · `K` `i18n-hash.js`.
-Tags `smoke` : V01, V02, S02, H02 (à rejouer en tête de QA).
+`V` valide · `P` parité structurelle · `M` marqueur · `L` champ `lang` · `I` `i18n.js` · `T` titres `plan.js` · `S` module manquant · `H` empreinte · `K` `i18n-hash.js` · `R` revue phase 1 (index.html, caption/verdict/explain, `hl`, duration, commentaires de fin, `--root` sans valeur).
+Tags `smoke` : V01, V02, S02, H02, R02 (à rejouer en tête de QA).

@@ -79,7 +79,7 @@ const CASES = [
   { id: 'P12', title: 'bloc : `frag` présent en fr, absent en en', edits: [ed(EN1, sub("{ t: 'bullets', frag: true,", "{ t: 'bullets',"))], args: [], expect: ERR(/frag/i) },
   { id: 'P13', title: 'callout : `kind` différent', edits: [ed(EN1, sub("kind: 'tip'", "kind: 'warn'"))], args: [], expect: ERR(/kind|callout/i) },
   { id: 'P14', title: 'module : `emoji` différent', edits: [ed(EN1, sub("emoji: '⚖️'", "emoji: '🧪'"))], args: [], expect: ERR(/emoji/i) },
-  { id: 'P15', title: 'module : `duration` différente', edits: [ed(EN1, sub("'≈ 10 min'", "'≈ 12 min'"))], args: [], expect: ERR(/duration/i) },
+  { id: 'P15', title: 'module : `duration` différente', edits: [ed(EN1, sub("'≈ 10 min + 5 min lab'", "'≈ 12 min + 5 min lab'"))], args: [], expect: ERR(/duration/i) },
   { id: 'P16', title: 'module : `num` différent', edits: [ed(EN1, sub('num: 1,', 'num: 2,'))], args: [], expect: ERR(/num/i) },
   { id: 'P17', title: 'module : nombre d\'objectifs différent', edits: [ed(EN1, sub(", 'Objective 3']", ']'))], args: [], expect: ERR(/objectives|objectifs/i) },
   { id: 'P18', title: 'module : nombre de takeaways différent', edits: [ed(EN1, sub(", 'Point 4']", ']'))], args: [], expect: ERR(/takeaways/i) },
@@ -122,13 +122,33 @@ const CASES = [
   { id: 'K02', title: 'i18n-hash --check : liste le module périmé', staleHash: true, edits: [ed(FR1, sub("'Fixture de parité fr/en.'", "'Fixture de parité fr/en, retouchée.'"))], steps: [{ tool: 'hash', args: ['--check'], expect: { exit: 1, out: [/m01/], notOut: [/m00/] } }] },
   { id: 'K03', title: 'i18n-hash --write m01 puis --check : plus rien de périmé', staleHash: true, edits: [ed(FR1, sub("'Fixture de parité fr/en.'", "'Fixture de parité fr/en, retouchée.'"))],
     steps: [{ tool: 'hash', args: ['--check'], expect: { exit: 1, out: [/m01/] } }, { tool: 'hash', args: ['--write', 'm01'], expect: { exit: 0 } },
-            { tool: 'hash', args: ['--check'], expect: { exit: 0, notOut: [/m0[01]/] } }, { tool: 'validate', args: ['--strict-i18n'], expect: OK }] }
+            { tool: 'hash', args: ['--check'], expect: { exit: 0, notOut: [/m0[01]/] } }, { tool: 'validate', args: ['--strict-i18n'], expect: OK }] },
+  // — Contrôles complémentaires (revue phase 1, dev-course 9c4e379 / ebfdfd5) —
+  { id: 'R01', title: 'module en présent mais non référencé par index.html : avertissement', edits: [ed(INDEX, sub('<script src="modules/en/m01-demo.js"></script>\n', ''))], args: [], expect: { exit: 0, out: [/warn/i, /index\.html|m01/], notOut: [/ERREUR/] } },
+  { id: 'R02', title: 'module en non référencé par index.html, --strict-i18n : erreur', tags: ['smoke'], edits: [ed(INDEX, sub('<script src="modules/en/m01-demo.js"></script>\n', ''))], args: ['--strict-i18n'], expect: ERR(/index\.html|m01/) },
+  { id: 'R03', title: 'module fr non référencé par index.html, --strict-i18n : erreur', edits: [ed(INDEX, sub('<script src="modules/fr/m01-demo.js"></script>\n', ''))], args: ['--strict-i18n'], expect: ERR(/index\.html|m01/) },
+  { id: 'R04', title: 'caption de bloc code perdue en en', edits: [ed(EN1, sub("caption: 'Code caption.', ", ''))], args: [], expect: ERR(/caption/i) },
+  { id: 'R05', title: 'caption de bloc flow perdue en en', edits: [ed(EN1, sub(", caption: 'The CVO drives the operators.'", ''))], args: [], expect: ERR(/caption/i) },
+  { id: 'R06', title: 'verdict de bloc compare perdu en en', edits: [ed(EN1, sub(", verdict: 'Verdict.'", ''))], args: [], expect: ERR(/verdict/i) },
+  { id: 'R07', title: 'explain de quiz perdu en en', edits: [ed(EN1, sub(", explain: 'Because <b>two</b>.'", ''))], args: [], expect: ERR(/explain/i) },
+  { id: 'R08', title: 'compare : titre de colonne perdu en en', edits: [ed(EN1, sub("left: { title: 'Left', items: ['a'] }", "left: { items: ['a'] }"))], args: [], expect: ERR(/title|compare/i) },
+  { id: 'R09', title: 'flow : `hl` d\'un nœud absent en en', edits: [ed(EN1, sub(", hl: true }", ' }'))], args: [], expect: ERR(/hl|flow/i) },
+  { id: 'R10', title: 'flow : `hl` ajouté sur un autre nœud en en seulement', edits: [ed(EN1, sub("{ label: 'Operators', sub: 'Every component' }", "{ label: 'Operators', sub: 'Every component', hl: true }"))], args: [], expect: ERR(/hl|flow/i) },
+  { id: 'R11', title: 'duration : « + lab 5 min » ↔ « + 5 min lab » accepté (base)', edits: [], args: ['--strict-i18n'], expect: OK },
+  { id: 'R12', title: 'duration : nombre différent (6 au lieu de 5) : erreur', edits: [ed(EN1, sub("'≈ 10 min + 5 min lab'", "'≈ 10 min + 6 min lab'"))], args: [], expect: ERR(/duration/i) },
+  { id: 'R13', title: 'code : commentaire de fin « cmd  # note » traduit : accepté', edits: [ed(EN1, sub('$ oc get nodes  # note', '$ oc get nodes  # remarque'))], args: ['--strict-i18n'], expect: OK },
+  { id: 'R14', title: 'code : commentaire de fin supprimé en en : accepté', edits: [ed(EN1, sub('$ oc get nodes  # note', '$ oc get nodes'))], args: ['--strict-i18n'], expect: OK },
+  { id: 'R15', title: 'code : `echo "a # b"` modifié (# entre guillemets = code) : erreur', edits: [ed(EN1, sub('echo "a # b"', 'echo "a # c"'))], args: [], expect: ERR(/code|ligne|line/i) },
+  { id: 'R16', title: 'code : commande avant le commentaire de fin modifiée : erreur', edits: [ed(EN1, sub('$ oc get nodes  # note', '$ oc get pods  # note'))], args: [], expect: ERR(/code|ligne|line/i) },
+  { id: 'R17', title: 'validate.js --root sans valeur : usage, exit 2', edits: [], steps: [{ tool: 'validate', raw: true, args: ['--root'], expect: { exit: 2, out: [/usage/i] } }] },
+  { id: 'R18', title: 'validate.js --root suivi d\'une option : usage, exit 2', edits: [], steps: [{ tool: 'validate', raw: true, args: ['--root', '--strict-i18n'], expect: { exit: 2, out: [/usage/i] } }] },
+  { id: 'R19', title: 'i18n-hash.js --root sans valeur : usage, exit 2', edits: [], steps: [{ tool: 'hash', raw: true, args: ['--check', '--root'], expect: { exit: 2, out: [/usage/i] } }] },
 ];
 
 // ───────────── Exécution ─────────────
 function copyTree(from, to) { fs.mkdirSync(to, { recursive: true }); for (const e of fs.readdirSync(from, { withFileTypes: true })) { const a = path.join(from, e.name), b = path.join(to, e.name); e.isDirectory() ? copyTree(a, b) : fs.copyFileSync(a, b); } }
-function run(tool, dir, args) {
-  const r = spawnSync(process.execPath, [TOOLS[tool], ...rootArgs(dir), ...args], { encoding: 'utf8', timeout: 60000 });
+function run(tool, dir, args, raw) {
+  const r = spawnSync(process.execPath, [TOOLS[tool], ...(raw ? [] : rootArgs(dir)), ...args], { encoding: 'utf8', timeout: 60000 });
   return { exit: r.status, out: (r.stdout || '') + (r.stderr || ''), spawnError: r.error && r.error.message };
 }
 function check(expect, res) {
@@ -156,7 +176,7 @@ for (const c of CASES) {
   } catch (e) { fail++; console.log(`FAIL ${c.id}  ${c.title}\n       fixture invalide : ${e.message}`); continue; }
   if (opt('--dry')) { console.log(`edit ${c.id}  ${c.title}`); continue; }
   const problems = [];
-  steps.forEach((s, i) => { const res = run(s.tool, dir, s.args); const p = check(s.expect, res); p.forEach(x => problems.push(`${steps.length > 1 ? `étape ${i + 1} (${s.tool} ${s.args.join(' ')}) : ` : ''}${x}`)); if (p.length && opt('--verbose')) problems.push('sortie :\n' + res.out.replace(/^/gm, '         | ')); });
+  steps.forEach((s, i) => { const res = run(s.tool, dir, s.args, s.raw); const p = check(s.expect, res); p.forEach(x => problems.push(`${steps.length > 1 ? `étape ${i + 1} (${s.tool} ${s.args.join(' ')}) : ` : ''}${x}`)); if (p.length && opt('--verbose')) problems.push('sortie :\n' + res.out.replace(/^/gm, '         | ')); });
   const msgOnly = problems.length && problems.every(p => p.startsWith('MSG') || /: MSG/.test(p));
   if (problems.length && !(opt('--exit-only') && msgOnly)) { fail++; console.log(`FAIL ${c.id}  ${c.title}\n${problems.map(p => '       ' + p).join('\n')}`); }
   else console.log(`ok   ${c.id}  ${c.title}${c.tags ? '  [' + c.tags.join(',') + ']' : ''}`);
