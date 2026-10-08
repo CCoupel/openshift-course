@@ -4,48 +4,35 @@
 
 ## État
 
-- **Version publiée** : 0.9.1 (pré-release ; tag `v0.9.1` sur ad1d8b7 ; version en VERSION file = 0.9.1)
-- **Branche principale** : `main` (c155b53, après fusion README + LICENSE MIT) ; une seule branche productive
-- **Template** : claude_project_template v3.10.0
-- **Site vitrine** : https://ccoupel.github.io/openshift-course/ (publié sur tag, pas sur push main)
-- **Release** : https://github.com/CCoupel/openshift-course/releases (GitHub Releases avec pré-release auto pour 0.x)
-- **Contenu** : 16 modules (m00 à m15) rédigés et publiés ; HTML interactif + export PPTX 498+ slides
-- **Infrastructure** : GitHub Actions (ci.yml, release.yml, pages.yml) ; ruleset `protect-release-tags` (id 24634998, bypass Admin) ; regex version SemVer stricte (pas de `-rc`) ; reprise manuelle du site : `gh workflow run pages.yml --ref vX.Y.Z`
-- **Procédures de déploiement** : publish.prod.md / deploy.prod.md = gabarits PaaS inexécutables (la release GitHub tient lieu de déploiement prod)
+- **Version publiée** : **1.0.0** (stable, tag annoté `v1.0.0` sur 936023a, 2026-10-07/08) ; Release : https://github.com/CCoupel/openshift-course/releases/tag/v1.0.0 (zip + `-fr.pptx` + `-en.pptx` + 3 sha256) ; VERSION = 1.0.0 ; `project-config.json` et `package-lock.json` restent en 0.1.0 (décision).
+- **Branche principale** : `main` (936023a), une seule branche productive ; milestone v1.0.0 fermé (13 issues fermées) ; issue #1 « Web Training » ouverte, sans contenu (non traitée).
+- **Template** : claude_project_template **v3.13.1** (synchronisé en session ; protocole : ordres > 3 lignes dans `_work/tasks/*.md`, format `[NOM] BLOQUE` + `Questions:`).
+- **Site** : https://ccoupel.github.io/openshift-course/ (publié sur tag).
+- **Contenu** : **16 modules bilingues fr/en** (`modules/fr/`, `modules/en/`), sélecteur de langue FR | EN (raccourci `l`, `?lang=`, langue en `localStorage`), `assets/i18n.js`, export PPTX par langue ; 66 marqueurs « à vérifier » / « to be verified » restent (m00 11, m02 5, m03 6, m04 4, m05 5, m06 3, m07 8, m09 4, m10 3, m11 2, m12 2, m13 6, m14 1, m15 6).
+- **Outils** : `tools/validate.js` (`--strict-i18n`, `--root`, liste blanche de clés de texte visible : message, summary, text, description, displayName), `tools/i18n-hash.js`, `tests/i18n/run.js` (87 cas, dossier temporaire unique), `docs/i18n/GLOSSARY.md`, `docs/mockup/v1.0.0/`.
+- **CI** : `ci.yml` (strict sur PR vers main), `release.yml` (strict, 2 pptx, 3 sha256), `pages.yml` ; ruleset `protect-release-tags` (id 24634998, bypass Admin).
+- **Procédures de déploiement** : `publish.prod.md` / `deploy.prod.md` = gabarits PaaS inexécutables (la Release GitHub tient lieu de déploiement) ; l'approche gh-pages a été étudiée puis abandonnée (trop complexe, tout reste sur main).
 
 ## Travail en cours
 
-- Aucun ; session de fin (documentation complétée)
-- Prochaine : relecture technique des faits avant 1.0.0 ; critères de 1.0.0 à décider
+- Aucun.
 
-## Décisions
+## Décisions (ajouts à conserver avec l'existant)
 
-- Cours OpenShift on-premise (4.20 EUS, Kubernetes 1.33 ; note 4.22), en français, pour admins K8s+plateforme, public
-- Format : HTML interactif source unique (`index.html` + `modules/mNN-*.js`) sans dépendance ; export PPTX pptxgenjs (devDependency)
-- Plan : 16 modules (m00 Environnement + m01-m15 contenu formateur), ≈3 jours (1105 min, modules 01-15 uniquement)
-- Environnements : E0 (poste/OpenShift Local/cluster cluster-admin), E1 (SNO), E2 (Compact 3), E3 (Bare metal/virtualisation imbriquée)
-- Mise en production : tag `vX.Y.Z` → release.yml (vérifie tag = VERSION + CHANGELOG obligatoire) → export PPTX → zip + pptx + sha256 → Release GitHub (prerelease auto si 0.x) → pages.yml (site après release, pas après push main)
-- Licence : MIT pour tout (copyright « CCoupel » ; à corriger si nom légal) ; voir `LICENSE`
-- Validation : `node tools/validate.js` obligatoire ; points incertains marqués « à vérifier » dans modules (convention du projet)
+- **i18n** : un fichier par langue, parité structurelle exacte, empreinte de source, une seule branche longue fusionnée (PR #16) ; relecture des faits après la traduction (PR #17) ; texte visible des YAML traduisible via liste blanche de clés ; marqueur « à vérifier » réservé aux incertitudes (usage ordinaire : « à contrôler »/« à confirmer ») ; « on-prem » forme unique ; identifiants d'exemple neutres fr+en (`change-me`, `my-sa`, …).
+- **Les levées de marqueurs** sur sources hors doc 4.20 ou communautaires (9, confiance « moyenne ») ont été gardées par l'utilisateur ; liste dans le rapport de la phase 4 (non versionné).
+- **Version 1.0.0** choisie par l'utilisateur malgré les 66 marqueurs restants et l'absence de test en navigateur réel (limites écrites dans le CHANGELOG).
 
-## Règles critiques
+## Règles critiques (ajouts)
 
-- **Adresse teamleader** : `team-lead` (pas `main`)
-- **Spécifications de tâche** : le teamleader écrit dans `_work/tasks/*.md` (seule exception à son interdiction d'écrire)
-- **Livrables** : `_work/reports/` uniquement ; DONE = références fichiers seules
-- **Pas de push direct sur main** : branche + CI + fusion --no-ff ; supprimer la branche après fusion (locale + distante)
-- **Aucun dossier de travail hors projet** : temporaires sous `_work/tmp/` uniquement
-- **Ne rien publier sans décision utilisateur** : tag, release, réglages GitHub
-- **Qualité** : agents Web-enabled (WebSearch/WebFetch) ; faits recoupés par résumés auto (confiance variable) ; « à vérifier » conservés ; ne jamais lever un « à vérifier » sans source ; ne jamais amender un commit annoncé
+- **Messages perdus pendant le traitement** : donner un ordre à part entière (fichier `_work/tasks/`) et exiger son DONE ; vérifier `git log` plutôt que les affirmations.
+- **Notes de Release** : extraites du CHANGELOG (`## [X.Y.Z]` exact) ; rien de provisoire ni d'inventé dedans ; faire relire l'extraction avant le tag.
+- **Tags poussés** : ne se déplacent pas ; jamais de force ni de suppression ; correction = nouvelle version.
+- **Faits techniques issus d'agents Web** : appliqués qu'après validation de l'utilisateur ; un constat peut être faux (ex. ACM pull 2.8 TP) ; toujours recouper.
 
 ## Pour la prochaine session
 
-- Relecture technique des faits par un humain avant 1.0.0
-- Décider des critères de 1.0.0
-- Ajouter au CHANGELOG de la prochaine version : entrée « Ajouté : Licence MIT + README »
-- Adapter `publish.prod.md` / `deploy.prod.md` (gabarits PaaS actuellement inexécutables)
-- Utilisateur corrige les templates d'agents : adresse `team-lead`, fin de tour, gabarits (voir `.claude/memory/protocole-communication-audit.md`)
-- Vérification visuelle du HTML en navigateur réel (jamais faite)
-- Relecture du document d'homogénéisation copié en `ANSIBLE/docs/HOMOGENEISATION-OPENSHIFT.md`
-- Détails : v0.9.0 `.pptx.sha256` à chemin `dist/…` ; `project-config.json` et `package-lock.json` restés en 0.1.0 (décision)
-- Optionnel : actions GitHub épinglées par SHA
+- **Smoke navigateur réel jamais fait** (Chrome, Firefox, `file://`) : `tests/i18n/QA-SELECTEUR.md` (53 cas) ; priorités : sélecteur, diagrammes SVG m02 s3 et m03 s13, tableaux longs (m09 s3, m00 s3), mobile ; rendu PowerPoint des deux .pptx.
+- **Relecture humaine des 66 marqueurs** et des 9 levées de confiance moyenne ; décider d'une issue de suivi (#13 est fermée).
+- **7 doutes consignés** dont « K8s 1.35 » pour 4.22, ANP « TP dès 4.14 », `localhost-recovery.kubeconfig` (doc 4.12), `crc config set …` (communautaire) : voir le CHANGELOG et le rapport phase 4 (non versionné).
+- **`CLAUDE.md` ligne 13** cite encore `modules/*.js` (→ `modules/fr/*.js`) ; adapter `publish.prod.md` / `deploy.prod.md` ou les retirer ; motd encodé de m02 reste en français ; issue #1 à traiter ou fermer ; optionnel : actions GitHub épinglées par SHA, `chore/**` dans les déclencheurs de `ci.yml`.
