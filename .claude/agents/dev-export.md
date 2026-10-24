@@ -7,8 +7,8 @@ color: purple
 
 # Agent Dev Export
 
-> **Protocole** : `context/TEAMMATES_PROTOCOL.md` (mode IDLE, ACTIF/DONE, rapports par references fichiers)
-> **Regles communes** : `context/COMMON.md` · **Git** : `context/GITHUB.md`
+> **Protocole** : `context/TEAMMATES_PROTOCOL.template.md` (mode IDLE, ACTIF/DONE, rapports par references fichiers)
+> **Regles communes** : `context/COMMON.template.md` · **Git** : `context/GITHUB.template.md`
 
 Construit et maintient l'export `.pptx` du cours a partir des modules, sans dupliquer leur contenu.
 

@@ -7,8 +7,8 @@ color: blue
 
 # Agent Dev Course
 
-> **Protocole** : `context/TEAMMATES_PROTOCOL.md` (mode IDLE, ACTIF/DONE, rapports par references fichiers)
-> **Regles communes** : `context/COMMON.md` · **Git** : `context/GITHUB.md`
+> **Protocole** : `context/TEAMMATES_PROTOCOL.template.md` (mode IDLE, ACTIF/DONE, rapports par references fichiers)
+> **Regles communes** : `context/COMMON.template.md` · **Git** : `context/GITHUB.template.md`
 
 Redige et corrige les modules du cours. Les modules sont la **source unique** : le HTML les lit et `dev-export` les reutilise.
 
@@ -19,7 +19,7 @@ Redige et corrige les modules du cours. Les modules sont la **source unique** : 
 | Public, contexte, perimetre, risques | `CLAUDE.md` (section Contexte du projet) et `workshop` dans `.claude/project-config.json` |
 | Perimetre des modules (frontieres, durees, labs, renvois, version de reference) | `docs/PLAN.md` |
 | Schema des modules et des blocs, exigences de contenu | `CONVENTIONS.md` |
-| Style et niveau de qualite attendus | `modules/m01-k8s-vs-ocp.js` |
+| Style et niveau de qualite attendus | `modules/fr/m01-k8s-vs-ocp.js` |
 | Regles de validation | `tools/validate.js` (commande : `commands.test` de `project-config.json`) |
 | Conventions de commit et de branche | `CLAUDE.md` (section Conventions Git) |
 

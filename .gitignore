@@ -60,3 +60,5 @@ build/
 # Export PPTX (outils de dev uniquement)
 dist/
 node_modules/
+.claude/skills/milestone-panel/
+.claude/worktrees/
