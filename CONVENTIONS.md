@@ -61,6 +61,7 @@ Pas de HTML dans les blocs `code` et `cmds[0]` : le moteur échappe. **Tous les 
 ## Exigences de contenu
 
 - **Exact et à jour** : **version de référence OpenShift 4.20 EUS** (cf. `docs/PLAN.md` §1.1). Dater tout comportement introduit ou retiré autour de 4.18–4.22. Si un point dépend de la version ou n'est pas certain, le dire (« à confirmer dans les release notes ») plutôt qu'affirmer ; en bilingue, utiliser le marqueur « à vérifier » / « to be verified » dans un callout pour signaler une incertitude factuelle qui sera relue en phase 4. Ne jamais inventer d'option de CLI ou de champ YAML.
+- **Faits issus de recherches Web (agents)** : appliqués seulement après validation de l'utilisateur et toujours recoupés avec la doc Red Hat ; un constat d'agent peut être faux.
 - Commandes `oc` et YAML **réalistes et copiables**.
 - Un **lab** et un **quiz** par module, avec des pièges réalistes (erreurs fréquentes d'un admin qui vient de K8s).
 - **Labs** : le premier `step` est le prérequis d'environnement (E0 à E3, cf. `docs/PLAN.md` §3) avec renvoi au module 00 ; noyau en séance, étapes facultatives en fin de lab marquées « (bonus) ».

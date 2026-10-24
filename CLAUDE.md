@@ -10,7 +10,7 @@ ecrit moi un support de court pour openshift. le cours doit porter sur: comparat
 
 - **But** : support de cours OpenShift **on-premise**, structuré pour mon apprentissage et réutilisable en mission, partagé avec la communauté (dépôt public ; vitrine sur GitHub Pages, cours HTML et PPTX en téléchargement via les Releases).
 - **Public** : admins K8s qui passent à OpenShift, ingénieurs plateforme/DevOps. Les bases K8s ne sont pas réexpliquées.
-- **Format** : hybride — **HTML interactif** (source de vérité, `index.html` + `modules/*.js`) et **export PowerPoint** pour présenter.
+- **Format** : hybride — **HTML interactif** (source de vérité, `index.html` + `modules/fr/*.js` et `modules/en/*.js`) et **export PowerPoint** pour présenter.
 - **Contraintes** : HTML/JS sans dépendance, ouvrable en double-clic ; en français ; encarts « écart cloud » quand le comportement diffère fortement du cloud managé.
 - **Hors périmètre v1** : OpenShift managé en détail, développement applicatif, suivi des apprenants côté serveur.
 - **Risques** : contenu inexact/périmé (versions OCP) ; deux formats à garder synchronisés (le contenu structuré des modules est la source unique).
@@ -20,7 +20,7 @@ ecrit moi un support de court pour openshift. le cours doit porter sur: comparat
 
 > **Repo** : `CCoupel/openshift-course`
 > **Branche principale** : `main`
-> **Versionnement** : `X.Y.Z.a` en dev / `X.Y.Z` en prod — voir `.claude/commands/context/COMMON.md` section 5
+> **Versionnement** : `X.Y.Z.a` en dev / `X.Y.Z` en prod — voir `.claude/commands/context/COMMON.template.md` section 5
 
 ---
 
@@ -72,7 +72,7 @@ ecrit moi un support de court pour openshift. le cours doit porter sur: comparat
 > **ponctuel** = spawné à la demande par la commande dédiée, fermé après DONE.
 
 > Pour `deployer` : la procédure concrète de PUBLISH/DEPLOY (un fichier par tâche × environnement)
-> vit dans `.claude/agents/environments/{publish,deploy}.<env>.md` — voir `agents/deploy.md`
+> vit dans `.claude/agents/environments/{publish,deploy}.<env>.template.md` — voir `agents/deploy.template.md`
 > section "Fichiers d'Environnement".
 
 ---
@@ -173,26 +173,22 @@ test-writer, code-reviewer, qa, doc-updater, deployer, security, infra
 
 ### Questions à l'utilisateur
 
-**Règle absolue** : toute information, décision ou validation attendue de l'utilisateur est posée
-**via l'outil `AskUserQuestion`** — jamais en texte dans le chat (pas de liste numérotée, pas de « OUI/NON »,
-pas de `[O/n]`, pas de « dis-moi »). Ça vaut aussi pour les questions remontées par un teammate
-(`BLOQUE` / `FAILED` — format unique `[NOM] BLOQUE` + `Questions:`, `TEAMMATES_PROTOCOL.md`).
-
-Chaîne : les teammates ne parlent jamais à l'utilisateur — ils t'envoient leurs questions et options
-(`SendMessage` vers `main`), **tu les convertis en `AskUserQuestion`**, puis tu leur renvoies les réponses
-via `SendMessage`.
-
-- Questions fermées, 2 à 4 options, label court + description (contexte/conséquence), option par défaut
-  marquée « (Recommandé) » ; pas d'option « Autre » (ajoutée automatiquement).
-- Tout regrouper dans **un seul appel** `AskUserQuestion` (jusqu'à 4 questions).
-- Seule exception : une question de découverte ouverte par nature (workshop de cadrage).
-
-Détail et checklist avant chaque message à l'utilisateur : `.claude/agents/teamleader.md`, section « Questions à l'utilisateur ».
+**Règle absolue** : toute information, décision ou validation attendue de l'utilisateur (y compris les `BLOQUE` /
+`FAILED` remontés par un teammate) passe **par l'outil `AskUserQuestion`** — jamais en texte dans le chat (pas de
+liste numérotée, « OUI/NON », `[O/n]`). Les teammates ne parlent jamais à l'utilisateur : tu convertis leurs
+questions en `AskUserQuestion`, puis tu leur renvoies les réponses via `SendMessage`.
+Procédure, format et checklist : `.claude/agents/teamleader.template.md`, section « Questions à l'utilisateur ».
 
 ### Relayer l'avancement
 
 Chaque jalon `[NOM] EN COURS — …` d'un teammate (ex. `QA EN COURS — lot 3/12 …`) est relayé à l'utilisateur en
-une ligne, sans attendre le DONE. Un jalon n'est pas un DONE : ne pas enchaîner avant le DONE.
+une ligne, sans attendre le DONE. Un jalon n'est pas un DONE : ne pas enchaîner avant le DONE. Si un jalon signale des échecs, les nommer dans le relais.
+
+### Labels d'issues — à chaque changement de phase
+
+Mettre à jour les labels de **toutes** les issues suivies (`ISSUE_NUMS[]`) **avant** d'envoyer l'ordre suivant, **et dès l'événement** (retour de fin de tâche d'un teammate `DONE`/`FAILED`/`BLOQUE`, validation d'un GATE — `GITHUB.md` §9.12), avant de le relayer. L'état dit ce qui **reste à faire** (ex. `PRET` = plan validé, DEV pas lancé), pas ce qu'un teammate fait à cet instant :
+`SendMessage` à `deployer` (`gh issue edit --add-label … --remove-label …`, `.claude/commands/context/GITHUB.template.md` §9).
+La clôture du milestone reste soumise à la validation utilisateur.
 
 ### Validation des rapports DONE
 
@@ -215,6 +211,7 @@ SendMessage({
 
 - **Branches** : `main` + `feature/*`, `bugfix/*` (une branche par module ou correction) — choix du workshop
 - **Commits** : Conventional Commits `type(scope): message` — types : `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
-- **Tags** : `vX.Y.Z` — la CI valide et publie la release
+- **Tags** : `vX.Y.Z` — la CI valide et publie la release ; un tag poussé ne se déplace jamais (ni force, ni suppression) : une correction = une nouvelle version
+- **Notes de release** : extraites du CHANGELOG (section `## [X.Y.Z]` exacte), sans contenu provisoire ni inventé ; extraction relue avant le tag
 - **Revue** : auto-revue assistée par l'agent `code-reviewer` avant merge
 - **Qualité** : `node tools/validate.js` doit passer ; les points techniques incertains sont marqués « à vérifier dans les release notes »
