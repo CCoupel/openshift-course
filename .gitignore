@@ -62,3 +62,4 @@ dist/
 node_modules/
 .claude/skills/milestone-panel/
 .claude/worktrees/
+.claude/workflow/
