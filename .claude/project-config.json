@@ -150,6 +150,32 @@
         "sha256": "8060486767f4ba0d4536c9cc195ac6f38554a35dde7ded76d68ff4245b895f27"
       },
       {
+        "name": "dev-course",
+        "source": "templates/dev-generic.md",
+        "tag": "v3.28.0",
+        "commit": "8f583bf7a54085e38bbf0c06704f32b48a7b4912",
+        "sha256": "5ef9f4825c636a524f64cddf51c5c4fd3876167bade7706f0793bca061244b19",
+        "role": "Rédaction des modules du cours (HTML, source unique)",
+        "paths": [
+          "modules/**",
+          "assets/**"
+        ]
+      },
+      {
+        "name": "dev-export",
+        "source": "templates/dev-generic.md",
+        "tag": "v3.28.0",
+        "commit": "8f583bf7a54085e38bbf0c06704f32b48a7b4912",
+        "sha256": "5ef9f4825c636a524f64cddf51c5c4fd3876167bade7706f0793bca061244b19",
+        "role": "Export PowerPoint (.pptx) à partir des modules",
+        "paths": [
+          "tools/export-pptx.js",
+          "tools/check-pptx.js",
+          "package.json",
+          "package-lock.json"
+        ]
+      },
+      {
         "name": "doc-updater",
         "source": "agents/doc-updater.md",
         "tag": "v3.26.2",

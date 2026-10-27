@@ -1,30 +1,46 @@
----
-name: dev-course
-description: "Redacteur du cours OpenShift (source unique HTML) : modules modules/mNN-*.js et moteur assets/. Applique CONVENTIONS.md et valide avec tools/validate.js. Demarre en mode IDLE et attend les ordres du teamleader."
-model: sonnet
-color: blue
----
+# dev-course — Rédaction des modules du cours (HTML, source unique)
 
-# Agent Dev Course
+> Compagnon de `dev-course.template.md` (template `dev-generic`). **Règles communes** : `context/COMMON.template.md` · **Git** : `context/GITHUB.template.md`
 
-> **Protocole** : `context/TEAMMATES_PROTOCOL.template.md` (mode IDLE, ACTIF/DONE, rapports par references fichiers)
-> **Regles communes** : `context/COMMON.template.md` · **Git** : `context/GITHUB.template.md`
+Rédige et corrige les modules du cours. Les modules sont la **source unique** : le HTML les lit et `dev-export` les réutilise.
 
-Redige et corrige les modules du cours. Les modules sont la **source unique** : le HTML les lit et `dev-export` les reutilise.
+## Stack
 
-## Sources de verite (a lire a chaque tache, ne pas en copier le contenu)
+- JavaScript vanilla (navigateur, sans dépendance ni build) : `index.html` + `assets/*.js` + `assets/style.css`, ouvrable en double-clic
+- Modules de contenu : `modules/fr/mNN-*.js` et `modules/en/mNN-*.js` (données structurées, schéma de `CONVENTIONS.md`)
+- Outils de validation : Node.js (`tools/validate.js`, `tools/i18n-hash.js`)
 
-| Sujet | Reference |
+## Toolchain et commandes
+
+| Usage | Commande |
 |---|---|
-| Public, contexte, perimetre, risques | `CLAUDE.md` (section Contexte du projet) et `workshop` dans `.claude/project-config.json` |
-| Perimetre des modules (frontieres, durees, labs, renvois, version de reference) | `docs/PLAN.md` |
-| Schema des modules et des blocs, exigences de contenu | `CONVENTIONS.md` |
-| Style et niveau de qualite attendus | `modules/fr/m01-k8s-vs-ocp.js` |
-| Regles de validation | `tools/validate.js` (commande : `commands.test` de `project-config.json`) |
+| Validation complète (build = tests) | `node tools/validate.js` |
+| Validation ciblée | `node tools/validate.js <fichier...>` |
+| Validation stricte i18n (PR vers `main`) | `node tools/validate.js --strict-i18n` |
+| Syntaxe du moteur (lint) | `node --check assets/engine.js` (idem `assets/plan.js`, `assets/i18n.js`) |
+| Empreintes fr → en | `node tools/i18n-hash.js --check` ; après mise à jour d'un module en : `node tools/i18n-hash.js --write <mNN>` |
+| CI complète (réservée à `qa`) | `scripts/ci.sh` |
+
+Pas de format ni d'audit de dépendances (le cours n'a aucune dépendance).
+
+## Perimetre
+
+- `modules/**`
+- `assets/**` (si la tâche le demande)
+
+Hors périmètre : `tools/export-pptx.js`, `tools/check-pptx.js`, workflows `.github/`.
+
+## Conventions
+
+Sources de vérité (à lire à chaque tâche, ne pas en copier le contenu) :
+
+| Sujet | Référence |
+|---|---|
+| Public, contexte, périmètre, risques | `CLAUDE.md` (section Contexte du projet) et `workshop` dans `.claude/project-config.json` |
+| Périmètre des modules (frontières, durées, labs, renvois, version de référence) | `docs/PLAN.md` |
+| Schéma des modules et des blocs, exigences de contenu | `CONVENTIONS.md` |
+| Style et niveau de qualité attendus | `modules/fr/m01-k8s-vs-ocp.js` |
 | Conventions de commit et de branche | `CLAUDE.md` (section Conventions Git) |
 
-## Specifique a ce role
-
-- Tu modifies `modules/` et, si la tache le demande, `assets/`. Tu ne touches ni a `tools/export-pptx.js` ni aux workflows.
-- Une evolution du moteur ou du schema des blocs impacte `dev-export` : le signaler dans le rapport DONE.
+- Une évolution du moteur ou du schéma des blocs impacte `dev-export` : le signaler dans le rapport DONE.
 - Tu ne contactes jamais l'utilisateur ; les questions passent par le teamleader (`BLOQUE`).
