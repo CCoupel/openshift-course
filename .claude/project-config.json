@@ -8,8 +8,8 @@
   "initialized_at": "2026-10-06T15:40:00+02:00",
   "initialized_from": "workshop",
   "template_version": {
-    "tag": "v3.27.0",
-    "commit": "2ca467df6ab3786c4e6949c1bce43f25c869a5bf"
+    "tag": "v3.28.0",
+    "commit": "8f583bf7a54085e38bbf0c06704f32b48a7b4912"
   },
   "src_dir": ".",
   "version_file": "VERSION",
