@@ -53,8 +53,8 @@ ecrit moi un support de court pour openshift. le cours doit porter sur: comparat
 | Nom | Rôle | Fichier | Spawn |
 |-----|------|---------|-------|
 | `planner` | Plan d'implémentation + contrats API | `.claude/agents/implementation-planner.template.md` | permanent |
-| `dev-course` | Rédaction des modules du cours (HTML, source unique) | `.claude/agents/dev-course.md` | permanent |
-| `dev-export` | Export PowerPoint (.pptx) à partir des modules | `.claude/agents/dev-export.md` | permanent |
+| `dev-course` | Rédaction des modules du cours (HTML, source unique) | `.claude/agents/dev-course.template.md` | permanent |
+| `dev-export` | Export PowerPoint (.pptx) à partir des modules | `.claude/agents/dev-export.template.md` | permanent |
 | `test-writer` | Scripts de tests + procédures QA | `.claude/agents/test-writer.template.md` | permanent |
 | `code-reviewer` | Revue de code | `.claude/agents/code-reviewer.template.md` | permanent |
 | `qa` | Exécution des tests et validation | `.claude/agents/qa.template.md` | permanent |
